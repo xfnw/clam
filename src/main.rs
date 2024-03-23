@@ -1,6 +1,6 @@
 use clap::Parser;
 use git2::Repository;
-use std::{collections::BTreeMap, path::PathBuf};
+use std::{collections::BTreeMap, error::Error, path::PathBuf, fs};
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -16,7 +16,7 @@ fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     dir_map: &mut BTreeMap<String, Vec<(String, Vec<u8>)>>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn Error>> {
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
 
@@ -32,6 +32,18 @@ fn walk_callback(
 
     let directory = dir_map.get_mut(dir).ok_or("VERBODEN TOEGANG")?;
     directory.push((name.to_string(), blob.content().to_vec()));
+
+    Ok(())
+}
+
+fn generate(
+    repo: &Repository,
+    dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
+    id: &str,
+) -> Result<(), Box<dyn Error>> {
+    for (dir, _file) in dir_map.iter() {
+        fs::create_dir_all(dir)?;
+    }
 
     Ok(())
 }
@@ -53,4 +65,6 @@ fn main() {
         0
     })
     .unwrap();
+
+    generate(&repo, &dir_map, id).unwrap();
 }
