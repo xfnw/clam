@@ -2,16 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>{{ self.title }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>html{max-width:60em;margin:0 auto;font-family:monospace;font-size:12pt;color-scheme:dark light}:target{background:#aa6}pre{white-space:pre-wrap}@media only print{nav{display:none}}</style>
+<style>html{max-width:60em;margin:0 auto;font-size:12pt;color-scheme:dark light}:target{background:#aa6}pre{margin-left:1em;white-space:pre-wrap}@media only print{nav{display:none}}</style>
+<title>{{ self.title }}</title>
 </head>
 <body>
 <h1>{{ self.title }}</h1>
 {{ Trusted(&self.body) }}
 <footer>
 <hr>
-generated from {{ self.commit }} with <a href="https://github.com/xfnw/clam">clam</a>.
+generated from git commit {{ self.commit }} using <a href="https://github.com/xfnw/clam">clam</a>.
 </footer>
 </body>
 </html>
