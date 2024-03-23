@@ -1,6 +1,7 @@
 use clap::Parser;
 use git2::Repository;
-use std::{collections::BTreeMap, error::Error, path::PathBuf, fs};
+use std::{collections::BTreeMap, error::Error, fs, path::PathBuf, io::Write};
+use orgize::Org;
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -41,8 +42,29 @@ fn generate(
     dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
     id: &str,
 ) -> Result<(), Box<dyn Error>> {
-    for (dir, _file) in dir_map.iter() {
+    for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
+
+        for file in files.iter() {
+            let mut full_path: PathBuf = format!("{}{}", dir, file.0).into();
+
+            let pcontent: Option<Vec<u8>> = match full_path.extension().and_then(std::ffi::OsStr::to_str) {
+                Some("org") => {
+                    full_path.set_extension("html");
+                    let fstr = std::str::from_utf8(file.1.as_slice())?;
+                    let res = Org::parse(fstr);
+                    Some(res.to_html().into_bytes())
+                }
+                _ => None,
+            };
+            let content = match &pcontent {
+                Some(c) => c,
+                None => &file.1,
+            };
+
+            let mut f = fs::File::create(full_path)?;
+            f.write_all(content)?;
+        }
     }
 
     Ok(())
