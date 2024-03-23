@@ -9,6 +9,7 @@ edition = "2021"
 boilerplate = "1.0.0"
 clap = { version = "4.5.3", default-features = false, features = ["derive", "std", "help", "usage"] }
 git2 = { version = "0.18.3", default-features = false }
+html-escaper = "0.2.0"
 orgize = "=0.10.0-alpha.7"
 rowan = "0.15.15"
 serde = "1.0.197"

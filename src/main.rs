@@ -1,5 +1,6 @@
 use clap::Parser;
 use git2::Repository;
+use html_escaper::{Escape, Trusted};
 use orgize::{ast::Keyword, ParseConfig};
 use rowan::ast::{support, AstNode};
 use std::{collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
@@ -11,6 +12,13 @@ struct Opt {
 
     #[arg(default_value = "HEAD")]
     branch: String,
+}
+
+#[derive(boilerplate::Boilerplate)]
+struct PageHtml<'a> {
+    title: String,
+    body: String,
+    commit: &'a str,
 }
 
 fn walk_callback(
@@ -42,7 +50,7 @@ fn generate(
     org_cfg: &ParseConfig,
     _repo: &Repository,
     dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
-    _id: &str,
+    id: &str,
 ) -> Result<(), Box<dyn Error>> {
     for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
@@ -67,7 +75,12 @@ fn generate(
                             }
                         };
 
-                        Some(res.to_html().into_bytes())
+                        let template = PageHtml {
+                            title,
+                            body: res.to_html(),
+                            commit: id,
+                        };
+                        Some(template.to_string().into_bytes())
                     }
                     _ => None,
                 };

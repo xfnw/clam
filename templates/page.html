@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ self.title }}</title>
+</head>
+<body>
+<h1>{{ self.title }}</h1>
+{{ Trusted(&self.body) }}
+<footer>
+<hr>
+generated from {{ self.commit }} with <a href="https://github.com/xfnw/clam">clam</a>.
+</footer>
+</body>
+</html>

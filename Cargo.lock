@@ -57,6 +57,7 @@ dependencies = [
  "boilerplate",
  "clap",
  "git2",
+ "html-escaper",
  "orgize",
  "rowan",
  "serde",
@@ -187,6 +188,12 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
+name = "html-escaper"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "459a0ca33ee92551e0a3bb1774f2d3bdd1c09fb6341845736662dd25e1fcb52a"
 
 [[package]]
 name = "ident_case"
