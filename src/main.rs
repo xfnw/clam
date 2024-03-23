@@ -1,7 +1,8 @@
 use clap::Parser;
 use git2::Repository;
-use std::{collections::BTreeMap, error::Error, fs, path::PathBuf, io::Write};
-use orgize::Org;
+use orgize::{ast::Keyword, ParseConfig};
+use rowan::ast::{support, AstNode};
+use std::{collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -38,9 +39,10 @@ fn walk_callback(
 }
 
 fn generate(
-    repo: &Repository,
+    org_cfg: &ParseConfig,
+    _repo: &Repository,
     dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
-    id: &str,
+    _id: &str,
 ) -> Result<(), Box<dyn Error>> {
     for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
@@ -48,15 +50,27 @@ fn generate(
         for file in files.iter() {
             let mut full_path: PathBuf = format!("{}{}", dir, file.0).into();
 
-            let pcontent: Option<Vec<u8>> = match full_path.extension().and_then(std::ffi::OsStr::to_str) {
-                Some("org") => {
-                    full_path.set_extension("html");
-                    let fstr = std::str::from_utf8(file.1.as_slice())?;
-                    let res = Org::parse(fstr);
-                    Some(res.to_html().into_bytes())
-                }
-                _ => None,
-            };
+            let pcontent: Option<Vec<u8>> =
+                match full_path.extension().and_then(std::ffi::OsStr::to_str) {
+                    Some("org") => {
+                        full_path.set_extension("html");
+                        let fstr = std::str::from_utf8(file.1.as_slice())?;
+                        let res = org_cfg.clone().parse(fstr);
+
+                        // https://github.com/PoiScript/orgize/issues/70#issuecomment-1916068875
+                        let mut title = "untitled".to_string();
+                        if let Some(section) = res.document().section() {
+                            for keyword in support::children::<Keyword>(section.syntax()) {
+                                if keyword.key() == "TITLE" {
+                                    title = keyword.value().trim().to_string();
+                                }
+                            }
+                        };
+
+                        Some(res.to_html().into_bytes())
+                    }
+                    _ => None,
+                };
             let content = match &pcontent {
                 Some(c) => c,
                 None => &file.1,
@@ -88,5 +102,10 @@ fn main() {
     })
     .unwrap();
 
-    generate(&repo, &dir_map, id).unwrap();
+    // TODO: get this stuff from clam.toml or something
+    let org_cfg = ParseConfig {
+        ..Default::default()
+    };
+
+    generate(&org_cfg, &repo, &dir_map, id).unwrap();
 }

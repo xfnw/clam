@@ -58,6 +58,7 @@ dependencies = [
  "clap",
  "git2",
  "orgize",
+ "rowan",
  "serde",
  "toml",
 ]
