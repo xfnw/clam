@@ -1,3 +1,4 @@
+use chrono::{offset::Utc, DateTime, Datelike};
 use clap::Parser;
 use git2::{Oid, Repository, Time};
 use html_escaper::{Escape, Trusted};
@@ -19,6 +20,9 @@ struct PageHtml<'a> {
     title: String,
     body: String,
     commit: &'a str,
+    author: &'a str,
+    created: DateTime<Utc>,
+    modified: DateTime<Utc>,
 }
 
 fn walk_callback(
@@ -66,7 +70,6 @@ fn generate(
             let pcontent: Option<Vec<u8>> =
                 match full_path.extension().and_then(std::ffi::OsStr::to_str) {
                     Some("org") => {
-                        full_path.set_extension("html");
                         let fstr = std::str::from_utf8(file.1.as_slice())?;
                         let res = org_cfg.clone().parse(fstr);
 
@@ -80,11 +83,23 @@ fn generate(
                             }
                         };
 
+                        let (created, author) =
+                            ctime.get(&full_path).ok_or("missing creation time")?;
+                        let modified = mtime.get(&full_path).ok_or("missing modification time")?;
+
                         let template = PageHtml {
                             title,
                             body: res.to_html(),
                             commit: short_id,
+                            author,
+                            created: DateTime::from_timestamp(created.seconds(), 0)
+                                .ok_or("broken creation date")?,
+                            modified: DateTime::from_timestamp(modified.seconds(), 0)
+                                .ok_or("broken modification date")?,
                         };
+
+                        full_path.set_extension("html");
+
                         Some(template.to_string().into_bytes())
                     }
                     _ => None,
@@ -105,10 +120,7 @@ fn generate(
 type CreateMap = BTreeMap<PathBuf, (Time, String)>;
 type ModifyMap = BTreeMap<PathBuf, Time>;
 
-fn make_time_tree(
-    repo: &Repository,
-    oid: Oid,
-) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
+fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
     macro_rules! add_times {
         ($time:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
             for change in $diff.deltas() {
@@ -144,8 +156,8 @@ fn make_time_tree(
         let tree = commit.tree()?;
         let parents = commit.parent_count();
         let author = commit.author();
+        let time = author.when();
         let author = author.name().ok_or("broken author")?;
-        let time = commit.time();
 
         // initial commit, everything touched
         if parents == 0 {

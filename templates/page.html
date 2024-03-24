@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>html{max-width:60em;margin:0 auto;font-size:12pt;color-scheme:dark light}:target{background:#aa6}pre{margin-left:1em;white-space:pre-wrap}@media only print{nav{display:none}}</style>
+<style>html{max-width:60em;margin:0 auto;font-size:12pt;color-scheme:dark light}:target{background:#aa6}pre{white-space:pre-wrap}pre,code,kbd{border: 1px solid gray}@media only print{nav{display:none}}</style>
 <title>{{ self.title }}</title>
 </head>
 <body>
@@ -11,7 +11,10 @@
 {{ Trusted(&self.body) }}
 <footer>
 <hr>
-generated from git commit {{ self.commit }} using <a href="https://github.com/xfnw/clam">clam</a>.
+&copy; {{ self.created.year() }} <i>{{ self.author }}</i> and contributors.
+last modified <time>{{ self.modified }}</time>.
+generated from git commit <code>{{ self.commit }}</code>
+using <a href="https://github.com/xfnw/clam">clam</a>.
 </footer>
 </body>
 </html>
