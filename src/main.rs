@@ -1,5 +1,5 @@
 use clap::Parser;
-use git2::Repository;
+use git2::{Oid, Repository, Time};
 use html_escaper::{Escape, Trusted};
 use orgize::{ast::Keyword, ParseConfig};
 use rowan::ast::{support, AstNode};
@@ -48,10 +48,15 @@ fn walk_callback(
 
 fn generate(
     org_cfg: &ParseConfig,
-    _repo: &Repository,
+    repo: &Repository,
     dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
-    id: &str,
+    short_id: &str,
+    // FIXME: needing both a short_id and oid is pretty silly, however git2
+    // annoyingly does not provide an easy way to derive one from the other
+    oid: Oid,
 ) -> Result<(), Box<dyn Error>> {
+    let (ctime, mtime) = make_time_tree(repo, oid)?;
+
     for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
 
@@ -78,7 +83,7 @@ fn generate(
                         let template = PageHtml {
                             title,
                             body: res.to_html(),
-                            commit: id,
+                            commit: short_id,
                         };
                         Some(template.to_string().into_bytes())
                     }
@@ -97,14 +102,77 @@ fn generate(
     Ok(())
 }
 
+type CreateMap = BTreeMap<PathBuf, (Time, String)>;
+type ModifyMap = BTreeMap<PathBuf, Time>;
+
+fn make_time_tree(
+    repo: &Repository,
+    oid: Oid,
+) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
+    macro_rules! add_times {
+        ($time:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
+            for change in $diff.deltas() {
+                let path = change.new_file().path().ok_or("broken path")?;
+                if let Some(entry) = $modify_time.get_mut(path) {
+                    if *entry < $time {
+                        *entry = $time.clone();
+                    }
+                } else {
+                    $modify_time.insert(path.to_owned(), $time.clone());
+                }
+                if let Some(entry) = $create_time.get_mut(path) {
+                    if entry.0 > $time {
+                        entry.0 = $time.clone();
+                        entry.1 = $author.to_string();
+                    }
+                } else {
+                    $create_time.insert(path.to_owned(), ($time.clone(), $author.to_string()));
+                }
+            }
+        };
+    }
+
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push(oid)?;
+    revwalk.set_sorting(git2::Sort::TIME)?;
+
+    let mut create_time: CreateMap = BTreeMap::new();
+    let mut modify_time: ModifyMap = BTreeMap::new();
+
+    for cid in revwalk {
+        let commit = repo.find_commit(cid?)?;
+        let tree = commit.tree()?;
+        let parents = commit.parent_count();
+        let author = commit.author();
+        let author = author.name().ok_or("broken author")?;
+        let time = commit.time();
+
+        // initial commit, everything touched
+        if parents == 0 {
+            let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
+            add_times!(time, author, diff, create_time, modify_time);
+            continue;
+        }
+
+        for parent in 0..parents {
+            let ptree = commit.parent(parent)?.tree()?;
+            let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
+            add_times!(time, author, diff, create_time, modify_time);
+        }
+    }
+
+    Ok((create_time, modify_time))
+}
+
 fn main() {
     let opt = Opt::parse();
 
     let repo = Repository::open(&opt.repository).unwrap();
     let commit = repo.revparse_single(&opt.branch).unwrap();
-    let id = commit.short_id().unwrap();
-    let id = id.as_str().unwrap();
+    let short_id = commit.short_id().unwrap();
+    let short_id = short_id.as_str().unwrap();
     let commit = commit.into_commit().unwrap();
+    let oid = commit.id();
     let tree = commit.tree().unwrap();
     let mut dir_map = BTreeMap::new();
     dir_map.insert("".to_string(), vec![]);
@@ -120,5 +188,5 @@ fn main() {
         ..Default::default()
     };
 
-    generate(&org_cfg, &repo, &dir_map, id).unwrap();
+    generate(&org_cfg, &repo, &dir_map, short_id, oid).unwrap();
 }
