@@ -1,4 +1,4 @@
-use orgize::export::{Container, Event, HtmlExport, TraversalContext, Traverser};
+use orgize::export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser};
 use slugify::slugify;
 use std::cmp::min;
 
@@ -24,6 +24,36 @@ impl Traverser for Handler {
             // why does the default HtmlExport output keywords with literally
             // zero formatting? no idea! let's instead not output them at all.
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            Event::Enter(Container::Link(link)) => {
+                let path = link.path();
+                let path = path.trim_start_matches("file:");
+                // FIXME: breaks if linking to bare .org domain.
+                // hopefully most have a trailing slash?
+                let path = if let Some(p) = path.strip_suffix(".org") {
+                    let mut p = p.to_string();
+                    p.push_str(".html");
+                    p
+                } else if path.contains(".org#") {
+                    path.replace(".org#", ".html#")
+                } else {
+                    path.to_string()
+                };
+
+                if link.is_image() {
+                    // FIXME: needs alt text support
+                    self.0
+                        .push_str(format!("<img src=\"{}\">", HtmlEscape(&path)));
+                    return ctx.skip();
+                }
+
+                self.0
+                    .push_str(format!("<a href=\"{}\">", HtmlEscape(&path)));
+
+                if !link.has_description() {
+                    self.0.push_str(format!("{}</a>", HtmlEscape(&path)));
+                    ctx.skip();
+                }
+            }
             _ => self.0.event(event, ctx),
         };
     }
