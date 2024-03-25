@@ -9,11 +9,13 @@ impl Traverser for Handler {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Headline(headline)) => {
-                let lvl = 1 + min(headline.level(), 5);
+                let lvl = headline.level();
+                let lead = "#".repeat(lvl);
+                let lvl = 1 + min(lvl, 5);
                 let txt = headline.title().map(|t| t.to_string()).collect::<String>();
 
                 self.0
-                    .push_str(format!("<h{} id=\"{}\">", lvl, slugify!(&txt)));
+                    .push_str(format!(r##"<h{} id="{1}"><a role="none" href="#{1}">{2}</a> "##, lvl, slugify!(&txt), lead));
 
                 for e in headline.title() {
                     self.element(e, ctx);
