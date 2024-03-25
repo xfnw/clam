@@ -54,6 +54,8 @@ impl Traverser for Handler {
                     ctx.skip();
                 }
             }
+            Event::Enter(Container::Subscript(_)) => self.0.push_str("_"),
+            Event::Leave(Container::Subscript(_)) => (),
             _ => self.0.event(event, ctx),
         };
     }
