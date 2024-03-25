@@ -23,6 +23,7 @@ struct PageHtml<'a> {
     author: &'a str,
     created: DateTime<Utc>,
     modified: DateTime<Utc>,
+    numdir: usize,
 }
 
 fn walk_callback(
@@ -61,6 +62,11 @@ fn generate(
 ) -> Result<(), Box<dyn Error>> {
     let (ctime, mtime) = make_time_tree(repo, oid)?;
 
+    {
+        let mut f = fs::File::create("style.css")?;
+        f.write_all(include_bytes!("style.css"))?;
+    }
+
     for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
 
@@ -96,6 +102,7 @@ fn generate(
                                 .ok_or("broken creation date")?,
                             modified: DateTime::from_timestamp(modified.seconds(), 0)
                                 .ok_or("broken modification date")?,
+                            numdir: full_path.iter().count(),
                         };
 
                         full_path.set_extension("html");
