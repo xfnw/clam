@@ -197,6 +197,14 @@ fn main() {
 
     // TODO: get this stuff from clam.toml or something
     let org_cfg = ParseConfig {
+        todo_keywords: (
+            ["TODO", "PENDING", "DELAYED", "RERUN"]
+                .map(|s| s.to_string())
+                .to_vec(),
+            ["DONE", "RESOLVED", "FIXED"]
+                .map(|s| s.to_string())
+                .to_vec(),
+        ),
         ..Default::default()
     };
 
