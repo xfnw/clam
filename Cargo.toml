@@ -13,3 +13,4 @@ git2 = { version = "0.18.3", default-features = false }
 html-escaper = "0.2.0"
 orgize = "=0.10.0-alpha.7"
 rowan = "0.15.15"
+slugify = "0.1.0"

@@ -7,6 +7,7 @@ use rowan::ast::{support, AstNode};
 use std::{collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod git;
+mod html;
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -70,9 +71,12 @@ fn generate(
                             ctime.get(&full_path).ok_or("missing creation time")?;
                         let modified = mtime.get(&full_path).ok_or("missing modification time")?;
 
+                        let mut html_export = html::Handler::default();
+                        res.traverse(&mut html_export);
+
                         let template = PageHtml {
                             title,
-                            body: res.to_html(),
+                            body: html_export.0.finish(),
                             commit: short_id,
                             author,
                             created: DateTime::from_timestamp(created.seconds(), 0)
