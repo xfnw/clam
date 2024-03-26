@@ -14,8 +14,12 @@ impl Traverser for Handler {
                 let lvl = 1 + min(lvl, 5);
                 let txt = headline.title().map(|t| t.to_string()).collect::<String>();
 
-                self.0
-                    .push_str(format!(r##"<h{} id="{1}"><a role="none" href="#{1}">{2}</a> "##, lvl, slugify!(&txt), lead));
+                self.0.push_str(format!(
+                    r##"<h{} id="{1}"><a role=none href="#{1}">{2}</a> "##,
+                    lvl,
+                    slugify!(&txt),
+                    lead
+                ));
 
                 for e in headline.title() {
                     self.element(e, ctx);

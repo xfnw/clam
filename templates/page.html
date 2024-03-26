@@ -7,6 +7,9 @@
 <title>{{ self.title }}</title>
 </head>
 <body>
+<nav><a href="{% for _ in 1..self.numdir { %}../{% } %}.">home</a>{% if self.numdir > 1 { %}
+/ <a href="..">up</a>
+/ <a href=".">here</a>{% } %}</nav>
 <h1>{{ self.title }}</h1>
 {{ Trusted(&self.body) }}
 <footer>
