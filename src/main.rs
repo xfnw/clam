@@ -6,6 +6,7 @@ use orgize::{ast::Keyword, ParseConfig};
 use rowan::ast::{support, AstNode};
 use std::{collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
+mod atom;
 mod git;
 mod html;
 
