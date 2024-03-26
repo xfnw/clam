@@ -42,6 +42,6 @@ pub fn entries<'a>(
         });
     }
 
-    entries.sort_by(|x, y| x.updated.cmp(&y.updated));
+    entries.sort_by(|x, y| y.updated.cmp(&x.updated));
     Ok(entries)
 }
