@@ -58,7 +58,11 @@ summary {
   padding: 10px;
 }
 
-th, summary, input {
+thead tr td, th, summary {
+  font-weight: bold;
+}
+
+thead tr td, th, summary, input {
   background: #333;
   color: #cdcdcd;
 }
@@ -132,7 +136,7 @@ blockquote {
   a:visited {
     color: #551A8B;
   }
-  th, summary, input {
+  thead tr td, th, summary, input {
     background: #ccc;
     color: #141415;
   }
