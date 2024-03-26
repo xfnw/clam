@@ -1,5 +1,5 @@
 use crate::git::ModifyMap;
-use chrono::{offset::Utc, DateTime};
+use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use std::{collections::BTreeMap, path::PathBuf};
 
@@ -8,15 +8,16 @@ pub struct FeedXml<'a> {
     pub title: &'a str,
     pub id: &'a str,
     pub url: &'a str,
-    pub updated: &'a DateTime<Utc>,
+    pub updated: &'a NaiveDateTime,
     pub entries: &'a [AtomEntry<'a>],
 }
 
+#[derive(Debug)]
 pub struct AtomEntry<'a> {
     pub title: &'a str,
     pub path: &'a str,
     pub author: &'a str,
-    pub updated: DateTime<Utc>,
+    pub updated: NaiveDateTime,
 }
 
 pub fn entries<'a>(
@@ -31,8 +32,9 @@ pub fn entries<'a>(
             None => continue,
         };
         let (updated, author) = mtime.get(old).ok_or("missing modification info")?;
-        let updated =
-            DateTime::from_timestamp(updated.seconds(), 0).ok_or("broken modification date")?;
+        let updated = DateTime::from_timestamp(updated.seconds(), 0)
+            .ok_or("broken modification date")?
+            .naive_utc();
 
         entries.push(AtomEntry {
             title,

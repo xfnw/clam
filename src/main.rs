@@ -1,4 +1,4 @@
-use chrono::{offset::Utc, DateTime, Datelike};
+use chrono::{DateTime, Datelike, NaiveDateTime};
 use clap::Parser;
 use git2::{Oid, Repository};
 use html_escaper::{Escape, Trusted};
@@ -26,8 +26,8 @@ struct PageHtml<'a> {
     body: String,
     commit: &'a str,
     author: &'a str,
-    created: DateTime<Utc>,
-    modified: DateTime<Utc>,
+    created: NaiveDateTime,
+    modified: NaiveDateTime,
     numdir: usize,
 }
 
@@ -91,9 +91,11 @@ fn generate(
                             commit: short_id,
                             author,
                             created: DateTime::from_timestamp(created.seconds(), 0)
-                                .ok_or("broken creation date")?,
+                                .ok_or("broken creation date")?
+                                .naive_utc(),
                             modified: DateTime::from_timestamp(modified.seconds(), 0)
-                                .ok_or("broken modification date")?,
+                                .ok_or("broken modification date")?
+                                .naive_utc(),
                             numdir: full_path.iter().count(),
                         };
 

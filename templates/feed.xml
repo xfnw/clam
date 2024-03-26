@@ -3,14 +3,14 @@
 <title>{{ self.title }}</title>
 <id>{{ self.id }}/feed.xml</id>
 <link rel="self" href="{{ self.url }}/feed.xml"/>
-<updated>{{ self.updated }}</updated>
+<updated>{{ format!("{:?}Z", self.updated) }}</updated>
 %% for entry in self.entries {
 <entry>
 <title>{{ entry.title }}</title>
 <id>{{ self.id }}/{{ entry.path }}</id>
 <link rel="alternate" href="{{ self.url }}/{{ entry.path }}"/>
 <author><name>{{ entry.author }}</name></author>
-<updated>{{ entry.updated }}</updated>
+<updated>{{ format!("{:?}Z", entry.updated) }}</updated>
 </entry>
 %% }
 </feed>
