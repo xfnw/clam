@@ -70,7 +70,7 @@ fn generate(
 
                         let (created, author) =
                             ctime.get(&full_path).ok_or("missing creation time")?;
-                        let modified = mtime.get(&full_path).ok_or("missing modification time")?;
+                        let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
 
                         let mut html_export = html::Handler::default();
                         res.traverse(&mut html_export);

@@ -3,7 +3,7 @@ use git2::{Oid, Repository, Time};
 use std::{collections::BTreeMap, error::Error, path::PathBuf};
 
 pub type CreateMap = BTreeMap<PathBuf, (Time, String)>;
-pub type ModifyMap = BTreeMap<PathBuf, Time>;
+pub type ModifyMap = BTreeMap<PathBuf, (Time, String)>;
 
 pub fn make_time_tree(
     repo: &Repository,
@@ -14,11 +14,12 @@ pub fn make_time_tree(
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or("broken path")?;
                 if let Some(entry) = $modify_time.get_mut(path) {
-                    if *entry < $time {
-                        *entry = $time.clone();
+                    if entry.0 < $time {
+                        entry.0 = $time.clone();
+                        entry.1 = $author.to_string();
                     }
                 } else {
-                    $modify_time.insert(path.to_owned(), $time.clone());
+                    $modify_time.insert(path.to_owned(), ($time.clone(), $author.to_string()));
                 }
                 if let Some(entry) = $create_time.get_mut(path) {
                     if entry.0 > $time {
