@@ -4,7 +4,8 @@ use git2::{Oid, Repository};
 use html_escaper::{Escape, Trusted};
 use orgize::{ast::Keyword, ParseConfig};
 use rowan::ast::{support, AstNode};
-use std::{collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
+use serde_derive::Deserialize;
+use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod git;
@@ -30,6 +31,13 @@ struct PageHtml<'a> {
     numdir: usize,
 }
 
+#[derive(Deserialize, Debug)]
+struct ClamConfig {
+    title: String,
+    id: Option<String>,
+    url: String,
+}
+
 fn generate(
     org_cfg: &ParseConfig,
     repo: &Repository,
@@ -45,6 +53,8 @@ fn generate(
         let mut f = fs::File::create("style.css")?;
         f.write_all(include_bytes!("style.css"))?;
     }
+
+    let mut titles = BTreeMap::new();
 
     for (dir, files) in dir_map.iter() {
         fs::create_dir_all(dir)?;
@@ -66,7 +76,7 @@ fn generate(
                                     title = keyword.value().trim().to_string();
                                 }
                             }
-                        };
+                        }
 
                         let (created, author) =
                             ctime.get(&full_path).ok_or("missing creation time")?;
@@ -76,7 +86,7 @@ fn generate(
                         res.traverse(&mut html_export);
 
                         let template = PageHtml {
-                            title,
+                            title: title.clone(),
                             body: html_export.0.finish(),
                             commit: short_id,
                             author,
@@ -87,7 +97,9 @@ fn generate(
                             numdir: full_path.iter().count(),
                         };
 
+                        let old_path = full_path.clone();
                         full_path.set_extension("html");
+                        titles.insert(full_path.clone(), (title, old_path));
 
                         Some(template.to_string().into_bytes())
                     }
@@ -101,6 +113,27 @@ fn generate(
             let mut f = fs::File::create(full_path)?;
             f.write_all(content)?;
         }
+    }
+
+    if let Ok(config) = fs::read_to_string(".clam.toml") {
+        let config: ClamConfig = toml::from_str(&config)?;
+
+        let feed = atom::entries(&titles, &mtime)?;
+
+        let mut f = fs::File::create("feed.xml")?;
+        f.write_all(
+            atom::FeedXml {
+                title: &config.title,
+                id: config.id.as_ref().unwrap_or(&config.url),
+                url: &config.url,
+                updated: &feed.first().ok_or("no entries in feed")?.updated,
+                entries: &feed[..min(feed.len(), 10)],
+            }
+            .to_string()
+            .as_bytes(),
+        )?;
+    } else {
+        eprintln!("missing config file, skipping feed.xml creation");
     }
 
     Ok(())
@@ -125,7 +158,7 @@ fn main() {
     })
     .unwrap();
 
-    // TODO: get this stuff from clam.toml or something
+    // TODO: get this stuff from .clam.toml or something
     let org_cfg = ParseConfig {
         todo_keywords: (
             ["TODO", "PENDING", "DELAYED", "RERUN"]
