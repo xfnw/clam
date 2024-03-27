@@ -136,6 +136,9 @@ blockquote {
   a:visited {
     color: #551A8B;
   }
+  :target {
+    background-color: #ee8;
+  }
   thead tr td, th, summary, input {
     background: #ccc;
     color: #141415;
