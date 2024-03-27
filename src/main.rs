@@ -72,7 +72,7 @@ fn generate(
                         let mut title = "untitled".to_string();
                         if let Some(section) = res.document().section() {
                             for keyword in support::children::<Keyword>(section.syntax()) {
-                                if keyword.key() == "TITLE" {
+                                if keyword.key().eq_ignore_ascii_case("TITLE") {
                                     title = keyword.value().trim().to_string();
                                 }
                             }
