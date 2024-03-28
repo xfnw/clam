@@ -11,6 +11,9 @@
 / <a href="..">up</a>
 / <a href=".">here</a>{% } %}</nav>
 <h1>{{ self.title }}</h1>
+%% if self.old_page {
+<div class=box>this page was last updated over a year ago. facts and circumstances may have changed since.</div>
+%% }
 {{ Trusted(&self.body) }}
 <footer>
 <hr>

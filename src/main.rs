@@ -29,6 +29,7 @@ struct PageHtml<'a> {
     created: NaiveDateTime,
     modified: NaiveDateTime,
     numdir: usize,
+    old_page: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -54,6 +55,11 @@ fn generate(
         f.write_all(include_bytes!("style.css"))?;
     }
 
+    let year_ago = std::time::SystemTime::now()
+        .duration_since(std::time::SystemTime::UNIX_EPOCH)?
+        .as_secs()
+        - 365 * 24 * 60 * 60;
+    let year_ago: i64 = year_ago.try_into()?;
     let mut titles = BTreeMap::new();
 
     for (dir, files) in dir_map.iter() {
@@ -85,6 +91,8 @@ fn generate(
                         let mut html_export = html::Handler::default();
                         res.traverse(&mut html_export);
 
+                        let old_page = modified.seconds() - year_ago < 0;
+
                         let template = PageHtml {
                             title: title.clone(),
                             body: html_export.0.finish(),
@@ -97,6 +105,7 @@ fn generate(
                                 .ok_or("broken modification date")?
                                 .naive_utc(),
                             numdir: full_path.iter().count(),
+                            old_page,
                         };
 
                         let old_path = full_path.clone();
