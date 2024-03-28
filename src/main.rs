@@ -129,7 +129,7 @@ fn generate(
                 id: config.id.as_ref().unwrap_or(&config.url),
                 url: &config.url,
                 updated: &feed.first().ok_or("no entries in feed")?.updated,
-                entries: &feed[..min(feed.len(), 10)],
+                entries: &feed[..min(feed.len(), 42)],
             }
             .to_string()
             .as_bytes(),
