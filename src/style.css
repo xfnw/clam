@@ -126,6 +126,7 @@ img {
 
 .fixme:before {
   content: "[FIXME] ";
+  font-weight: bold;
   float: left;
 }
 
