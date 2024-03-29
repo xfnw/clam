@@ -1,4 +1,5 @@
 use orgize::export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser};
+use rowan::ast::AstNode;
 use slugify::slugify;
 use std::cmp::min;
 
@@ -60,6 +61,29 @@ impl Traverser for Handler {
                     ctx.skip();
                 }
             }
+            Event::Enter(Container::SpecialBlock(block)) => {
+                if let Some(Some(name)) = block.syntax().first_child().map(|n| {
+                    n.children_with_tokens()
+                        .filter_map(|t| t.into_token())
+                        .nth(1)
+                }) {
+                    self.0
+                        .push_str(format!("<div class=\"{}\">", HtmlEscape(&name.text())));
+
+                    // strip off some exterior formatting
+                    for child in block.syntax().children() {
+                        for sub in child.children() {
+                            for e in sub.children_with_tokens() {
+                                self.element(e, ctx);
+                            }
+                        }
+                    }
+
+                    self.0.push_str("</div>");
+                    ctx.skip();
+                }
+            }
+            Event::Leave(Container::SpecialBlock(_)) => ctx.skip(),
             Event::Enter(Container::Subscript(_)) => self.0.push_str("_"),
             Event::Leave(Container::Subscript(_)) => (),
             _ => self.0.event(event, ctx),
