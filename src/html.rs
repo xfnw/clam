@@ -1,4 +1,7 @@
-use orgize::export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser};
+use orgize::{
+    ast::TodoType,
+    export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
+};
 use rowan::ast::AstNode;
 use slugify::slugify;
 use std::cmp::min;
@@ -21,6 +24,18 @@ impl Traverser for Handler {
                     slugify!(&txt),
                     lead
                 ));
+
+                if let Some(keyword) = headline.todo_keyword() {
+                    self.0.push_str(match headline.todo_type() {
+                        Some(TodoType::Todo) => {
+                            format!("<span class=todo>{}</span> ", HtmlEscape(keyword.as_ref()))
+                        }
+                        Some(TodoType::Done) => {
+                            format!("<span class=done>{}</span> ", HtmlEscape(keyword.as_ref()))
+                        }
+                        None => unreachable!(),
+                    });
+                }
 
                 for e in headline.title() {
                     self.element(e, ctx);

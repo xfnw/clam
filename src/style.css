@@ -120,11 +120,31 @@ img {
   max-width: 100%;
 }
 
-.alert, .warning, .fixme {
+.todo, .done {
+  color: #ddd;
+}
+
+.todo:before, .done:before {
+  content: "[";
+}
+
+.todo:after, .done:after {
+  content: "]";
+}
+
+.todo {
+  background: #b11;
+}
+
+.done {
+  background: #171;
+}
+
+.alert, .warning, .fixme, .FIXME {
   background: #b01111;
 }
 
-.fixme:before {
+.fixme:before, .FIXME:before {
   content: "[FIXME] ";
   font-weight: bold;
   float: left;
@@ -160,7 +180,7 @@ img {
   blockquote {
     border-left: 1px solid #ddd;
   }
-  .alert, .warning, .fixme {
+  .alert, .warning, .fixme, .FIXME {
     background: #f53838;
   }
 }

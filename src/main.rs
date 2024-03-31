@@ -175,7 +175,7 @@ fn main() {
             ["TODO", "PENDING", "DELAYED", "RERUN"]
                 .map(|s| s.to_string())
                 .to_vec(),
-            ["DONE", "RESOLVED", "FIXED"]
+            ["DONE", "RESOLVED", "FIXED", "WONTFIX"]
                 .map(|s| s.to_string())
                 .to_vec(),
         ),
