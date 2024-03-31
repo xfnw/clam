@@ -80,10 +80,9 @@ impl Traverser for Handler {
                     }
 
                     self.0.push_str("</div>");
-                    ctx.skip();
                 }
+                ctx.skip();
             }
-            Event::Leave(Container::SpecialBlock(_)) => ctx.skip(),
             Event::Enter(Container::Subscript(_)) => self.0.push_str("_"),
             Event::Leave(Container::Subscript(_)) => (),
             _ => self.0.event(event, ctx),
