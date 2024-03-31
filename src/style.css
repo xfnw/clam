@@ -122,14 +122,7 @@ img {
 
 .todo, .done {
   color: #ddd;
-}
-
-.todo:before, .done:before {
-  content: "[";
-}
-
-.todo:after, .done:after {
-  content: "]";
+  padding: 0 .3em;
 }
 
 .todo {
