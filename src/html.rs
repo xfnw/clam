@@ -1,8 +1,8 @@
 use orgize::{
-    ast::TodoType,
+    ast::{PropertyDrawer, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
 };
-use rowan::ast::AstNode;
+use rowan::ast::{support, AstNode};
 use slugify::slugify;
 use std::cmp::min;
 
@@ -18,11 +18,19 @@ impl Traverser for Handler {
                 let lvl = 1 + min(lvl, 5);
                 let txt = headline.title().map(|t| t.to_string()).collect::<String>();
 
+                let id = if let Some(Some(cid)) =
+                    support::children::<PropertyDrawer>(headline.syntax())
+                        .next()
+                        .map(|p| p.get("CUSTOM_ID"))
+                {
+                    cid.to_string()
+                } else {
+                    slugify!(&txt)
+                };
+
                 self.0.push_str(format!(
                     r##"<h{} id="{1}"><a role=none href="#{1}">{2}</a> "##,
-                    lvl,
-                    slugify!(&txt),
-                    lead
+                    lvl, id, lead
                 ));
 
                 if let Some(keyword) = headline.todo_keyword() {
