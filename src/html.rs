@@ -57,9 +57,13 @@ impl Traverser for Handler {
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
                 let path = path.trim_start_matches("file:");
+                let path = if let Some(p) = path.strip_prefix('*') {
+                    let mut p = slugify!(p);
+                    p.insert(0, '#');
+                    p
                 // FIXME: breaks if linking to bare .org domain.
                 // hopefully most have a trailing slash?
-                let path = if let Some(p) = path.strip_suffix(".org") {
+                } else if let Some(p) = path.strip_suffix(".org") {
                     let mut p = p.to_string();
                     p.push_str(".html");
                     p
