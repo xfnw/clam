@@ -9,11 +9,11 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = (import nixpkgs) { inherit system; };
-
         naersk' = pkgs.callPackage naersk { };
-
       in rec {
-        defaultPackage = naersk'.buildPackage { src = ./.; };
+        packages.clam = naersk'.buildPackage { src = ./.; };
+
+        defaultPackage = packages.clam;
 
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [ rustc cargo clippy ];
