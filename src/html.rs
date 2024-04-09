@@ -74,9 +74,16 @@ impl Traverser for Handler {
                 };
 
                 if link.is_image() {
-                    // FIXME: needs alt text support
-                    self.0
-                        .push_str(format!("<img src=\"{}\">", HtmlEscape(&path)));
+                    if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
+                        self.0.push_str(format!(
+                            r#"<img src="{}" alt="{}">"#,
+                            HtmlEscape(&path),
+                            HtmlEscape(caption.trim())
+                        ));
+                    } else {
+                        self.0
+                            .push_str(format!("<img src=\"{}\">", HtmlEscape(&path)));
+                    }
                     return ctx.skip();
                 }
 
