@@ -7,7 +7,10 @@ use slugify::slugify;
 use std::cmp::min;
 
 #[derive(Default)]
-pub struct Handler(pub HtmlExport);
+pub struct Handler {
+    pub exp: HtmlExport,
+    pub numdir: usize,
+}
 
 impl Traverser for Handler {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
@@ -28,13 +31,13 @@ impl Traverser for Handler {
                     slugify!(&txt)
                 };
 
-                self.0.push_str(format!(
+                self.exp.push_str(format!(
                     r##"<h{} id="{1}"><a role=none href="#{1}">{2}</a> "##,
                     lvl, id, lead
                 ));
 
                 if let Some(keyword) = headline.todo_keyword() {
-                    self.0.push_str(match headline.todo_type() {
+                    self.exp.push_str(match headline.todo_type() {
                         Some(TodoType::Todo) => {
                             format!("<span class=todo>{}</span> ", HtmlEscape(keyword.as_ref()))
                         }
@@ -49,7 +52,7 @@ impl Traverser for Handler {
                     self.element(e, ctx);
                 }
 
-                self.0.push_str(format!("</h{}>", lvl));
+                self.exp.push_str(format!("</h{}>", lvl));
             }
             // why does the default HtmlExport output keywords with literally
             // zero formatting? no idea! let's instead not output them at all.
@@ -75,51 +78,63 @@ impl Traverser for Handler {
 
                 if link.is_image() {
                     if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
-                        self.0.push_str(format!(
+                        self.exp.push_str(format!(
                             r#"<img src="{}" alt="{}">"#,
                             HtmlEscape(&path),
                             HtmlEscape(caption.trim())
                         ));
                     } else {
-                        self.0
+                        self.exp
                             .push_str(format!("<img src=\"{}\">", HtmlEscape(&path)));
                     }
                     return ctx.skip();
                 }
 
-                self.0
+                self.exp
                     .push_str(format!("<a href=\"{}\">", HtmlEscape(&path)));
 
                 if !link.has_description() {
-                    self.0.push_str(format!("{}</a>", HtmlEscape(&path)));
+                    self.exp.push_str(format!("{}</a>", HtmlEscape(&path)));
                     ctx.skip();
                 }
             }
             Event::Enter(Container::SpecialBlock(block)) => {
-                if let Some(Some(name)) = block.syntax().first_child().map(|n| {
-                    n.children_with_tokens()
-                        .filter_map(|t| t.into_token())
-                        .nth(1)
-                }) {
-                    self.0
-                        .push_str(format!("<div class=\"{}\">", HtmlEscape(&name.text())));
+                if let Some(mut par) = block
+                    .syntax()
+                    .first_child()
+                    .map(|n| n.children_with_tokens().filter_map(|t| t.into_token()))
+                {
+                    if let Some(name) = par.nth(1) {
+                        self.exp
+                            .push_str(format!("<div class=\"{}\">", HtmlEscape(&name.text())));
 
-                    // strip off some exterior formatting
-                    for child in block.syntax().children() {
-                        for sub in child.children() {
-                            for e in sub.children_with_tokens() {
-                                self.element(e, ctx);
-                            }
-                        }
+                        self.output_block_children(block, ctx);
+
+                        self.exp.push_str("</div>");
                     }
-
-                    self.0.push_str("</div>");
                 }
                 ctx.skip();
             }
-            Event::Enter(Container::Subscript(_)) => self.0.push_str("_"),
+            Event::Enter(Container::Subscript(_)) => self.exp.push_str("_"),
             Event::Leave(Container::Subscript(_)) => (),
-            _ => self.0.event(event, ctx),
+            _ => self.exp.event(event, ctx),
         };
+    }
+}
+
+impl Handler {
+    /// output children while stripping off some exterior formatting
+    fn output_block_children(
+        &mut self,
+        block: orgize::ast::SpecialBlock,
+        ctx: &mut TraversalContext,
+    ) {
+        for child in block.syntax().children() {
+            for sub in child.children() {
+                for e in sub.children_with_tokens() {
+                    self.element(e, ctx);
+                }
+            }
+        }
     }
 }

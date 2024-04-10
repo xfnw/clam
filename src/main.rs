@@ -88,14 +88,19 @@ fn generate(
                             ctime.get(&full_path).ok_or("missing creation time")?;
                         let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
 
-                        let mut html_export = html::Handler::default();
+                        let numdir = full_path.iter().count();
+
+                        let mut html_export = html::Handler {
+                            numdir,
+                            ..Default::default()
+                        };
                         res.traverse(&mut html_export);
 
                         let old_page = modified.seconds() - year_ago < 0;
 
                         let template = PageHtml {
                             title: title.clone(),
-                            body: html_export.0.finish(),
+                            body: html_export.exp.finish(),
                             commit: short_id,
                             author,
                             created: DateTime::from_timestamp(created.seconds(), 0)
@@ -104,7 +109,7 @@ fn generate(
                             modified: DateTime::from_timestamp(modified.seconds(), 0)
                                 .ok_or("broken modification date")?
                                 .naive_utc(),
-                            numdir: full_path.iter().count(),
+                            numdir,
                             old_page,
                         };
 
