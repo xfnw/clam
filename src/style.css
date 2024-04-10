@@ -35,11 +35,11 @@ code, kbd, pre, textarea {
   color: #eee;
 }
 
-code, kbd, pre, .flex div, .box, textarea {
+code, kbd, pre, .flex div, .box, .chat, textarea {
   background: #222;
 }
 
-.box, .alert, .warning, .fixme, .FIXME {
+.box, .alert, .warning, .chat, .fixme, .FIXME {
   padding: 10px;
   margin-top: 10px;
 }
@@ -143,6 +143,15 @@ img {
   float: left;
 }
 
+.chat-head {
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.chat-nick {
+  font-weight: bold;
+}
+
 @media (prefers-color-scheme: light) {
   body {
     background: white;
@@ -167,7 +176,7 @@ img {
   code, kbd, pre, textarea {
     color: #111;
   }
-  code, kbd, pre, .flex div, .box, textarea {
+  code, kbd, pre, .flex div, .box, .chat, textarea {
     background: #ddd;
   }
   blockquote {

@@ -105,8 +105,28 @@ impl Traverser for Handler {
                     .map(|n| n.children_with_tokens().filter_map(|t| t.into_token()))
                 {
                     if let Some(name) = par.nth(1) {
+                        let name = name.text();
+
                         self.exp
-                            .push_str(format!("<div class=\"{}\">", HtmlEscape(&name.text())));
+                            .push_str(format!("<div class=\"{}\">", HtmlEscape(&name)));
+
+                        if name.eq_ignore_ascii_case("chat") {
+                            if let Some(usr) = par.next() {
+                                let usr = usr.text().trim();
+                                if !usr.is_empty() {
+                                    self.exp.push_str(
+                                        "<img class=chat-head aria-hidden=true width=42 src=\"",
+                                    );
+                                    for _ in 1..self.numdir {
+                                        self.exp.push_str("../");
+                                    }
+                                    self.exp.push_str(format!(
+					r#"faces/{}.png"><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
+					slugify!(usr), HtmlEscape(usr.rsplit_once('/').map_or(usr, |u| u.0))
+				    ));
+                                }
+                            }
+                        }
 
                         self.output_block_children(block, ctx);
 
