@@ -1,9 +1,8 @@
-use chrono::{DateTime, Datelike, NaiveDateTime};
+#![allow(clippy::too_many_arguments)]
+
 use clap::Parser;
-use git2::{Oid, Repository};
-use html_escaper::{Escape, Trusted};
-use orgize::{ast::Keyword, ParseConfig};
-use rowan::ast::{support, AstNode};
+use git2::{Object, Repository};
+use orgize::ParseConfig;
 use serde_derive::Deserialize;
 use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
@@ -20,18 +19,6 @@ struct Opt {
     branch: String,
 }
 
-#[derive(boilerplate::Boilerplate)]
-struct PageHtml<'a> {
-    title: String,
-    body: String,
-    commit: &'a str,
-    author: &'a str,
-    created: NaiveDateTime,
-    modified: NaiveDateTime,
-    numdir: usize,
-    old_page: bool,
-}
-
 #[derive(Deserialize, Debug)]
 struct ClamConfig {
     title: String,
@@ -42,12 +29,14 @@ struct ClamConfig {
 fn generate(
     org_cfg: &ParseConfig,
     repo: &Repository,
-    dir_map: &BTreeMap<String, Vec<(String, Vec<u8>)>>,
-    short_id: &str,
-    // FIXME: needing both a short_id and oid is pretty silly, however git2
-    // annoyingly does not provide an easy way to derive one from the other
-    oid: Oid,
+    commit: Object,
 ) -> Result<(), Box<dyn Error>> {
+    let short_id = commit.short_id().unwrap();
+    let short_id = short_id.as_str().unwrap();
+    let commit = commit.into_commit().unwrap();
+    let oid = commit.id();
+    let tree = commit.tree().unwrap();
+
     let (ctime, mtime) = git::make_time_tree(repo, oid)?;
 
     {
@@ -62,74 +51,21 @@ fn generate(
     let year_ago: i64 = year_ago.try_into()?;
     let mut titles = BTreeMap::new();
 
-    for (dir, files) in dir_map.iter() {
-        fs::create_dir_all(dir)?;
-
-        for file in files.iter() {
-            let mut full_path: PathBuf = format!("{}{}", dir, file.0).into();
-
-            let pcontent: Option<Vec<u8>> =
-                match full_path.extension().and_then(std::ffi::OsStr::to_str) {
-                    Some("org") => {
-                        let fstr = std::str::from_utf8(file.1.as_slice())?;
-                        let res = org_cfg.clone().parse(fstr);
-
-                        // https://github.com/PoiScript/orgize/issues/70#issuecomment-1916068875
-                        let mut title = "untitled".to_string();
-                        if let Some(section) = res.document().section() {
-                            for keyword in support::children::<Keyword>(section.syntax()) {
-                                if keyword.key().eq_ignore_ascii_case("TITLE") {
-                                    title = keyword.value().trim().to_string();
-                                }
-                            }
-                        }
-
-                        let (created, author) =
-                            ctime.get(&full_path).ok_or("missing creation time")?;
-                        let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
-
-                        let numdir = full_path.iter().count();
-
-                        let mut html_export = html::Handler {
-                            numdir,
-                            ..Default::default()
-                        };
-                        res.traverse(&mut html_export);
-
-                        let old_page = modified.seconds() - year_ago < 0;
-
-                        let template = PageHtml {
-                            title: title.clone(),
-                            body: html_export.exp.finish(),
-                            commit: short_id,
-                            author,
-                            created: DateTime::from_timestamp(created.seconds(), 0)
-                                .ok_or("broken creation date")?
-                                .naive_utc(),
-                            modified: DateTime::from_timestamp(modified.seconds(), 0)
-                                .ok_or("broken modification date")?
-                                .naive_utc(),
-                            numdir,
-                            old_page,
-                        };
-
-                        let old_path = full_path.clone();
-                        full_path.set_extension("html");
-                        titles.insert(full_path.clone(), (title, old_path));
-
-                        Some(template.to_string().into_bytes())
-                    }
-                    _ => None,
-                };
-            let content = match &pcontent {
-                Some(c) => c,
-                None => &file.1,
-            };
-
-            let mut f = fs::File::create(full_path)?;
-            f.write_all(content)?;
-        }
-    }
+    tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
+        git::walk_callback(
+            repo,
+            dir,
+            entry,
+            org_cfg,
+            &ctime,
+            &mtime,
+            year_ago,
+            short_id,
+            &mut titles,
+        )
+        .unwrap();
+        0
+    })?;
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml::from_str(&config)?;
@@ -160,19 +96,6 @@ fn main() {
 
     let repo = Repository::open(&opt.repository).unwrap();
     let commit = repo.revparse_single(&opt.branch).unwrap();
-    let short_id = commit.short_id().unwrap();
-    let short_id = short_id.as_str().unwrap();
-    let commit = commit.into_commit().unwrap();
-    let oid = commit.id();
-    let tree = commit.tree().unwrap();
-    let mut dir_map = BTreeMap::new();
-    dir_map.insert("".to_string(), vec![]);
-
-    tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        git::walk_callback(&repo, dir, entry, &mut dir_map).unwrap();
-        0
-    })
-    .unwrap();
 
     // TODO: get this stuff from .clam.toml or something
     let org_cfg = ParseConfig {
@@ -187,5 +110,5 @@ fn main() {
         ..Default::default()
     };
 
-    generate(&org_cfg, &repo, &dir_map, short_id, oid).unwrap();
+    generate(&org_cfg, &repo, commit).unwrap();
 }

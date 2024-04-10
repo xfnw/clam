@@ -1,6 +1,6 @@
 use git2::{Oid, Repository, Time};
-
-use std::{collections::BTreeMap, error::Error, path::PathBuf};
+use orgize::ParseConfig;
+use std::{collections::BTreeMap, error::Error, fs, path::PathBuf};
 
 pub type CreateMap = BTreeMap<PathBuf, (Time, String)>;
 pub type ModifyMap = BTreeMap<PathBuf, (Time, String)>;
@@ -69,7 +69,12 @@ pub fn walk_callback(
     repo: &Repository,
     dir: &str,
     entry: &git2::TreeEntry,
-    dir_map: &mut BTreeMap<String, Vec<(String, Vec<u8>)>>,
+    org_cfg: &ParseConfig,
+    ctime: &BTreeMap<PathBuf, (Time, String)>,
+    mtime: &BTreeMap<PathBuf, (Time, String)>,
+    year_ago: i64,
+    short_id: &str,
+    titles: &mut BTreeMap<PathBuf, (String, PathBuf)>,
 ) -> Result<(), Box<dyn Error>> {
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
@@ -79,13 +84,22 @@ pub fn walk_callback(
 
         Err(_) => {
             // is probably a directory
-            dir_map.insert(format!("{}{}/", dir, name), vec![]);
+            fs::create_dir_all(format!("{}{}/", dir, name))?;
             return Ok(());
         }
     };
 
-    let directory = dir_map.get_mut(dir).ok_or("VERBODEN TOEGANG")?;
-    directory.push((name.to_string(), blob.content().to_vec()));
+    crate::html::generate_page(
+        dir,
+        name,
+        blob.content(),
+        org_cfg,
+        ctime,
+        mtime,
+        year_ago,
+        short_id,
+        titles,
+    )?;
 
     Ok(())
 }

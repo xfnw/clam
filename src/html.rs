@@ -1,10 +1,26 @@
+use crate::git::{CreateMap, ModifyMap};
+use chrono::{DateTime, Datelike, NaiveDateTime};
+use html_escaper::{Escape, Trusted};
 use orgize::{
-    ast::{PropertyDrawer, TodoType},
+    ast::{Keyword, PropertyDrawer, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
+    ParseConfig,
 };
 use rowan::ast::{support, AstNode};
 use slugify::slugify;
-use std::cmp::min;
+use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
+
+#[derive(boilerplate::Boilerplate)]
+struct PageHtml<'a> {
+    title: String,
+    body: String,
+    commit: &'a str,
+    author: &'a str,
+    created: NaiveDateTime,
+    modified: NaiveDateTime,
+    numdir: usize,
+    old_page: bool,
+}
 
 #[derive(Default)]
 pub struct Handler {
@@ -157,4 +173,76 @@ impl Handler {
             }
         }
     }
+}
+
+pub fn generate_page(
+    dir: &str,
+    name: &str,
+    file: &[u8],
+    org_cfg: &ParseConfig,
+    ctime: &CreateMap,
+    mtime: &ModifyMap,
+    year_ago: i64,
+    short_id: &str,
+    titles: &mut BTreeMap<PathBuf, (String, PathBuf)>,
+) -> Result<(), Box<dyn Error>> {
+    let mut full_path: PathBuf = format!("{}{}", dir, name).into();
+    let pcontent: Option<Vec<u8>> = match full_path.extension().and_then(std::ffi::OsStr::to_str) {
+        Some("org") => {
+            let fstr = std::str::from_utf8(file)?;
+            let res = org_cfg.clone().parse(fstr);
+
+            // https://github.com/PoiScript/orgize/issues/70#issuecomment-1916068875
+            let mut title = "untitled".to_string();
+            if let Some(section) = res.document().section() {
+                for keyword in support::children::<Keyword>(section.syntax()) {
+                    if keyword.key().eq_ignore_ascii_case("TITLE") {
+                        title = keyword.value().trim().to_string();
+                    }
+                }
+            }
+
+            let (created, author) = ctime.get(&full_path).ok_or("missing creation time")?;
+            let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
+
+            let numdir = full_path.iter().count();
+
+            let mut html_export = Handler {
+                numdir,
+                ..Default::default()
+            };
+            res.traverse(&mut html_export);
+
+            let old_page = modified.seconds() - year_ago < 0;
+
+            let template = PageHtml {
+                title: title.clone(),
+                body: html_export.exp.finish(),
+                commit: short_id,
+                author,
+                created: DateTime::from_timestamp(created.seconds(), 0)
+                    .ok_or("broken creation date")?
+                    .naive_utc(),
+                modified: DateTime::from_timestamp(modified.seconds(), 0)
+                    .ok_or("broken modification date")?
+                    .naive_utc(),
+                numdir,
+                old_page,
+            };
+
+            let old_path = full_path.clone();
+            full_path.set_extension("html");
+            titles.insert(full_path.clone(), (title, old_path));
+
+            Some(template.to_string().into_bytes())
+        }
+        _ => None,
+    };
+    let content = match &pcontent {
+        Some(c) => c,
+        None => file,
+    };
+    let mut f = fs::File::create(full_path)?;
+    f.write_all(content)?;
+    Ok(())
 }
