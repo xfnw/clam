@@ -39,7 +39,7 @@ code, kbd, pre, .flex div, .box, textarea {
   background: #222;
 }
 
-.box, .alert, .warning, .fixme {
+.box, .alert, .warning, .fixme, .FIXME {
   padding: 10px;
   margin-top: 10px;
 }
