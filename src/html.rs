@@ -115,7 +115,7 @@ impl Traverser for Handler {
                                 let usr = usr.text().trim();
                                 if !usr.is_empty() {
                                     self.exp.push_str(
-                                        "<img class=chat-head aria-hidden=true width=42 src=\"",
+                                        "<img class=chat-head aria-hidden=true width=64 src=\"",
                                     );
                                     for _ in 1..self.numdir {
                                         self.exp.push_str("../");
