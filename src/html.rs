@@ -137,9 +137,15 @@ impl Traverser for Handler {
                                         self.exp.push_str("../");
                                     }
                                     self.exp.push_str(format!(
-                                        r#"faces/{}.png"><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
+                                        r#"faces/{}.png"><div class=chat-text><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
                                         slugify!(usr), HtmlEscape(usr.rsplit_once('/').map_or(usr, |u| u.0))
                                     ));
+
+                                    self.output_block_children(block, ctx);
+
+                                    self.exp.push_str("</div></div>");
+
+                                    return ctx.skip();
                                 }
                             }
                         }
