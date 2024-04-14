@@ -252,3 +252,55 @@ pub fn generate_page(
     f.write_all(content)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::html::*;
+    use orgize::Org;
+
+    #[test]
+    fn generate_html() {
+        let res = Org::parse(
+            r#"#+TITLE: you should not see this
+* meow
+#+begin_chat fox
+AAAA
+#+end_chat
+
+this__has__under_scores
+
+[[*finish writing this test][i am a heading link]]
+[[https://example.org/test.org][should link to .html]]
+[[https://example.org/test.org#something][should also link to .html]]
+[[https://example.org/][but not me!]]
+
+#+CAPTION: the libera.chat logo, but with the mountain replaced with a cat
+[[https://cheapiesystems.com/media/images/libera-cat.png]]
+
+** TODO wash the fox
+:PROPERTIES:
+:CUSTOM_ID: foxwash-time
+:END:
+
+#+begin_chat fox/stimky
+AAAA even more
+#+end_chat
+
+** DONE finish writing this test"#,
+        );
+        let mut exp = Handler::default();
+        res.traverse(&mut exp);
+        assert_eq!(
+            exp.exp.finish(),
+            r##"<main><section></section><h2 id="meow"><a role=none href="#meow">#</a> meow</h2><section><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
+</div></div><p>this__has__under_scores
+</p><p><a href="#finish-writing-this-test">i am a heading link</a>
+<a href="https://example.org/test.html">should link to .html</a>
+<a href="https://example.org/test.html#something">should also link to .html</a>
+<a href="https://example.org/">but not me!</a>
+</p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
+</p></section><h3 id="foxwash-time"><a role=none href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox</h3><section><p></p><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox-stimky.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
+</div></div></section><h3 id="finish-writing-this-test"><a role=none href="#finish-writing-this-test">##</a> <span class=done>DONE</span> finish writing this test</h3></main>"##
+        );
+    }
+}
