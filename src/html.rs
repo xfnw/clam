@@ -80,8 +80,8 @@ impl Traverser for Handler {
                     let mut p = slugify!(p);
                     p.insert(0, '#');
                     p
-                // FIXME: breaks if linking to bare .org domain.
-                // hopefully most have a trailing slash?
+                } else if path.starts_with("//") || path.contains("://") {
+                    path.to_string()
                 } else if let Some(p) = path.strip_suffix(".org") {
                     let mut p = p.to_string();
                     p.push_str(".html");
@@ -270,9 +270,10 @@ AAAA
 this__has__under_scores
 
 [[*finish writing this test][i am a heading link]]
-[[https://example.org/test.org][should link to .html]]
-[[https://example.org/test.org#something][should also link to .html]]
-[[https://example.org/][but not me!]]
+[[hmm/example.org/test.org][should link to .html]]
+[[hmm/example.org/test.org#something][should also link to .html]]
+[[hmm/example.org/][im a directory!]]
+[[https://example.org][webbed sight]]
 
 #+CAPTION: the libera.chat logo, but with the mountain replaced with a cat
 [[https://cheapiesystems.com/media/images/libera-cat.png]]
@@ -295,9 +296,10 @@ AAAA even more
             r##"<main><section></section><h2 id="meow"><a role=none href="#meow">#</a> meow</h2><section><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
 </div></div><p>this__has__under_scores
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
-<a href="https://example.org/test.html">should link to .html</a>
-<a href="https://example.org/test.html#something">should also link to .html</a>
-<a href="https://example.org/">but not me!</a>
+<a href="hmm/example.org/test.html">should link to .html</a>
+<a href="hmm/example.org/test.html#something">should also link to .html</a>
+<a href="hmm/example.org/">im a directory!</a>
+<a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 id="foxwash-time"><a role=none href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox</h3><section><p></p><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox-stimky.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 id="finish-writing-this-test"><a role=none href="#finish-writing-this-test">##</a> <span class=done>DONE</span> finish writing this test</h3></main>"##
