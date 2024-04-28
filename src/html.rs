@@ -198,7 +198,10 @@ pub fn generate_page(
             let fstr = std::str::from_utf8(file)?;
             let res = org_cfg.clone().parse(fstr);
 
-            let title = res.document().title().unwrap_or_else(|| "untitled".to_string());
+            let title = res
+                .document()
+                .title()
+                .unwrap_or_else(|| "untitled".to_string());
 
             let (created, author) = ctime.get(&full_path).ok_or("missing creation time")?;
             let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
