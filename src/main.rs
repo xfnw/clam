@@ -4,7 +4,14 @@ use clap::Parser;
 use git2::{Object, Repository};
 use orgize::ParseConfig;
 use serde_derive::Deserialize;
-use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{
+    cmp::min,
+    collections::{BTreeMap, BTreeSet},
+    error::Error,
+    fs,
+    io::Write,
+    path::PathBuf,
+};
 
 mod atom;
 mod git;
@@ -24,6 +31,7 @@ struct ClamConfig {
     title: String,
     id: Option<String>,
     url: String,
+    exclude: Option<BTreeSet<String>>,
 }
 
 fn generate(
@@ -70,7 +78,7 @@ fn generate(
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml::from_str(&config)?;
 
-        let feed = atom::entries(&titles, &mtime)?;
+        let feed = atom::entries(&titles, &mtime, &config.exclude)?;
 
         let mut f = fs::File::create("feed.xml")?;
         f.write_all(
