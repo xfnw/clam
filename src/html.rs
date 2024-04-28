@@ -130,15 +130,15 @@ impl Traverser for Handler {
                             if let Some(usr) = par.next() {
                                 let usr = usr.text().trim();
                                 if !usr.is_empty() {
-                                    self.exp.push_str(
-                                        "<img class=chat-head aria-hidden=true width=64 src=\"",
-                                    );
+                                    let (person, expression) =
+                                        usr.rsplit_once('/').unwrap_or((usr, usr));
+                                    self.exp.push_str("<img class=chat-head width=64 src=\"");
                                     for _ in 1..self.numdir {
                                         self.exp.push_str("../");
                                     }
                                     self.exp.push_str(format!(
-                                        r#"faces/{}.png"><div class=chat-text><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
-                                        slugify!(usr), HtmlEscape(usr.rsplit_once('/').map_or(usr, |u| u.0))
+                                        r#"faces/{}.png" alt="{} is {}"><div class=chat-text><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
+                                        slugify!(usr), HtmlEscape(person), HtmlEscape(expression)
                                     ));
 
                                     self.output_block_children(block, ctx);
@@ -288,7 +288,7 @@ AAAA even more
         res.traverse(&mut exp);
         assert_eq!(
             exp.exp.finish(),
-            r##"<main><section></section><h2 id="meow"><a role=none href="#meow">#</a> meow</h2><section><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
+            r##"<main><section></section><h2 id="meow"><a role=none href="#meow">#</a> meow</h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
 </div></div><p>this__has__under_scores
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
@@ -296,7 +296,7 @@ AAAA even more
 <a href="hmm/example.org/">im a directory!</a>
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 id="foxwash-time"><a role=none href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox</h3><section><p></p><div class="chat"><img class=chat-head aria-hidden=true width=64 src="faces/fox-stimky.png"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
+</p></section><h3 id="foxwash-time"><a role=none href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox</h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 id="finish-writing-this-test"><a role=none href="#finish-writing-this-test">##</a> <span class=done>DONE</span> finish writing this test</h3></main>"##
         );
     }
