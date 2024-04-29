@@ -157,6 +157,25 @@ impl Traverser for Handler {
                 }
                 ctx.skip();
             }
+            Event::Enter(Container::ListItem(ref item)) => {
+                // pretend indeterminate checkboxes do not exist and
+                // shove the state into a bool. html does not have a
+                // good way to create indeterminate checkboxes unless
+                // using javascript >:(
+                let checked = item.checkbox().map(|s| s.as_bytes() == b"X");
+
+                // orgize's ListItem implementation uses weird private fields,
+                // easier to just reuse it (though bye bye item reference)
+                self.exp.event(event, ctx);
+
+                if let Some(state) = checked {
+                    self.exp.push_str(if state {
+                        "<input type=checkbox disabled checked /> "
+                    } else {
+                        "<input type=checkbox disabled /> "
+                    })
+                }
+            }
             Event::Enter(Container::Subscript(_)) => self.exp.push_str("_"),
             Event::Leave(Container::Subscript(_)) => (),
             _ => self.exp.event(event, ctx),
