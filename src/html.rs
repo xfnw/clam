@@ -48,7 +48,7 @@ impl Traverser for Handler {
                 };
 
                 self.exp.push_str(format!(
-                    r##"<h{} id="{1}"><a aria-hidden=true href="#{1}">{2}</a> "##,
+                    r##"<h{} id="{1}"><a aria-hidden=true tabindex=-1 href="#{1}">{2}</a> "##,
                     lvl, id, lead
                 ));
 
@@ -68,7 +68,10 @@ impl Traverser for Handler {
                     self.element(e, ctx);
                 }
 
-                self.exp.push_str(format!("</h{}>", lvl));
+                self.exp.push_str(format!(
+                    r##" <small><a class=see-focus href="#{}">permalink to section</a></small></h{}>"##,
+                    id, lvl
+                ));
             }
             // why does the default HtmlExport output keywords with literally
             // zero formatting? no idea! let's instead not output them at all.
@@ -307,7 +310,7 @@ AAAA even more
         res.traverse(&mut exp);
         assert_eq!(
             exp.exp.finish(),
-            r##"<main><section></section><h2 id="meow"><a aria-hidden=true href="#meow">#</a> meow</h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
+            r##"<main><section></section><h2 id="meow"><a aria-hidden=true tabindex=-1 href="#meow">#</a> meow <small><a class=see-focus href="#meow">permalink to section</a></small></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
 </div></div><p>this__has__under_scores
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
@@ -315,8 +318,8 @@ AAAA even more
 <a href="hmm/example.org/">im a directory!</a>
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 id="foxwash-time"><a aria-hidden=true href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox</h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
-</div></div></section><h3 id="finish-writing-this-test"><a aria-hidden=true href="#finish-writing-this-test">##</a> <span class=done>DONE</span> finish writing this test</h3></main>"##
+</p></section><h3 id="foxwash-time"><a aria-hidden=true tabindex=-1 href="#foxwash-time">##</a> <span class=todo>TODO</span> wash the fox <small><a class=see-focus href="#foxwash-time">permalink to section</a></small></h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
+</div></div></section><h3 id="finish-writing-this-test"><a aria-hidden=true tabindex=-1 href="#finish-writing-this-test">##</a> <span class=done>DONE</span> finish writing this test <small><a class=see-focus href="#finish-writing-this-test">permalink to section</a></small></h3></main>"##
         );
     }
 }

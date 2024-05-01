@@ -124,6 +124,22 @@ li p:nth-of-type(1) {
   display: inline;
 }
 
+.see-focus {
+  position: absolute;
+  background: #000;
+  color: #fff !important;
+  padding: 5px;
+}
+
+.see-focus:not(:focus) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
 .todo, .done {
   color: #ddd;
   padding: 0 .3em;
