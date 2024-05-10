@@ -73,9 +73,6 @@ impl Traverser for Handler {
                     id, lvl
                 ));
             }
-            // why does the default HtmlExport output keywords with literally
-            // zero formatting? no idea! let's instead not output them at all.
-            Event::Enter(Container::Keyword(_)) => ctx.skip(),
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
                 let path = path.trim_start_matches("file:");
