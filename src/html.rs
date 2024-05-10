@@ -176,8 +176,10 @@ impl Traverser for Handler {
                     })
                 }
             }
-            Event::Enter(Container::Subscript(_)) => self.exp.push_str("_"),
-            Event::Leave(Container::Subscript(_)) => (),
+            Event::Enter(Container::Subscript(sub)) => {
+                self.exp.push_str(sub.raw());
+                ctx.skip();
+            }
             _ => self.exp.event(event, ctx),
         };
     }
@@ -281,7 +283,7 @@ mod tests {
 AAAA
 #+end_chat
 
-this__has__under_scores
+this__has__under_scores yip_{yap yop}
 
 [[*finish writing this test][i am a heading link]]
 [[hmm/example.org/test.org][should link to .html]]
@@ -308,7 +310,7 @@ AAAA even more
         assert_eq!(
             exp.exp.finish(),
             r##"<main><section></section><h2 id="meow"><a aria-hidden=true tabindex=-1 href="#meow">#</a> meow <small><a class=see-focus href="#meow">permalink to section</a></small></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
-</div></div><p>this__has__under_scores
+</div></div><p>this__has__under_scores yip_{yap yop}
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
 <a href="hmm/example.org/test.html#something">should also link to .html</a>
