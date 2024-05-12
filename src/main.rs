@@ -76,7 +76,7 @@ fn generate(
     })?;
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
-        let config: ClamConfig = toml::from_str(&config)?;
+        let config: ClamConfig = toml_edit::de::from_str(&config)?;
 
         let feed = atom::entries(&titles, &mtime, &config.exclude)?;
 

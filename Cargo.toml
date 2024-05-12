@@ -17,4 +17,4 @@ rowan = "0.15.15"
 serde = { version = "1.0.197", default-features = false }
 serde_derive = { version = "1.0.197" }
 slugify = "0.1.0"
-toml = { version = "0.8.12", default-features = false, features = ["parse"] }
+toml_edit = { version = "0.22.12", default-features = false, features = ["serde", "parse"] }
