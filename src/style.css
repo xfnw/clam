@@ -10,16 +10,11 @@ body {
 }
 
 a {
-  text-decoration: none;
   color: #3291ff;
 }
 
 a:visited {
   color: #931fff;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 
 :target {
