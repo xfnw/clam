@@ -7,6 +7,7 @@
 <title>{{ self.title }}</title>
 </head>
 <body>
+<header>
 <nav><a href="{% for _ in 1..self.numdir { %}../{% } %}.">home</a>{% if self.numdir > 1 { %}
 / <a href="..">up</a>
 / <a href=".">here</a>{% } %}</nav>
@@ -14,6 +15,7 @@
 %% if self.old_page {
 <div class=box>this page was last updated over a year ago. facts and circumstances may have changed since.</div>
 %% }
+</header>
 {{ Trusted(&self.body) }}
 <footer>
 <hr>
