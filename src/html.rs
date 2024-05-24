@@ -133,7 +133,7 @@ impl Traverser for Handler {
                                         self.exp.push_str("../");
                                     }
                                     self.exp.push_str(format!(
-                                        r#"faces/{}.png" alt="{} is {}"><div class=chat-text><span class=chat-nick aria-label="{1} says">&lt;{1}&gt;</span> "#,
+                                        r#"faces/{}.png" alt="{} is {}"><div class=chat-text><span class=chat-nick role=figure aria-label="{1} says">&lt;{1}&gt;</span> "#,
                                         slugify!(usr), HtmlEscape(person), HtmlEscape(expression)
                                     ));
 
@@ -305,7 +305,7 @@ AAAA even more
         res.traverse(&mut exp);
         assert_eq!(
             exp.exp.finish(),
-            r##"<main><section></section><h2 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA
+            r##"<main><section></section><h2 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA
 </div></div><p>this__has__under_scores yip_{yap yop}
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
@@ -313,7 +313,7 @@ AAAA even more
 <a href="hmm/example.org/">im a directory!</a>
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick aria-label="fox says">&lt;fox&gt;</span> AAAA even more
+</p></section><h3 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3></main>"##
         );
     }
