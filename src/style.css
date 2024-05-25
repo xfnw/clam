@@ -22,8 +22,9 @@ a:visited {
 }
 
 code, kbd, pre, textarea {
-  border: none;
-  color: #eee;
+  font-family: monospace, monospace;
+  border: 1px solid;
+  color: #ccc;
 }
 
 code, kbd, pre, .flex div, .box, .chat-text, textarea {
@@ -49,7 +50,7 @@ summary {
   padding: 10px;
 }
 
-thead tr td, th, summary {
+thead tr td, th, kbd, summary, .chat-nick {
   font-weight: bold;
 }
 
@@ -162,10 +163,6 @@ li p:nth-of-type(1) {
 .chat-head {
   margin-right: 10px;
   vertical-align: middle;
-}
-
-.chat-nick {
-  font-weight: bold;
 }
 
 .chat-text {
