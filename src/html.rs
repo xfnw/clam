@@ -41,7 +41,7 @@ impl Traverser for Handler {
                         .next()
                         .map(|p| p.get("CUSTOM_ID"))
                 {
-                    cid.to_string()
+                    HtmlEscape(cid).to_string()
                 } else {
                     slugify!(&txt)
                 };
