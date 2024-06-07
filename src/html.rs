@@ -170,8 +170,11 @@ impl Traverser for Handler {
                 }
             }
             Event::Enter(Container::Subscript(sub)) => {
-                self.exp.push_str(sub.raw());
+                self.exp.push_str(HtmlEscape(sub.raw()).to_string());
                 ctx.skip();
+            }
+            Event::Cookie(cookie) => {
+                self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
             _ => self.exp.event(event, ctx),
         };
