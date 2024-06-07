@@ -151,43 +151,66 @@ impl Traverser for Handler {
                 }
             }
             Event::Enter(Container::Keyword(keyword)) => {
-                if keyword.key().eq_ignore_ascii_case("TOC") {
-                    self.exp
-                        .push_str("<details><summary>table of contents</summary>");
+                if !keyword.key().eq_ignore_ascii_case("TOC") {
+                    ctx.skip();
+                    return;
+                }
 
-                    if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
-                        let mut depth = 0;
-                        for descendant in parent.descendants() {
-                            if let Some(headline) = Headline::cast(descendant) {
-                                let level = headline.level();
-                                while depth < level {
-                                    self.exp.push_str("<ul>");
-                                    depth += 1;
-                                }
-                                while depth > level {
-                                    self.exp.push_str("</ul>");
-                                    depth -= 1;
-                                }
+                let value = keyword.value();
+                let mut value = value.split_ascii_whitespace();
+                match value.next() {
+                    Some("headlines") => (),
+                    Some(o) => {
+                        eprintln!("TOC type {} not supported", o);
+                        ctx.skip();
+                        return;
+                    }
+                    None => (),
+                }
+                let limit: usize = if let Some(Ok(val)) = value.next().map(|v| v.parse()) {
+                    val
+                } else {
+                    0
+                };
 
-                                self.exp.push_str(format!(
-                                    "<li><a href=\"#{}\">",
-                                    generate_headline_id(&headline)
-                                ));
-                                self.output_headline_todo(&headline);
-                                for e in headline.title() {
-                                    self.element(e, ctx);
-                                }
-                                self.exp.push_str("</a></li>");
+                self.exp
+                    .push_str("<details><summary>table of contents</summary>");
+
+                if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
+                    let mut depth = 0;
+                    for descendant in parent.descendants() {
+                        if let Some(headline) = Headline::cast(descendant) {
+                            let level = headline.level();
+                            if limit != 0 && level > limit {
+                                continue;
                             }
-                        }
-                        while depth > 0 {
-                            self.exp.push_str("</ul>");
-                            depth -= 1;
+                            while depth < level {
+                                self.exp.push_str("<ul>");
+                                depth += 1;
+                            }
+                            while depth > level {
+                                self.exp.push_str("</ul>");
+                                depth -= 1;
+                            }
+
+                            self.exp.push_str(format!(
+                                "<li><a href=\"#{}\">",
+                                generate_headline_id(&headline)
+                            ));
+                            self.output_headline_todo(&headline);
+                            for e in headline.title() {
+                                self.element(e, ctx);
+                            }
+                            self.exp.push_str("</a></li>");
                         }
                     }
-
-                    self.exp.push_str("</details>");
+                    while depth > 0 {
+                        self.exp.push_str("</ul>");
+                        depth -= 1;
+                    }
                 }
+
+                self.exp.push_str("</details>");
                 ctx.skip();
             }
             Event::Enter(Container::Subscript(sub)) => {
