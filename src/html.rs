@@ -34,33 +34,14 @@ impl Traverser for Handler {
             Event::Enter(Container::Headline(headline)) => {
                 let lvl = headline.level();
                 let lvl = 1 + min(lvl, 5);
-                let txt = headline.title().map(|t| t.to_string()).collect::<String>();
 
-                let id = if let Some(Some(cid)) = headline.properties().map(|p| p.get("CUSTOM_ID"))
-                {
-                    HtmlEscape(cid).to_string()
-                } else {
-                    slugify!(&txt)
-                };
+                let id = generate_headline_id(&headline);
 
                 self.exp.push_str(format!("<h{} id=\"{}\">", lvl, id));
-
-                if let Some(keyword) = headline.todo_keyword() {
-                    self.exp.push_str(match headline.todo_type() {
-                        Some(TodoType::Todo) => {
-                            format!("<span class=todo>{}</span> ", HtmlEscape(keyword.as_ref()))
-                        }
-                        Some(TodoType::Done) => {
-                            format!("<span class=done>{}</span> ", HtmlEscape(keyword.as_ref()))
-                        }
-                        None => unreachable!(),
-                    });
-                }
-
+                self.output_headline_todo(&headline);
                 for e in headline.title() {
                     self.element(e, ctx);
                 }
-
                 self.exp.push_str(format!(
                     r##" <a class=see-focus href="#{}" aria-label="permalink to section">¶</a></h{}>"##,
                     id, lvl
@@ -173,7 +154,6 @@ impl Traverser for Handler {
                 if keyword.key().eq_ignore_ascii_case("TOC") {
                     self.exp
                         .push_str("<details><summary>table of contents</summary>");
-                    println!("IM A TABLE OF CONTENTS");
 
                     if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
                         let mut depth = 0;
@@ -188,10 +168,16 @@ impl Traverser for Handler {
                                     self.exp.push_str("</ul>");
                                     depth -= 1;
                                 }
+
                                 self.exp.push_str(format!(
-                                    "<li><a href=\"#{}\">{}</a></li>",
-                                    "meow", "meow"
+                                    "<li><a href=\"#{}\">",
+                                    generate_headline_id(&headline)
                                 ));
+                                self.output_headline_todo(&headline);
+                                for e in headline.title() {
+                                    self.element(e, ctx);
+                                }
+                                self.exp.push_str("</a></li>");
                             }
                         }
                         while depth > 0 {
@@ -230,6 +216,30 @@ impl Handler {
                 }
             }
         }
+    }
+
+    fn output_headline_todo(&mut self, headline: &Headline) {
+        if let Some(keyword) = headline.todo_keyword() {
+            self.exp.push_str(match headline.todo_type() {
+                Some(TodoType::Todo) => {
+                    format!("<span class=todo>{}</span> ", HtmlEscape(keyword.as_ref()))
+                }
+                Some(TodoType::Done) => {
+                    format!("<span class=done>{}</span> ", HtmlEscape(keyword.as_ref()))
+                }
+                None => unreachable!(),
+            });
+        }
+    }
+}
+
+fn generate_headline_id(headline: &Headline) -> String {
+    let txt: String = headline.title().map(|t| t.to_string()).collect();
+
+    if let Some(Some(cid)) = headline.properties().map(|p| p.get("CUSTOM_ID")) {
+        HtmlEscape(cid).to_string()
+    } else {
+        slugify!(&txt)
     }
 }
 
