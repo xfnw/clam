@@ -184,13 +184,17 @@ impl Traverser for Handler {
                             if limit != 0 && level > limit {
                                 continue;
                             }
-                            while depth < level {
-                                self.exp.push_str("<ul>");
-                                depth += 1;
-                            }
-                            while depth > level {
-                                self.exp.push_str("</ul>");
-                                depth -= 1;
+                            if depth == level {
+                                self.exp.push_str("</li>");
+                            } else {
+                                while depth < level {
+                                    self.exp.push_str("<ul>");
+                                    depth += 1;
+                                }
+                                while depth > level {
+                                    self.exp.push_str("</li></ul>");
+                                    depth -= 1;
+                                }
                             }
 
                             self.exp.push_str(format!(
@@ -201,11 +205,11 @@ impl Traverser for Handler {
                             for e in headline.title() {
                                 self.element(e, ctx);
                             }
-                            self.exp.push_str("</a></li>");
+                            self.exp.push_str("</a>");
                         }
                     }
                     while depth > 0 {
-                        self.exp.push_str("</ul>");
+                        self.exp.push_str("</li></ul>");
                         depth -= 1;
                     }
                 }
