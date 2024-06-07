@@ -2,11 +2,11 @@ use crate::git::{CreateMap, ModifyMap};
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
 use orgize::{
-    ast::{PropertyDrawer, TodoType},
+    ast::TodoType,
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
     ParseConfig,
 };
-use rowan::ast::{support, AstNode};
+use rowan::ast::AstNode;
 use slugify::slugify;
 use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
@@ -36,10 +36,7 @@ impl Traverser for Handler {
                 let lvl = 1 + min(lvl, 5);
                 let txt = headline.title().map(|t| t.to_string()).collect::<String>();
 
-                let id = if let Some(Some(cid)) =
-                    support::children::<PropertyDrawer>(headline.syntax())
-                        .next()
-                        .map(|p| p.get("CUSTOM_ID"))
+                let id = if let Some(Some(cid)) = headline.properties().map(|p| p.get("CUSTOM_ID"))
                 {
                     HtmlEscape(cid).to_string()
                 } else {
