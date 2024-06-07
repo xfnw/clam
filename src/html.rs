@@ -2,7 +2,7 @@ use crate::git::{CreateMap, ModifyMap};
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
 use orgize::{
-    ast::TodoType,
+    ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
     ParseConfig,
 };
@@ -168,6 +168,41 @@ impl Traverser for Handler {
                         "<input type=checkbox disabled /> "
                     })
                 }
+            }
+            Event::Enter(Container::Keyword(keyword)) => {
+                if keyword.key().eq_ignore_ascii_case("TOC") {
+                    self.exp
+                        .push_str("<details><summary>table of contents</summary>");
+                    println!("IM A TABLE OF CONTENTS");
+
+                    if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
+                        let mut depth = 0;
+                        for descendant in parent.descendants() {
+                            if let Some(headline) = Headline::cast(descendant) {
+                                let level = headline.level();
+                                while depth < level {
+                                    self.exp.push_str("<ul>");
+                                    depth += 1;
+                                }
+                                while depth > level {
+                                    self.exp.push_str("</ul>");
+                                    depth -= 1;
+                                }
+                                self.exp.push_str(format!(
+                                    "<li><a href=\"#{}\">{}</a></li>",
+                                    "meow", "meow"
+                                ));
+                            }
+                        }
+                        while depth > 0 {
+                            self.exp.push_str("</ul>");
+                            depth -= 1;
+                        }
+                    }
+
+                    self.exp.push_str("</details>");
+                }
+                ctx.skip();
             }
             Event::Enter(Container::Subscript(sub)) => {
                 self.exp.push_str(HtmlEscape(sub.raw()).to_string());
