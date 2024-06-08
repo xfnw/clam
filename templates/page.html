@@ -8,8 +8,8 @@
 </head>
 <body>
 <header>
-<nav><a href="{% for _ in 1..self.numdir { %}../{% } %}.">home</a>{% if self.numdir > 1 { %}
-<a href="..">up</a>
+<nav><a href="{% for _ in 1..self.numdir { %}../{% } %}.">home</a>{% if self.numdir > 2 { %}
+<a href="..">up</a>{% } if self.numdir > 1 { %}
 <a href=".">here</a>{% } %}</nav>
 <h1>{{ self.title }}</h1>
 %% if self.old_page {
