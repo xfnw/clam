@@ -49,7 +49,7 @@ impl fmt::Display for AtomDateTime {
 pub fn entries<'a>(
     titles: &'a BTreeMap<PathBuf, (String, PathBuf)>,
     mtime: &'a ModifyMap,
-    exclude: &'a Option<BTreeSet<String>>,
+    exclude: &Option<BTreeSet<String>>,
 ) -> Result<Vec<AtomEntry<'a>>, Box<dyn std::error::Error>> {
     let mut entries = vec![];
 
