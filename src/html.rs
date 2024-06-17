@@ -287,13 +287,16 @@ pub fn generate_page(
             let fstr = std::str::from_utf8(file)?;
             let res = org_cfg.clone().parse(fstr);
 
-            let title = res
-                .document()
-                .title()
-                .unwrap_or_else(|| "untitled".to_string());
+            let title = res.title().unwrap_or_else(|| "untitled".to_string());
 
             let (created, author) = ctime.get(&full_path).ok_or("missing creation time")?;
             let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
+
+            let author = res
+                .keywords()
+                .find(|k| k.key().eq_ignore_ascii_case("AUTHOR"))
+                .map(|k| k.value().trim().to_string())
+                .unwrap_or_else(|| author.to_string());
 
             let numdir = full_path.iter().count();
 
@@ -309,7 +312,7 @@ pub fn generate_page(
                 title: title.clone(),
                 body: html_export.exp.finish(),
                 commit: short_id,
-                author,
+                author: &author,
                 created: DateTime::from_timestamp(created.seconds(), 0)
                     .ok_or("broken creation date")?
                     .naive_utc(),
