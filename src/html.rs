@@ -16,8 +16,8 @@ struct PageHtml<'a> {
     body: String,
     commit: &'a str,
     author: &'a str,
-    created: NaiveDateTime,
     modified: NaiveDateTime,
+    year: i32,
     numdir: usize,
     old_page: bool,
 }
@@ -298,6 +298,19 @@ pub fn generate_page(
                 .map(|k| k.value().trim().to_string())
                 .unwrap_or_else(|| author.to_string());
 
+            let year = if let Some(Ok(year)) = res
+                .keywords()
+                .find(|k| k.key().eq_ignore_ascii_case("YEAR"))
+                .map(|k| k.value().trim().parse())
+            {
+                year
+            } else {
+                DateTime::from_timestamp(created.seconds(), 0)
+                    .ok_or("broken creation date")?
+                    .naive_utc()
+                    .year()
+            };
+
             let numdir = full_path.iter().count();
 
             let mut html_export = Handler {
@@ -313,12 +326,10 @@ pub fn generate_page(
                 body: html_export.exp.finish(),
                 commit: short_id,
                 author: &author,
-                created: DateTime::from_timestamp(created.seconds(), 0)
-                    .ok_or("broken creation date")?
-                    .naive_utc(),
                 modified: DateTime::from_timestamp(modified.seconds(), 0)
                     .ok_or("broken modification date")?
                     .naive_utc(),
+                year,
                 numdir,
                 old_page,
             };

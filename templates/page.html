@@ -19,7 +19,7 @@
 {{ Trusted(&self.body) }}
 <hr>
 <footer>
-&copy; {{ self.created.year() }} <i>{{ self.author }}</i> and contributors.
+&copy; {{ self.year }} <i>{{ self.author }}</i> and contributors.
 last modified <time>{{ self.modified }}</time>.
 generated from commit <code>{{ self.commit }}</code>.
 </footer>
