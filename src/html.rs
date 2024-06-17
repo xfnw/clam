@@ -385,7 +385,7 @@ AAAA even more
 <a href="hmm/example.org/">im a directory!</a>
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><p></p><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
+</p></section><h3 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3></main>"##
         );
     }
