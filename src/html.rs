@@ -14,8 +14,9 @@ use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::Pa
 struct PageHtml<'a> {
     title: String,
     body: String,
+    lang: String,
+    author: String,
     commit: &'a str,
-    author: &'a str,
     modified: NaiveDateTime,
     year: i32,
     numdir: usize,
@@ -292,17 +293,9 @@ pub fn generate_page(
             let (created, author) = ctime.get(&full_path).ok_or("missing creation time")?;
             let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
 
-            let author = res
-                .keywords()
-                .find(|k| k.key().eq_ignore_ascii_case("AUTHOR"))
-                .map(|k| k.value().trim().to_string())
-                .unwrap_or_else(|| author.to_string());
-
-            let year = if let Some(Ok(year)) = res
-                .keywords()
-                .find(|k| k.key().eq_ignore_ascii_case("YEAR"))
-                .map(|k| k.value().trim().parse())
-            {
+            let author = get_keyword(&res, "AUTHOR").unwrap_or_else(|| author.to_string());
+            let lang = get_keyword(&res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
+            let year = if let Some(Ok(year)) = get_keyword(&res, "YEAR").map(|k| k.parse()) {
                 year
             } else {
                 DateTime::from_timestamp(created.seconds(), 0)
@@ -324,8 +317,9 @@ pub fn generate_page(
             let template = PageHtml {
                 title: title.clone(),
                 body: html_export.exp.finish(),
+                lang,
+                author,
                 commit: short_id,
-                author: &author,
                 modified: DateTime::from_timestamp(modified.seconds(), 0)
                     .ok_or("broken modification date")?
                     .naive_utc(),
@@ -349,6 +343,12 @@ pub fn generate_page(
     let mut f = fs::File::create(full_path)?;
     f.write_all(content)?;
     Ok(())
+}
+
+fn get_keyword(res: &orgize::Org, keyword: &str) -> Option<String> {
+    res.keywords()
+        .find(|k| k.key().eq_ignore_ascii_case(keyword))
+        .map(|k| k.value().trim().to_string())
 }
 
 #[cfg(test)]
