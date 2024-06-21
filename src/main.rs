@@ -3,15 +3,9 @@
 use clap::Parser;
 use git2::{Object, Repository};
 use orgize::ParseConfig;
+use regex::RegexSet;
 use serde_derive::Deserialize;
-use std::{
-    cmp::min,
-    collections::{BTreeMap, BTreeSet},
-    error::Error,
-    fs,
-    io::Write,
-    path::PathBuf,
-};
+use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod git;
@@ -31,7 +25,7 @@ struct ClamConfig {
     title: String,
     id: Option<String>,
     url: String,
-    exclude: Option<BTreeSet<String>>,
+    exclude: Option<Vec<String>>,
 }
 
 fn generate(
@@ -77,8 +71,13 @@ fn generate(
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml_edit::de::from_str(&config)?;
+        let exclude = if let Some(e) = config.exclude {
+            RegexSet::new(e)?
+        } else {
+            RegexSet::empty()
+        };
 
-        let feed = atom::entries(&titles, &mtime, &config.exclude)?;
+        let feed = atom::entries(&titles, &mtime, &exclude)?;
 
         let mut f = fs::File::create("feed.xml")?;
         f.write_all(

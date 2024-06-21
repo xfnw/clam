@@ -1,8 +1,9 @@
 use crate::git::ModifyMap;
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
+use regex::RegexSet;
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::BTreeMap,
     fmt::{self, Write},
     path::PathBuf,
 };
@@ -49,7 +50,7 @@ impl fmt::Display for AtomDateTime {
 pub fn entries<'a>(
     titles: &'a BTreeMap<PathBuf, (String, PathBuf)>,
     mtime: &'a ModifyMap,
-    exclude: &Option<BTreeSet<String>>,
+    exclude: &RegexSet,
 ) -> Result<Vec<AtomEntry<'a>>, Box<dyn std::error::Error>> {
     let mut entries = vec![];
 
@@ -59,10 +60,8 @@ pub fn entries<'a>(
             None => continue,
         };
 
-        if let Some(exclude) = exclude {
-            if exclude.contains(path) {
-                continue;
-            }
+        if exclude.is_match(path) {
+            continue;
         }
 
         let (updated, author) = mtime.get(old).ok_or("missing modification info")?;
