@@ -218,6 +218,14 @@ impl Traverser for Handler {
                 self.exp.push_str("</details>");
                 ctx.skip();
             }
+            Event::Enter(Container::FnDef(foot)) => {
+                self.exp.push_str(HtmlEscape(foot.raw()).to_string());
+                ctx.skip();
+            }
+            Event::Enter(Container::FnRef(foot)) => {
+                self.exp.push_str(HtmlEscape(foot.raw()).to_string());
+                ctx.skip();
+            }
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
