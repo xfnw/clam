@@ -218,10 +218,6 @@ impl Traverser for Handler {
                 self.exp.push_str("</details>");
                 ctx.skip();
             }
-            Event::Enter(Container::Subscript(sub)) => {
-                self.exp.push_str(HtmlEscape(sub.raw()).to_string());
-                ctx.skip();
-            }
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
@@ -365,8 +361,6 @@ mod tests {
 AAAA
 #+end_chat
 
-this__has__under_scores yip_{yap yop}
-
 [[*finish writing this test][i am a heading link]]
 [[hmm/example.org/test.org][should link to .html]]
 [[hmm/example.org/test.org#something][should also link to .html]]
@@ -392,8 +386,7 @@ AAAA even more
         assert_eq!(
             exp.exp.finish(),
             r##"<main><section></section><h2 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA
-</div></div><p>this__has__under_scores yip_{yap yop}
-</p><p><a href="#finish-writing-this-test">i am a heading link</a>
+</div></div><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
 <a href="hmm/example.org/test.html#something">should also link to .html</a>
 <a href="hmm/example.org/">im a directory!</a>

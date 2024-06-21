@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use git2::{Object, Repository};
-use orgize::ParseConfig;
+use orgize::config::{ParseConfig, UseSubSuperscript};
 use regex::RegexSet;
 use serde_derive::Deserialize;
 use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
@@ -114,6 +114,7 @@ fn main() {
                 .map(|s| s.to_string())
                 .to_vec(),
         ),
+        use_sub_superscript: UseSubSuperscript::Brace,
         ..Default::default()
     };
 
