@@ -226,6 +226,8 @@ impl Traverser for Handler {
                 self.exp.push_str(HtmlEscape(foot.raw()).to_string());
                 ctx.skip();
             }
+            Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=\"example\">"),
+            Event::Leave(Container::FixedWidth(_)) => self.exp.push_str("</pre>"),
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
