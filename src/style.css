@@ -209,7 +209,7 @@ li p:nth-of-type(1) {
 }
 
 @media only print {
-  nav {
-    display:none;
+  nav, .toc:not([open]) {
+    display: none;
   }
 }

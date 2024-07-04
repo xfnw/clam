@@ -38,7 +38,8 @@ impl Traverser for Handler {
 
                 let id = generate_headline_id(&headline);
 
-                self.exp.push_str(format!("<h{} tabindex=-1 id=\"{}\">", lvl, id));
+                self.exp
+                    .push_str(format!("<h{} tabindex=-1 id=\"{}\">", lvl, id));
                 self.output_headline_todo(&headline);
                 for e in headline.title() {
                     self.element(e, ctx);
@@ -175,7 +176,7 @@ impl Traverser for Handler {
                 };
 
                 self.exp
-                    .push_str("<details><summary>table of contents</summary>");
+                    .push_str("<details class=toc><summary>table of contents</summary>");
 
                 if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
                     let mut depth = 0;
