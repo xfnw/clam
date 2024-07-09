@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use git2::{Object, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
 use regex::RegexSet;
@@ -13,6 +13,17 @@ mod html;
 
 #[derive(Debug, Parser)]
 struct Opt {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    Build(CommonArgs),
+}
+
+#[derive(Debug, Args)]
+struct CommonArgs {
     #[arg(required = true)]
     repository: PathBuf,
 
@@ -101,8 +112,14 @@ fn generate(
 fn main() {
     let opt = Opt::parse();
 
-    let repo = Repository::open(&opt.repository).unwrap();
-    let commit = repo.revparse_single(&opt.branch).unwrap();
+    match &opt.command {
+        Commands::Build(args) => do_build(args),
+    }
+}
+
+fn do_build(args: &CommonArgs) {
+    let repo = Repository::open(&args.repository).unwrap();
+    let commit = repo.revparse_single(&args.branch).unwrap();
 
     // TODO: get this stuff from .clam.toml or something
     let org_cfg = ParseConfig {
