@@ -10,6 +10,8 @@ use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::Pa
 mod atom;
 mod git;
 mod html;
+#[cfg(feature = "preview")]
+mod preview;
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -19,16 +21,27 @@ struct Opt {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Build(CommonArgs),
+    /// generate site from git repository
+    Build(BuildArgs),
+    /// serve the current directory in limited preview mode
+    #[cfg(feature = "preview")]
+    Preview(PreviewArgs),
 }
 
 #[derive(Debug, Args)]
-struct CommonArgs {
+struct BuildArgs {
     #[arg(required = true)]
     repository: PathBuf,
 
     #[arg(default_value = "HEAD")]
     branch: String,
+}
+
+#[cfg(feature = "preview")]
+#[derive(Debug, Args)]
+struct PreviewArgs {
+    #[arg(default_value = "[::]:8086")]
+    bindhost: std::net::SocketAddr,
 }
 
 #[derive(Deserialize, Debug)]
@@ -38,6 +51,8 @@ struct ClamConfig {
     url: String,
     exclude: Option<Vec<String>>,
 }
+
+static STYLESHEET: &[u8] = include_bytes!("style.css");
 
 fn generate(
     org_cfg: &ParseConfig,
@@ -54,7 +69,7 @@ fn generate(
 
     {
         let mut f = fs::File::create("style.css")?;
-        f.write_all(include_bytes!("style.css"))?;
+        f.write_all(STYLESHEET)?;
     }
 
     let year_ago = std::time::SystemTime::now()
@@ -114,15 +129,29 @@ fn main() {
 
     match &opt.command {
         Commands::Build(args) => do_build(args),
+        #[cfg(feature = "preview")]
+        Commands::Preview(args) => do_preview(args),
     }
 }
 
-fn do_build(args: &CommonArgs) {
+fn do_build(args: &BuildArgs) {
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
 
+    let org_cfg = org_cfg();
+
+    generate(&org_cfg, &repo, commit).unwrap();
+}
+
+#[cfg(feature = "preview")]
+fn do_preview(args: &PreviewArgs) {
+    let org_cfg = org_cfg();
+    preview::serve(&org_cfg, args.bindhost);
+}
+
+fn org_cfg() -> ParseConfig {
     // TODO: get this stuff from .clam.toml or something
-    let org_cfg = ParseConfig {
+    ParseConfig {
         todo_keywords: (
             ["TODO", "PENDING", "DELAYED", "RERUN"]
                 .map(|s| s.to_string())
@@ -133,7 +162,5 @@ fn do_build(args: &CommonArgs) {
         ),
         use_sub_superscript: UseSubSuperscript::Brace,
         ..Default::default()
-    };
-
-    generate(&org_cfg, &repo, commit).unwrap();
+    }
 }

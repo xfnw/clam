@@ -1,0 +1,106 @@
+use chrono::DateTime;
+use micro_http_server::{Client, MicroHTTP};
+use orgize::ParseConfig;
+use std::{
+    fs::{read_to_string, File},
+    io::Result,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+};
+
+use crate::html::{get_keyword, Handler, PageHtml};
+
+pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
+    let server = MicroHTTP::new(bindhost).unwrap();
+
+    // we cannot print the actual listener address, MicroHTTP does
+    // not expose that... no listening on port 0 i guess :(
+    println!("listening on {}", bindhost);
+
+    while let Ok(Some(client)) = server.next_client() {
+        match handle_request(client, org_cfg) {
+            Ok(_) => (),
+            Err(_) => continue,
+        }
+    }
+}
+
+fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
+    let path = match client.request() {
+        Some(p) => p,
+        None => return client.respond("400 Bad Request", b"why no request", &vec![]),
+    };
+    // prevent both accessing hidden files and path traversal
+    if path.contains("/.") {
+        return client.respond("400 Bad Request", b"no bad\n", &vec![]);
+    }
+    // previous check may have missed stuff if the leading / is not there
+    let Some(path) = path.strip_prefix("/") else {
+        return client.respond("400 Bad Request", b"what the dog doin\n", &vec![]);
+    };
+    let mut pathb = PathBuf::from(path);
+    if path.is_empty() || pathb.is_dir() {
+        return client.respond_ok(b"clam preview. you should not be here.\n");
+    }
+    if pathb.is_file() {
+        let Ok((file, len)) = preview_static(&pathb) else {
+            return client.respond(
+                "500 Internal Service Error",
+                b"thats a weird file\n",
+                &vec![],
+            );
+        };
+        return client.respond_ok_chunked(file, len as usize);
+    }
+    if path == "style.css" {
+        return client.respond_ok(crate::STYLESHEET);
+    }
+    pathb.set_extension("org");
+    if pathb.is_file() {
+        let Some(preview) = preview_page(&pathb, org_cfg) else {
+            return client.respond(
+                "500 Internal Service Error",
+                b"oh no org broke what did you do???\n",
+                &vec![],
+            );
+        };
+        return client.respond_ok(preview.as_bytes());
+    }
+
+    client.respond("404 Not Found", b"how did i get here\n", &vec![])
+}
+
+fn preview_static(pathb: &PathBuf) -> Result<(File, u64)> {
+    let file = File::open(pathb)?;
+    let len = file.metadata()?.len();
+    Ok((file, len))
+}
+
+fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
+    let fstr = read_to_string(path).ok()?;
+    let res = org_cfg.clone().parse(fstr);
+
+    let title = res.title().unwrap_or_else(|| "untitled".to_string());
+    let lang = get_keyword(&res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
+    let numdir = path.iter().count();
+
+    let mut html_export = Handler {
+        numdir,
+        ..Default::default()
+    };
+    res.traverse(&mut html_export);
+
+    let template = PageHtml {
+        title,
+        body: html_export.exp.finish(),
+        lang,
+        author: "unknown (preview mode)",
+        commit: "dirty",
+        modified: DateTime::from_timestamp(0, 0).unwrap().naive_utc(),
+        year: 0,
+        numdir,
+        old_page: false,
+    };
+
+    Some(template.to_string())
+}

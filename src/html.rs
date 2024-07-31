@@ -11,16 +11,16 @@ use slugify::slugify;
 use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
 
 #[derive(boilerplate::Boilerplate)]
-struct PageHtml<'a> {
-    title: String,
-    body: String,
-    lang: String,
-    author: String,
-    commit: &'a str,
-    modified: NaiveDateTime,
-    year: i32,
-    numdir: usize,
-    old_page: bool,
+pub struct PageHtml<'a> {
+    pub title: String,
+    pub body: String,
+    pub lang: String,
+    pub author: &'a str,
+    pub commit: &'a str,
+    pub modified: NaiveDateTime,
+    pub year: i32,
+    pub numdir: usize,
+    pub old_page: bool,
 }
 
 #[derive(Default)]
@@ -325,7 +325,7 @@ pub fn generate_page(
                 title: title.clone(),
                 body: html_export.exp.finish(),
                 lang,
-                author,
+                author: &author,
                 commit: short_id,
                 modified: DateTime::from_timestamp(modified.seconds(), 0)
                     .ok_or("broken modification date")?
@@ -352,7 +352,7 @@ pub fn generate_page(
     Ok(())
 }
 
-fn get_keyword(res: &orgize::Org, keyword: &str) -> Option<String> {
+pub fn get_keyword(res: &orgize::Org, keyword: &str) -> Option<String> {
     res.keywords()
         .find(|k| k.key().eq_ignore_ascii_case(keyword))
         .map(|k| k.value().trim().to_string())

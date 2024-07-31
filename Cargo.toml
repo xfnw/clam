@@ -12,6 +12,7 @@ chrono = { version = "0.4.35", default-features = false }
 clap = { version = "4.5.3", default-features = false, features = ["derive", "std", "help", "usage"] }
 git2 = { version = "0.18.3", default-features = false }
 html-escaper = "0.2.0"
+micro_http_server = { version = "0.0.5", optional = true }
 orgize = "=0.10.0-alpha.10"
 regex = { version = "1.10.5", default-features = false, features = ["std"] }
 rowan = "0.15.15"
@@ -19,3 +20,7 @@ serde = { version = "1.0.197", default-features = false }
 serde_derive = { version = "1.0.197" }
 slugify = "0.1.0"
 toml_edit = { version = "0.22.12", default-features = false, features = ["serde", "parse"] }
+
+[features]
+default = ["preview"]
+preview = ["dep:micro_http_server"]
