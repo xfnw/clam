@@ -40,7 +40,7 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
     };
     let mut pathb = PathBuf::from(path);
     if path.is_empty() || pathb.is_dir() {
-        return client.respond_ok(b"clam preview. you should not be here.\n");
+        pathb.push("index.html");
     }
     if pathb.is_file() {
         let Ok((file, len)) = preview_static(&pathb) else {
