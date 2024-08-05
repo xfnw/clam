@@ -50,10 +50,23 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
                 &vec![],
             );
         };
-        return client.respond_ok_chunked(file, len as usize);
+        return client.respond_chunked(
+            "200 OK",
+            file,
+            len as usize,
+            &if let Some(true) = pathb.extension().map(|e| e == "css") {
+                vec!["Content-Type: text/css".to_string()]
+            } else {
+                vec![]
+            },
+        );
     }
     if path == "style.css" {
-        return client.respond_ok(crate::STYLESHEET);
+        return client.respond(
+            "200 OK",
+            crate::STYLESHEET,
+            &vec!["Content-Type: text/css".to_string()],
+        );
     }
     pathb.set_extension("org");
     if pathb.is_file() {
@@ -64,7 +77,11 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
                 &vec![],
             );
         };
-        return client.respond_ok(preview.as_bytes());
+        return client.respond(
+            "200 OK",
+            preview.as_bytes(),
+            &vec!["Content-Type: text/html".to_string()],
+        );
     }
 
     client.respond("404 Not Found", b"how did i get here\n", &vec![])
