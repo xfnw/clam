@@ -11,6 +11,8 @@ mod atom;
 mod git;
 mod html;
 #[cfg(feature = "util")]
+mod orphan;
+#[cfg(feature = "util")]
 mod preview;
 
 #[derive(Debug, Parser)]
@@ -26,6 +28,9 @@ enum Commands {
     /// serve the current directory in limited preview mode
     #[cfg(feature = "util")]
     Preview(PreviewArgs),
+    /// check for orphan pages
+    #[cfg(feature = "util")]
+    Orphan(BuildArgs),
 }
 
 #[derive(Debug, Args)]
@@ -131,6 +136,8 @@ fn main() {
         Commands::Build(args) => do_build(args),
         #[cfg(feature = "util")]
         Commands::Preview(args) => do_preview(args),
+        #[cfg(feature = "util")]
+        Commands::Orphan(args) => do_orphan(args),
     }
 }
 
@@ -147,6 +154,18 @@ fn do_build(args: &BuildArgs) {
 fn do_preview(args: &PreviewArgs) {
     let org_cfg = org_cfg();
     preview::serve(&org_cfg, args.bindhost);
+}
+
+#[cfg(feature = "util")]
+fn do_orphan(args: &BuildArgs) {
+    let repo = Repository::open(&args.repository).unwrap();
+    let commit = repo.revparse_single(&args.branch).unwrap();
+
+    let orphans = orphan::get_orphans(&repo, commit);
+
+    for o in orphans.into_iter() {
+        println!("{}", o.display());
+    }
 }
 
 fn org_cfg() -> ParseConfig {
