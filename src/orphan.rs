@@ -20,10 +20,14 @@ pub fn get_orphans(repo: &Repository, commit: Object) -> BTreeSet<PathBuf> {
         if 0o120000 == entry.filemode() {
             return 0;
         }
-        let name: PathBuf = format!("/{dir}{}", entry.name().unwrap()).into();
-        if let Some(true) = name.extension().map(|e| e == "org") {
-            find_links(&name, blob, &mut links);
-            pages.insert(name);
+        let name = entry.name().unwrap();
+        let fname: PathBuf = format!("/{dir}{}", name).into();
+        if let Some(true) = fname.extension().map(|e| e == "org") {
+            find_links(&fname, blob, &mut links);
+            // index is always linked by header nav
+            if name != "index.org" {
+                pages.insert(fname);
+            }
         }
         0
     })
