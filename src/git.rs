@@ -79,14 +79,10 @@ pub fn walk_callback(
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
 
-    let blob = match object.into_blob() {
-        Ok(blob) => blob,
-
-        Err(_) => {
-            // is probably a directory
-            fs::create_dir_all(format!("{}{}/", dir, name))?;
-            return Ok(());
-        }
+    let Ok(blob) = object.into_blob() else {
+        // is probably a directory
+        fs::create_dir_all(format!("{}{}/", dir, name))?;
+        return Ok(());
     };
 
     if 0o120000 == entry.filemode() {
