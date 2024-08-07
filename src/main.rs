@@ -10,7 +10,7 @@ use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::Pa
 mod atom;
 mod git;
 mod html;
-#[cfg(feature = "preview")]
+#[cfg(feature = "util")]
 mod preview;
 
 #[derive(Debug, Parser)]
@@ -24,7 +24,7 @@ enum Commands {
     /// generate site from git repository
     Build(BuildArgs),
     /// serve the current directory in limited preview mode
-    #[cfg(feature = "preview")]
+    #[cfg(feature = "util")]
     Preview(PreviewArgs),
 }
 
@@ -37,7 +37,7 @@ struct BuildArgs {
     branch: String,
 }
 
-#[cfg(feature = "preview")]
+#[cfg(feature = "util")]
 #[derive(Debug, Args)]
 struct PreviewArgs {
     #[arg(default_value = "[::]:8086")]
@@ -129,7 +129,7 @@ fn main() {
 
     match &opt.command {
         Commands::Build(args) => do_build(args),
-        #[cfg(feature = "preview")]
+        #[cfg(feature = "util")]
         Commands::Preview(args) => do_preview(args),
     }
 }
@@ -143,7 +143,7 @@ fn do_build(args: &BuildArgs) {
     generate(&org_cfg, &repo, commit).unwrap();
 }
 
-#[cfg(feature = "preview")]
+#[cfg(feature = "util")]
 fn do_preview(args: &PreviewArgs) {
     let org_cfg = org_cfg();
     preview::serve(&org_cfg, args.bindhost);

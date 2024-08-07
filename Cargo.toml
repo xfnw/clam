@@ -22,5 +22,5 @@ slugify = "0.1.0"
 toml_edit = { version = "0.22.12", default-features = false, features = ["serde", "parse"] }
 
 [features]
-default = ["preview"]
-preview = ["dep:micro_http_server"]
+default = ["util"]
+util = ["dep:micro_http_server"]
