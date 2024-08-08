@@ -2,15 +2,15 @@ use git2::{Blob, Object, Repository};
 use orgize::{ast::Link, Org};
 use rowan::ast::AstNode;
 use std::{
-    collections::BTreeSet,
+    collections::HashSet,
     path::{Component, Path, PathBuf},
 };
 
-pub fn get_orphans(repo: &Repository, commit: Object) -> BTreeSet<PathBuf> {
+pub fn get_orphans(repo: &Repository, commit: Object) -> HashSet<PathBuf> {
     let commit = commit.into_commit().unwrap();
     let tree = commit.tree().unwrap();
-    let mut pages = BTreeSet::new();
-    let mut links = BTreeSet::new();
+    let mut pages = HashSet::new();
+    let mut links = HashSet::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
         let Ok(obj) = entry.to_object(repo) else {
@@ -36,7 +36,7 @@ pub fn get_orphans(repo: &Repository, commit: Object) -> BTreeSet<PathBuf> {
     pages.difference(&links).cloned().collect()
 }
 
-fn find_links(name: &Path, blob: Blob, links: &mut BTreeSet<PathBuf>) {
+fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
     let document = res.document();

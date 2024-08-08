@@ -8,7 +8,7 @@ use orgize::{
 };
 use rowan::ast::AstNode;
 use slugify::slugify;
-use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
 #[derive(boilerplate::Boilerplate)]
 pub struct PageHtml<'a> {
@@ -287,7 +287,7 @@ pub fn generate_page(
     mtime: &ModifyMap,
     year_ago: i64,
     short_id: &str,
-    titles: &mut BTreeMap<PathBuf, (String, PathBuf)>,
+    titles: &mut HashMap<PathBuf, (String, PathBuf)>,
 ) -> Result<(), Box<dyn Error>> {
     let mut full_path: PathBuf = format!("{}{}", dir, name).into();
     let pcontent: Option<Vec<u8>> = match full_path.extension().and_then(std::ffi::OsStr::to_str) {

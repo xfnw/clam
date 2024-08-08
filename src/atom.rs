@@ -3,7 +3,7 @@ use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use regex::RegexSet;
 use std::{
-    collections::BTreeMap,
+    collections::HashMap,
     fmt::{self, Write},
     path::PathBuf,
 };
@@ -48,7 +48,7 @@ impl fmt::Display for AtomDateTime {
 }
 
 pub fn entries<'a>(
-    titles: &'a BTreeMap<PathBuf, (String, PathBuf)>,
+    titles: &'a HashMap<PathBuf, (String, PathBuf)>,
     mtime: &'a ModifyMap,
     exclude: &RegexSet,
 ) -> Result<Vec<AtomEntry<'a>>, Box<dyn std::error::Error>> {

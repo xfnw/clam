@@ -5,7 +5,7 @@ use git2::{Object, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
 use regex::RegexSet;
 use serde_derive::Deserialize;
-use std::{cmp::min, collections::BTreeMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod git;
@@ -82,7 +82,7 @@ fn generate(
         .as_secs()
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into()?;
-    let mut titles = BTreeMap::new();
+    let mut titles = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
         git::walk_callback(

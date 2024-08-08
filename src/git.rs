@@ -1,9 +1,9 @@
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
-use std::{collections::BTreeMap, error::Error, fs, path::PathBuf};
+use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
-pub type CreateMap = BTreeMap<PathBuf, (Time, String)>;
-pub type ModifyMap = BTreeMap<PathBuf, (Time, String)>;
+pub type CreateMap = HashMap<PathBuf, (Time, String)>;
+pub type ModifyMap = HashMap<PathBuf, (Time, String)>;
 
 pub fn make_time_tree(
     repo: &Repository,
@@ -37,8 +37,8 @@ pub fn make_time_tree(
     revwalk.push(oid)?;
     revwalk.set_sorting(git2::Sort::TIME)?;
 
-    let mut create_time: CreateMap = BTreeMap::new();
-    let mut modify_time: ModifyMap = BTreeMap::new();
+    let mut create_time: CreateMap = HashMap::new();
+    let mut modify_time: ModifyMap = HashMap::new();
 
     for cid in revwalk {
         let commit = repo.find_commit(cid?)?;
@@ -70,11 +70,11 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
-    ctime: &BTreeMap<PathBuf, (Time, String)>,
-    mtime: &BTreeMap<PathBuf, (Time, String)>,
+    ctime: &HashMap<PathBuf, (Time, String)>,
+    mtime: &HashMap<PathBuf, (Time, String)>,
     year_ago: i64,
     short_id: &str,
-    titles: &mut BTreeMap<PathBuf, (String, PathBuf)>,
+    titles: &mut HashMap<PathBuf, (String, PathBuf)>,
 ) -> Result<(), Box<dyn Error>> {
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
