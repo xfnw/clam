@@ -11,6 +11,9 @@
 <link rel="alternate" href="{{ self.url }}/{{ entry.path }}"/>
 <author><name>{{ entry.author }}</name></author>
 <updated>{{ entry.updated }}</updated>
+%% if let Some(summary) = entry.summary {
+<summary>{{ summary }}</summary>
+%% }
 </entry>
 %% }
 </feed>

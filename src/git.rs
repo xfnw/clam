@@ -3,23 +3,27 @@ use orgize::ParseConfig;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 pub type CreateMap = HashMap<PathBuf, (Time, String)>;
-pub type ModifyMap = HashMap<PathBuf, (Time, String)>;
+pub type ModifyMap = HashMap<PathBuf, (Time, String, Option<String>)>;
 
 pub fn make_time_tree(
     repo: &Repository,
     oid: Oid,
 ) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
     macro_rules! add_times {
-        ($time:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
+        ($time:expr, $message:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or("broken path")?;
                 if let Some(entry) = $modify_time.get_mut(path) {
                     if entry.0 < $time {
                         entry.0 = $time.clone();
                         entry.1 = $author.to_string();
+                        entry.2 = $message.clone();
                     }
                 } else {
-                    $modify_time.insert(path.to_owned(), ($time.clone(), $author.to_string()));
+                    $modify_time.insert(
+                        path.to_owned(),
+                        ($time.clone(), $author.to_string(), $message.clone()),
+                    );
                 }
                 if let Some(entry) = $create_time.get_mut(path) {
                     if entry.0 > $time {
@@ -44,6 +48,7 @@ pub fn make_time_tree(
         let commit = repo.find_commit(cid?)?;
         let tree = commit.tree()?;
         let parents = commit.parent_count();
+        let message = commit.message().map(|s| s.to_string());
         let author = commit.author();
         let time = author.when();
         let author = author.name().ok_or("broken author")?;
@@ -51,14 +56,14 @@ pub fn make_time_tree(
         // initial commit, everything touched
         if parents == 0 {
             let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            add_times!(time, author, diff, create_time, modify_time);
+            add_times!(time, message, author, diff, create_time, modify_time);
             continue;
         }
 
         for parent in 0..parents {
             let ptree = commit.parent(parent)?.tree()?;
             let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-            add_times!(time, author, diff, create_time, modify_time);
+            add_times!(time, message, author, diff, create_time, modify_time);
         }
     }
 
@@ -70,8 +75,8 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
-    ctime: &HashMap<PathBuf, (Time, String)>,
-    mtime: &HashMap<PathBuf, (Time, String)>,
+    ctime: &CreateMap,
+    mtime: &ModifyMap,
     year_ago: i64,
     short_id: &str,
     titles: &mut HashMap<PathBuf, (String, PathBuf)>,

@@ -22,6 +22,7 @@ pub struct AtomEntry<'a> {
     pub title: &'a str,
     pub path: &'a str,
     pub author: &'a str,
+    pub summary: Option<&'a str>,
     pub updated: AtomDateTime,
 }
 
@@ -64,14 +65,16 @@ pub fn entries<'a>(
             continue;
         }
 
-        let (updated, author) = mtime.get(old).ok_or("missing modification info")?;
+        let (updated, author, summary) = mtime.get(old).ok_or("missing modification info")?;
         let updated = AtomDateTime::new(updated.seconds()).ok_or("broken modification date")?;
+        let summary = summary.as_deref();
 
         entries.push(AtomEntry {
             title,
             path,
             author,
             updated,
+            summary,
         });
     }
 
