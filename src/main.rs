@@ -85,7 +85,7 @@ fn generate(
     let mut titles = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        git::walk_callback(
+        if let Err(e) = git::walk_callback(
             repo,
             dir,
             entry,
@@ -95,8 +95,9 @@ fn generate(
             year_ago,
             short_id,
             &mut titles,
-        )
-        .unwrap();
+        ) {
+            eprintln!("{}", e);
+        }
         0
     })?;
 

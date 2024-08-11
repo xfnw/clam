@@ -86,8 +86,7 @@ pub fn walk_callback(
     };
 
     if 0o120000 == entry.filemode() {
-        eprintln!("skipping symlink {}{}", dir, name);
-        return Ok(());
+        return Err(format!("skipping symlink {}{}", dir, name).into());
     }
 
     crate::html::generate_page(
