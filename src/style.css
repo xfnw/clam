@@ -42,6 +42,7 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
 
 .verse {
   white-space: pre-line;
+  font-family: inherit;
 }
 
 pre, .flex div {

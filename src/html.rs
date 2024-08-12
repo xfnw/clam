@@ -133,6 +133,8 @@ impl Traverser for Handler {
                 }
                 ctx.skip();
             }
+            Event::Enter(Container::VerseBlock(_)) => self.exp.push_str("<pre class=verse>"),
+            Event::Leave(Container::VerseBlock(_)) => self.exp.push_str("</pre>"),
             Event::Enter(Container::ListItem(ref item)) => {
                 // pretend indeterminate checkboxes do not exist and
                 // shove the state into a bool. html does not have a
