@@ -40,6 +40,10 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
   margin: 10px 0;
 }
 
+.verse {
+  white-space: pre-line;
+}
+
 pre, .flex div {
   padding: 5px;
   overflow: auto;
