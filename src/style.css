@@ -37,7 +37,7 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
 
 .box, .alert, .warning, .fixme, .FIXME {
   padding: 10px;
-  margin-top: 10px;
+  margin: 10px 0;
 }
 
 pre, .flex div {
@@ -159,7 +159,7 @@ li p:nth-of-type(1) {
 }
 
 .chat {
-  margin-top: 10px;
+  margin: 10px 0;
   display: flex;
   align-items: center;
 }
