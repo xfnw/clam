@@ -10,28 +10,28 @@ pub fn make_time_tree(
     oid: Oid,
 ) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
     macro_rules! add_times {
-        ($time:expr, $message:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
+        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or("broken path")?;
                 if let Some(entry) = $modify_time.get_mut(path) {
-                    if entry.0 < $time {
-                        entry.0 = $time.clone();
+                    if entry.0 < $time_c {
+                        entry.0 = $time_c.clone();
                         entry.1 = $author.to_string();
                         entry.2 = $message.clone();
                     }
                 } else {
                     $modify_time.insert(
                         path.to_owned(),
-                        ($time.clone(), $author.to_string(), $message.clone()),
+                        ($time_c.clone(), $author.to_string(), $message.clone()),
                     );
                 }
                 if let Some(entry) = $create_time.get_mut(path) {
-                    if entry.0 > $time {
-                        entry.0 = $time.clone();
+                    if entry.0 > $time_a {
+                        entry.0 = $time_a.clone();
                         entry.1 = $author.to_string();
                     }
                 } else {
-                    $create_time.insert(path.to_owned(), ($time.clone(), $author.to_string()));
+                    $create_time.insert(path.to_owned(), ($time_a.clone(), $author.to_string()));
                 }
             }
         };
@@ -50,20 +50,37 @@ pub fn make_time_tree(
         let parents = commit.parent_count();
         let message = commit.message().map(|s| s.to_string());
         let author = commit.author();
-        let time = author.when();
+        let time_a = author.when();
+        let time_c = commit.time();
         let author = author.name().ok_or("broken author")?;
 
         // initial commit, everything touched
         if parents == 0 {
             let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            add_times!(time, message, author, diff, create_time, modify_time);
+            add_times!(
+                time_a,
+                time_c,
+                message,
+                author,
+                diff,
+                create_time,
+                modify_time
+            );
             continue;
         }
 
         for parent in 0..parents {
             let ptree = commit.parent(parent)?.tree()?;
             let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-            add_times!(time, message, author, diff, create_time, modify_time);
+            add_times!(
+                time_a,
+                time_c,
+                message,
+                author,
+                diff,
+                create_time,
+                modify_time
+            );
         }
     }
 
