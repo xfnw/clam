@@ -4,7 +4,7 @@ use clap::{Args, Parser, Subcommand};
 use git2::{Object, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
 use regex::RegexSet;
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
