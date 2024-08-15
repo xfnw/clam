@@ -31,6 +31,12 @@ impl Traverser for TextExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            Event::Enter(Container::Headline(headline)) => {
+                for e in headline.title() {
+                    self.element(e, ctx);
+                }
+                self.push_str("\n")
+            }
             Event::Timestamp(time) => self.push_str(time.raw()),
             Event::Text(text) => self.push_str(text),
             _ => (),
