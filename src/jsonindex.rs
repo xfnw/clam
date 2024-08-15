@@ -50,8 +50,9 @@ pub fn print_index(repo: &Repository, commit: Object) {
             return 0;
         }
         let name = entry.name().unwrap();
-        let fname: PathBuf = format!("/{dir}{}", name).into();
+        let mut fname: PathBuf = format!("/{dir}{}", name).into();
         if let Some(true) = fname.extension().map(|e| e == "org") {
+	    fname.set_extension("html");
             let entry = get_entry(fname, blob);
             println!("{}", serde_json::to_string(&entry).unwrap());
         }
