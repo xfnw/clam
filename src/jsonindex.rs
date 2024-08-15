@@ -1,6 +1,8 @@
 use git2::{Blob, Object, Repository};
-use orgize::{Org, SyntaxKind};
-use rowan::{ast::AstNode, NodeOrToken::Token};
+use orgize::{
+    export::{Container, Event, TraversalContext, Traverser},
+    Org,
+};
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -9,6 +11,30 @@ struct Entry {
     title: String,
     path: PathBuf,
     content: String,
+}
+
+#[derive(Default)]
+struct TextExport {
+    output: String,
+}
+
+impl TextExport {
+    fn push_str(&mut self, s: impl AsRef<str>) {
+        self.output += s.as_ref();
+    }
+    fn finish(self) -> String {
+        self.output
+    }
+}
+
+impl Traverser for TextExport {
+    fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
+        match event {
+            Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            Event::Text(text) => self.push_str(text),
+            _ => (),
+        }
+    }
 }
 
 pub fn print_index(repo: &Repository, commit: Object) {
@@ -37,21 +63,13 @@ pub fn print_index(repo: &Repository, commit: Object) {
 fn get_entry(path: PathBuf, blob: Blob) -> Entry {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
-    let document = res.document();
-    let title = document.title().unwrap_or_else(|| "untitled".to_string());
-    let syntax = document.syntax();
-    let mut contents = vec![];
-
-    for descendant in syntax.descendants_with_tokens() {
-        let Token(token) = descendant else { continue };
-        if token.kind() == SyntaxKind::TEXT {
-            contents.push(token.text().to_string());
-        }
-    }
+    let title = res.title().unwrap_or_else(|| "untitled".to_string());
+    let mut export = TextExport::default();
+    res.traverse(&mut export);
 
     Entry {
         title,
         path,
-        content: contents.join(" "),
+        content: export.finish(),
     }
 }
