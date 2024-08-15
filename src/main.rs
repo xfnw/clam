@@ -11,6 +11,8 @@ mod atom;
 mod git;
 mod html;
 #[cfg(feature = "util")]
+mod jsonindex;
+#[cfg(feature = "util")]
 mod orphan;
 #[cfg(feature = "util")]
 mod preview;
@@ -31,6 +33,9 @@ enum Commands {
     /// check for orphan pages
     #[cfg(feature = "util")]
     Orphan(BuildArgs),
+    /// output page content as json lines
+    #[cfg(feature = "util")]
+    Jsonindex(BuildArgs),
 }
 
 #[derive(Debug, Args)]
@@ -139,6 +144,8 @@ fn main() {
         Commands::Preview(args) => do_preview(args),
         #[cfg(feature = "util")]
         Commands::Orphan(args) => do_orphan(args),
+        #[cfg(feature = "util")]
+        Commands::Jsonindex(args) => do_jsonindex(args),
     }
 }
 
@@ -167,6 +174,13 @@ fn do_orphan(args: &BuildArgs) {
     for o in orphans.into_iter() {
         println!(".{}", o.display());
     }
+}
+
+#[cfg(feature = "util")]
+fn do_jsonindex(args: &BuildArgs) {
+    let repo = Repository::open(&args.repository).unwrap();
+    let commit = repo.revparse_single(&args.branch).unwrap();
+    jsonindex::print_index(&repo, commit);
 }
 
 fn org_cfg() -> ParseConfig {
