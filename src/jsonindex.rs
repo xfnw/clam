@@ -31,6 +31,7 @@ impl Traverser for TextExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            Event::Timestamp(time) => self.push_str(time.raw()),
             Event::Text(text) => self.push_str(text),
             _ => (),
         }
@@ -52,7 +53,7 @@ pub fn print_index(repo: &Repository, commit: Object) {
         let name = entry.name().unwrap();
         let mut fname: PathBuf = format!("/{dir}{}", name).into();
         if let Some(true) = fname.extension().map(|e| e == "org") {
-	    fname.set_extension("html");
+            fname.set_extension("html");
             let entry = get_entry(fname, blob);
             println!("{}", serde_json::to_string(&entry).unwrap());
         }
