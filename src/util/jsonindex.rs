@@ -48,9 +48,9 @@ impl Traverser for TextExport {
 pub fn print_index(repo: &Repository, commit: Object) {
     let commit = commit.into_commit().unwrap();
 
-    map_org(repo, commit, |blob, mut fname, _| {
-        fname.set_extension("html");
-        let entry = get_entry(fname, blob);
+    map_org(repo, commit, |mut name, blob| {
+        name.set_extension("html");
+        let entry = get_entry(name, blob);
         println!("{}", serde_json::to_string(&entry).unwrap());
     })
     .unwrap()

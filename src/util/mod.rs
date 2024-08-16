@@ -30,7 +30,11 @@ pub fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
         };
         let parent = name.parent().expect("borked name");
         let fullpath = parent.join(path);
-        let fullpath = normalize(&fullpath);
+        let mut fullpath = normalize(&fullpath);
+        match fullpath.extension().map(|e| e == "org") {
+            Some(true) => (),
+            _ => fullpath.push("index.org"),
+        };
         links.insert(fullpath);
     }
 }
@@ -65,7 +69,7 @@ pub fn normalize(path: &Path) -> PathBuf {
 /// run a function on every org file in repository
 pub fn map_org<F>(repo: &Repository, commit: Commit, mut callback: F) -> Result<(), git2::Error>
 where
-    F: FnMut(Blob, PathBuf, &str),
+    F: FnMut(PathBuf, Blob),
 {
     let tree = commit.tree()?;
 
@@ -78,9 +82,9 @@ where
             return 0;
         }
         let name = entry.name().unwrap();
-        let fname: PathBuf = format!("/{dir}{}", name).into();
-        if let Some(true) = fname.extension().map(|e| e == "org") {
-            callback(blob, fname, name);
+        let name: PathBuf = format!("/{dir}{}", name).into();
+        if let Some(true) = name.extension().map(|e| e == "org") {
+            callback(name, blob);
         }
         0
     })

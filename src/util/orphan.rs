@@ -7,12 +7,9 @@ pub fn get_orphans(repo: &Repository, commit: Object) -> HashSet<PathBuf> {
     let mut pages = HashSet::new();
     let mut links = HashSet::new();
 
-    map_org(repo, commit, |blob, fname, name| {
-        find_links(&fname, blob, &mut links);
-        // index is always linked by header nav
-        if name != "index.org" {
-            pages.insert(fname);
-        }
+    map_org(repo, commit, |name, blob| {
+        find_links(&name, blob, &mut links);
+        pages.insert(name);
     })
     .unwrap();
 
