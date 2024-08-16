@@ -1,4 +1,4 @@
-use git2::Blob;
+use git2::{Blob, Commit, Repository};
 use orgize::{ast::Link, Org};
 use rowan::ast::AstNode;
 use std::{
@@ -49,4 +49,28 @@ pub fn normalize(path: &Path) -> PathBuf {
     }
 
     res
+}
+
+/// run a function on every org file in repository
+pub fn map_org<F>(repo: &Repository, commit: Commit, mut callback: F) -> Result<(), git2::Error>
+where
+    F: FnMut(Blob, PathBuf, &str),
+{
+    let tree = commit.tree()?;
+
+    tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
+        let Ok(obj) = entry.to_object(repo) else {
+            return 0;
+        };
+        let Ok(blob) = obj.into_blob() else { return 0 };
+        if 0o120000 == entry.filemode() {
+            return 0;
+        }
+        let name = entry.name().unwrap();
+        let fname: PathBuf = format!("/{dir}{}", name).into();
+        if let Some(true) = fname.extension().map(|e| e == "org") {
+            callback(blob, fname, name);
+        }
+        0
+    })
 }

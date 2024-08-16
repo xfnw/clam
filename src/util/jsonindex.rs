@@ -1,3 +1,4 @@
+use super::map_org;
 use git2::{Blob, Object, Repository};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
@@ -46,26 +47,13 @@ impl Traverser for TextExport {
 
 pub fn print_index(repo: &Repository, commit: Object) {
     let commit = commit.into_commit().unwrap();
-    let tree = commit.tree().unwrap();
 
-    tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        let Ok(obj) = entry.to_object(repo) else {
-            return 0;
-        };
-        let Ok(blob) = obj.into_blob() else { return 0 };
-        if 0o120000 == entry.filemode() {
-            return 0;
-        }
-        let name = entry.name().unwrap();
-        let mut fname: PathBuf = format!("/{dir}{}", name).into();
-        if let Some(true) = fname.extension().map(|e| e == "org") {
-            fname.set_extension("html");
-            let entry = get_entry(fname, blob);
-            println!("{}", serde_json::to_string(&entry).unwrap());
-        }
-        0
+    map_org(repo, commit, |blob, mut fname, _| {
+        fname.set_extension("html");
+        let entry = get_entry(fname, blob);
+        println!("{}", serde_json::to_string(&entry).unwrap());
     })
-    .unwrap();
+    .unwrap()
 }
 
 fn get_entry(path: PathBuf, blob: Blob) -> Entry {
