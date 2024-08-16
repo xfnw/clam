@@ -10,6 +10,10 @@ pub mod jsonindex;
 pub mod orphan;
 pub mod preview;
 
+/// add all links in an org document to a set.
+///
+/// will add mangled entries when encountering links to
+/// external resources.
 pub fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
@@ -31,6 +35,13 @@ pub fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
     }
 }
 
+/// normalize a path *without* checking actual files.
+///
+/// this may give incorrect answers when symlinks are
+/// involved. use [`std::fs::canonicalize`] instead
+/// when this is an issue.
+///
+/// panics if given a windows-style path prefix.
 // why is this not a thing in the std???
 // https://github.com/rust-lang/rfcs/issues/2208
 pub fn normalize(path: &Path) -> PathBuf {
