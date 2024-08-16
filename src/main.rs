@@ -11,11 +11,7 @@ mod atom;
 mod git;
 mod html;
 #[cfg(feature = "util")]
-mod jsonindex;
-#[cfg(feature = "util")]
-mod orphan;
-#[cfg(feature = "util")]
-mod preview;
+mod util;
 
 #[derive(Debug, Parser)]
 struct Opt {
@@ -161,7 +157,7 @@ fn do_build(args: &BuildArgs) {
 #[cfg(feature = "util")]
 fn do_preview(args: &PreviewArgs) {
     let org_cfg = org_cfg();
-    preview::serve(&org_cfg, args.bindhost);
+    util::preview::serve(&org_cfg, args.bindhost);
 }
 
 #[cfg(feature = "util")]
@@ -169,7 +165,7 @@ fn do_orphan(args: &BuildArgs) {
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
 
-    let orphans = orphan::get_orphans(&repo, commit);
+    let orphans = util::orphan::get_orphans(&repo, commit);
 
     for o in orphans.into_iter() {
         println!(".{}", o.display());
@@ -180,7 +176,7 @@ fn do_orphan(args: &BuildArgs) {
 fn do_jsonindex(args: &BuildArgs) {
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
-    jsonindex::print_index(&repo, commit);
+    util::jsonindex::print_index(&repo, commit);
 }
 
 fn org_cfg() -> ParseConfig {
