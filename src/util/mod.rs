@@ -82,7 +82,7 @@ where
             return 0;
         }
         let name = entry.name().unwrap();
-        let name: PathBuf = format!("/{dir}{}", name).into();
+        let name: PathBuf = format!("{dir}{}", name).into();
         if let Some(true) = name.extension().map(|e| e == "org") {
             callback(name, blob);
         }

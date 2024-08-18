@@ -161,7 +161,7 @@ fn do_orphan(repo: &Repository, commit: Commit) {
     let orphans = util::orphan::get_orphans(repo, commit);
 
     for o in orphans.into_iter() {
-        println!(".{}", o.display());
+        println!("{}", o.display());
     }
 }
 
