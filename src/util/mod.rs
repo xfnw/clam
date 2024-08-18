@@ -1,20 +1,20 @@
 use git2::{Blob, Commit, Repository};
 use orgize::{ast::Link, Org};
 use rowan::ast::AstNode;
-use std::{
-    collections::HashSet,
-    path::{Component, Path, PathBuf},
-};
+use std::path::{Component, Path, PathBuf};
 
 pub mod jsonindex;
 pub mod orphan;
 pub mod preview;
 
-/// add all links in an org document to a set.
+/// run a function on every link in an org document
 ///
-/// will add mangled entries when encountering links to
+/// will give mangled paths when encountering links to
 /// external resources.
-pub fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
+pub fn find_links<F>(name: &Path, blob: Blob, mut callback: F)
+where
+    F: FnMut(PathBuf),
+{
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
     let document = res.document();
@@ -35,7 +35,7 @@ pub fn find_links(name: &Path, blob: Blob, links: &mut HashSet<PathBuf>) {
             Some(true) => (),
             _ => fullpath.push("index.org"),
         };
-        links.insert(fullpath);
+        callback(fullpath);
     }
 }
 
