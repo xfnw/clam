@@ -3,6 +3,7 @@ use orgize::{ast::Link, Org};
 use rowan::ast::AstNode;
 use std::path::{Component, Path, PathBuf};
 
+pub mod dot;
 pub mod jsonindex;
 pub mod orphan;
 pub mod preview;

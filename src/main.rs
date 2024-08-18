@@ -32,6 +32,9 @@ enum Commands {
     /// output page content as json lines
     #[cfg(feature = "util")]
     Jsonindex(RepoArgs),
+    /// output links between pages in graphviz dot format
+    #[cfg(feature = "util")]
+    Dot(RepoArgs),
 }
 
 #[derive(Debug, Args)]
@@ -141,6 +144,8 @@ fn main() {
         Commands::Orphan(args) => open_repo(args, do_orphan),
         #[cfg(feature = "util")]
         Commands::Jsonindex(args) => open_repo(args, util::jsonindex::print_index),
+        #[cfg(feature = "util")]
+        Commands::Dot(args) => open_repo(args, util::dot::print_dot),
     }
 }
 
