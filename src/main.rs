@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use clap::{Args, Parser, Subcommand};
-use git2::{Object, Repository};
+use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
 use regex::RegexSet;
 use serde::Deserialize;
@@ -22,20 +22,20 @@ struct Opt {
 #[derive(Debug, Subcommand)]
 enum Commands {
     /// generate site from git repository
-    Build(BuildArgs),
+    Build(RepoArgs),
     /// serve the current directory in limited preview mode
     #[cfg(feature = "util")]
     Preview(PreviewArgs),
     /// check for orphan pages
     #[cfg(feature = "util")]
-    Orphan(BuildArgs),
+    Orphan(RepoArgs),
     /// output page content as json lines
     #[cfg(feature = "util")]
-    Jsonindex(BuildArgs),
+    Jsonindex(RepoArgs),
 }
 
 #[derive(Debug, Args)]
-struct BuildArgs {
+struct RepoArgs {
     #[arg(required = true)]
     repository: PathBuf,
 
@@ -63,11 +63,10 @@ static STYLESHEET: &[u8] = include_bytes!("style.css");
 fn generate(
     org_cfg: &ParseConfig,
     repo: &Repository,
-    commit: Object,
+    commit: Commit,
 ) -> Result<(), Box<dyn Error>> {
-    let short_id = commit.short_id().unwrap();
+    let short_id = commit.as_object().short_id().unwrap();
     let short_id = short_id.as_str().unwrap();
-    let commit = commit.into_commit().unwrap();
     let oid = commit.id();
     let tree = commit.tree().unwrap();
 
@@ -135,23 +134,20 @@ fn main() {
     let opt = Opt::parse();
 
     match &opt.command {
-        Commands::Build(args) => do_build(args),
+        Commands::Build(args) => open_repo(args, do_build),
         #[cfg(feature = "util")]
         Commands::Preview(args) => do_preview(args),
         #[cfg(feature = "util")]
-        Commands::Orphan(args) => do_orphan(args),
+        Commands::Orphan(args) => open_repo(args, do_orphan),
         #[cfg(feature = "util")]
-        Commands::Jsonindex(args) => do_jsonindex(args),
+        Commands::Jsonindex(args) => open_repo(args, util::jsonindex::print_index),
     }
 }
 
-fn do_build(args: &BuildArgs) {
-    let repo = Repository::open(&args.repository).unwrap();
-    let commit = repo.revparse_single(&args.branch).unwrap();
-
+fn do_build(repo: &Repository, commit: Commit) {
     let org_cfg = org_cfg();
 
-    generate(&org_cfg, &repo, commit).unwrap();
+    generate(&org_cfg, repo, commit).unwrap();
 }
 
 #[cfg(feature = "util")]
@@ -161,22 +157,22 @@ fn do_preview(args: &PreviewArgs) {
 }
 
 #[cfg(feature = "util")]
-fn do_orphan(args: &BuildArgs) {
-    let repo = Repository::open(&args.repository).unwrap();
-    let commit = repo.revparse_single(&args.branch).unwrap();
-
-    let orphans = util::orphan::get_orphans(&repo, commit);
+fn do_orphan(repo: &Repository, commit: Commit) {
+    let orphans = util::orphan::get_orphans(repo, commit);
 
     for o in orphans.into_iter() {
         println!(".{}", o.display());
     }
 }
 
-#[cfg(feature = "util")]
-fn do_jsonindex(args: &BuildArgs) {
+fn open_repo<F>(args: &RepoArgs, callback: F)
+where
+    F: Fn(&Repository, Commit),
+{
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
-    util::jsonindex::print_index(&repo, commit);
+    let commit = commit.into_commit().unwrap();
+    callback(&repo, commit);
 }
 
 fn org_cfg() -> ParseConfig {

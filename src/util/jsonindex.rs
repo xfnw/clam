@@ -1,5 +1,5 @@
 use super::map_org;
-use git2::{Blob, Object, Repository};
+use git2::{Blob, Commit, Repository};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
     Org,
@@ -45,9 +45,7 @@ impl Traverser for TextExport {
     }
 }
 
-pub fn print_index(repo: &Repository, commit: Object) {
-    let commit = commit.into_commit().unwrap();
-
+pub fn print_index(repo: &Repository, commit: Commit) {
     map_org(repo, commit, |mut name, blob| {
         name.set_extension("html");
         let entry = get_entry(name, blob);
