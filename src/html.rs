@@ -1,10 +1,11 @@
 use crate::git::{CreateMap, ModifyMap};
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
+use indexmap::IndexMap;
 use orgize::{
     ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
-    ParseConfig,
+    ParseConfig, SyntaxKind,
 };
 use rowan::ast::AstNode;
 use slugify::slugify;
@@ -27,6 +28,7 @@ pub struct PageHtml<'a> {
 pub struct Handler {
     pub exp: HtmlExport,
     pub numdir: usize,
+    pub feet: IndexMap<String, (Option<String>, u32)>,
 }
 
 impl Traverser for Handler {
@@ -222,21 +224,87 @@ impl Traverser for Handler {
                 ctx.skip();
             }
             Event::Enter(Container::FnDef(foot)) => {
-                self.exp.push_str(HtmlEscape(foot.raw()).to_string());
+                let text = collect_text(foot.syntax());
+                if let Some(name) = text.get(1).map(|t| t.text()) {
+                    if let Some(def) = text.get(2).map(|t| t.text().trim().to_string()) {
+                        if let Some(note) = self.feet.get_mut(name) {
+                            note.0 = Some(def);
+                        } else {
+                            self.feet.insert(name.to_string(), (Some(def), 0));
+                        }
+                    }
+                }
                 ctx.skip();
             }
             Event::Enter(Container::FnRef(foot)) => {
-                self.exp.push_str(HtmlEscape(foot.raw()).to_string());
+                let text = collect_text(foot.syntax());
+                if let Some(name) = text.get(1).map(|t| t.text()) {
+                    let def = text.get(2);
+                    let (fnum, rnum) = if let Some(note) = self.feet.get_full_mut(name) {
+                        note.2 .1 += 1;
+                        if def.is_some() {
+                            note.2 .0 = def.map(|s| s.to_string());
+                        }
+                        (note.0, note.2 .1)
+                    } else {
+                        let n = self.feet.len();
+                        self.feet.insert(
+                            if name.is_empty() {
+                                format!(":{n}") // footnote name cannot contain colons
+                            } else {
+                                name.to_string()
+                            },
+                            (def.map(|s| s.to_string()), 0),
+                        );
+                        (n, 0)
+                    };
+                    let fnum = fnum + 1;
+                    self.exp.push_str(format!(
+                        r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}">[{fnum}]</a></sup>"##
+                    ));
+                }
                 ctx.skip();
             }
             Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=\"example\">"),
             Event::Leave(Container::FixedWidth(_)) => self.exp.push_str("</pre>"),
+            Event::Leave(Container::Document(_)) => {
+                if !self.feet.is_empty() {
+                    self.exp.push_str("<h2>footnotes</h2><ol>");
+                    for (n, (_, (note, refs))) in self.feet.iter().enumerate() {
+                        let note: &str = if let Some(note) = note { note } else { "null" };
+                        let n = n + 1;
+                        self.exp
+                            .push_str(format!("<li id=\"fn.{n}\">{}\n<sup>", HtmlEscape(note)));
+                        for r in 0..=*refs {
+                            self.exp
+                                .push_str(format!("<a href=\"#fnr.{n}.{r}\">{r}</a>\n"));
+                        }
+                        self.exp.push_str("</sup></li>");
+                    }
+                    self.exp.push_str("</ol>");
+                }
+
+                self.exp.push_str("</main>");
+            }
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
             _ => self.exp.event(event, ctx),
         };
     }
+}
+
+fn collect_text(syntax: &orgize::SyntaxNode) -> Vec<orgize::SyntaxToken> {
+    syntax
+        .children_with_tokens()
+        .filter_map(|t| {
+            if t.kind() == SyntaxKind::TEXT {
+                t.into_token()
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
 impl Handler {
