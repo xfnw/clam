@@ -5,9 +5,9 @@ use indexmap::IndexMap;
 use orgize::{
     ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
-    ParseConfig, SyntaxKind,
+    ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
 };
-use rowan::ast::AstNode;
+use rowan::{ast::AstNode, NodeOrToken};
 use slugify::slugify;
 use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
@@ -24,11 +24,13 @@ pub struct PageHtml<'a> {
     pub old_page: bool,
 }
 
+type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
+
 #[derive(Default)]
 pub struct Handler {
     pub exp: HtmlExport,
     pub numdir: usize,
-    pub feet: IndexMap<String, (Option<String>, u32)>,
+    pub feet: IndexMap<String, (Option<TokenList>, u32)>,
 }
 
 impl Traverser for Handler {
@@ -224,26 +226,38 @@ impl Traverser for Handler {
                 ctx.skip();
             }
             Event::Enter(Container::FnDef(foot)) => {
-                let text = collect_text(foot.syntax());
-                if let Some(name) = text.get(1).map(|t| t.text()) {
-                    if let Some(def) = text.get(2).map(|t| t.text().trim().to_string()) {
+                let mut children = foot.syntax().children_with_tokens().skip(3);
+                if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
+                    let name = dbg!(name.text());
+                    let def = if let Some(c) = dbg!(children.next()) {
+                        c.kind() == SyntaxKind::R_BRACKET
+                    } else {
+                        false
+                    };
+                    if def {
                         if let Some(note) = self.feet.get_mut(name) {
-                            note.0 = Some(def);
+                            note.0 = Some(children.collect());
                         } else {
-                            self.feet.insert(name.to_string(), (Some(def), 0));
+                            self.feet
+                                .insert(name.to_string(), (Some(children.collect()), 0));
                         }
                     }
                 }
                 ctx.skip();
             }
             Event::Enter(Container::FnRef(foot)) => {
-                let text = collect_text(foot.syntax());
-                if let Some(name) = text.get(1).map(|t| t.text()) {
-                    let def = text.get(2);
+                let mut children = foot.syntax().children_with_tokens().skip(3);
+                if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
+                    let name = name.text();
+                    let def = if let Some(c) = children.next() {
+                        c.kind() == SyntaxKind::COLON
+                    } else {
+                        false
+                    };
                     let (fnum, rnum) = if let Some(note) = self.feet.get_full_mut(name) {
                         note.2 .1 += 1;
-                        if def.is_some() {
-                            note.2 .0 = def.map(|s| s.to_string());
+                        if def {
+                            note.2 .0 = Some(children.collect());
                         }
                         (note.0, note.2 .1)
                     } else {
@@ -254,7 +268,7 @@ impl Traverser for Handler {
                             } else {
                                 name.to_string()
                             },
-                            (def.map(|s| s.to_string()), 0),
+                            (if def { Some(children.collect()) } else { None }, 0),
                         );
                         (n, 0)
                     };
@@ -270,11 +284,16 @@ impl Traverser for Handler {
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
                     self.exp.push_str("<h2>footnotes</h2><ol>");
-                    for (n, (_, (note, refs))) in self.feet.iter().enumerate() {
-                        let note: &str = if let Some(note) = note { note } else { "null" };
+                    for (n, (_, (elem, refs))) in self.feet.iter().enumerate() {
                         let n = n + 1;
-                        self.exp
-                            .push_str(format!("<li id=\"fn.{n}\">{}\n<sup>", HtmlEscape(note)));
+                        self.exp.push_str(format!("<li id=\"fn.{n}\">"));
+                        if let Some(elem) = elem {
+                            for e in elem {
+                                // bad workaround for self.element needing &mut self
+                                self.exp.element(e.clone(), ctx);
+                            }
+                        }
+                        self.exp.push_str("\n<sup>");
                         for r in 0..=*refs {
                             self.exp
                                 .push_str(format!("<a href=\"#fnr.{n}.{r}\">{r}</a>\n"));
@@ -292,19 +311,6 @@ impl Traverser for Handler {
             _ => self.exp.event(event, ctx),
         };
     }
-}
-
-fn collect_text(syntax: &orgize::SyntaxNode) -> Vec<orgize::SyntaxToken> {
-    syntax
-        .children_with_tokens()
-        .filter_map(|t| {
-            if t.kind() == SyntaxKind::TEXT {
-                t.into_token()
-            } else {
-                None
-            }
-        })
-        .collect()
 }
 
 impl Handler {
