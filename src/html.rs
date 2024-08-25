@@ -448,6 +448,10 @@ mod tests {
 AAAA
 #+end_chat
 
+i have a footnote[fn:1:beep /boop/][fn:2]
+
+[fn:2] and *another* footnote
+
 [[*finish writing this test][i am a heading link]]
 [[hmm/example.org/test.org][should link to .html]]
 [[hmm/example.org/test.org#something][should also link to .html]]
@@ -473,14 +477,19 @@ AAAA even more
         assert_eq!(
             exp.exp.finish(),
             r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA
-</div></div><p><a href="#finish-writing-this-test">i am a heading link</a>
+</div></div><p>i have a footnote<sup><a id="fnr.1.0" href="#fn.1">[1]</a></sup><sup><a id="fnr.2.0" href="#fn.2">[2]</a></sup>
+</p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
 <a href="hmm/example.org/test.html#something">should also link to .html</a>
 <a href="hmm/example.org/">im a directory!</a>
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
-</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3></main>"##
+</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><h2>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
+<sup><a href="#fnr.1.0">0</a>
+</sup></li><li id="fn.2"> and *another* footnote
+<sup><a href="#fnr.2.0">0</a>
+</sup></li></ol></main>"##
         );
     }
 }
