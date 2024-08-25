@@ -228,8 +228,8 @@ impl Traverser for Handler {
             Event::Enter(Container::FnDef(foot)) => {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
                 if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
-                    let name = dbg!(name.text());
-                    let def = if let Some(c) = dbg!(children.next()) {
+                    let name = name.text();
+                    let def = if let Some(c) = children.next() {
                         c.kind() == SyntaxKind::R_BRACKET
                     } else {
                         false
