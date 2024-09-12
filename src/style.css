@@ -23,7 +23,7 @@ a:visited {
 code, kbd, pre, textarea {
   font-family: monospace, monospace;
   white-space: pre-wrap;
-  border: 1px solid;
+  border: 1px dotted;
   color: #ccc;
 }
 
