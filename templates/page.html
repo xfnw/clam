@@ -12,8 +12,8 @@
 <a href="..">up</a>{% } if self.numdir > 1 { %}
 <a href=".">here</a>{% } %}</nav>
 <h1>{{ self.title }}</h1>
-%% if self.old_page {
-<aside class=box>this page was last updated over a year ago. facts and circumstances may have changed since.</aside>
+%% if let Some(notice) = self.notice {
+<aside class=box>{{ Trusted(&notice) }}</aside>
 %% }
 </header>
 {{ Trusted(&self.body) }}

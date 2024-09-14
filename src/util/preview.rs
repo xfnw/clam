@@ -116,7 +116,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
         modified: DateTime::from_timestamp(0, 0).unwrap().naive_utc(),
         year: 0,
         numdir,
-        old_page: false,
+        notice: None,
     };
 
     Some(template.to_string())

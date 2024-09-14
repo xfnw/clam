@@ -21,7 +21,7 @@ pub struct PageHtml<'a> {
     pub modified: NaiveDateTime,
     pub year: i32,
     pub numdir: usize,
-    pub old_page: bool,
+    pub notice: Option<&'static str>,
 }
 
 type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
@@ -395,7 +395,11 @@ pub fn generate_page(
             };
             res.traverse(&mut html_export);
 
-            let old_page = modified.seconds() - year_ago < 0;
+            let notice = if modified.seconds() - year_ago < 0 {
+                Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+            } else {
+                None
+            };
 
             let template = PageHtml {
                 title: title.clone(),
@@ -408,7 +412,7 @@ pub fn generate_page(
                     .naive_utc(),
                 year,
                 numdir,
-                old_page,
+                notice,
             };
 
             let old_path = full_path.clone();
