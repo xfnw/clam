@@ -107,6 +107,10 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
     };
     res.traverse(&mut html_export);
 
+    let notice = Some(
+            "you found my preview site. please avoid sharing the link around, don't be the reason this needs to be more complex.",
+        );
+
     let template = PageHtml {
         title,
         body: html_export.exp.finish(),
@@ -116,7 +120,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
         modified: DateTime::from_timestamp(0, 0).unwrap().naive_utc(),
         year: 0,
         numdir,
-        notice: None,
+        notice,
     };
 
     Some(template.to_string())
