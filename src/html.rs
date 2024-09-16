@@ -30,7 +30,7 @@ type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
 pub struct Handler {
     pub exp: HtmlExport,
     pub numdir: usize,
-    pub feet: IndexMap<String, (Option<TokenList>, u32)>,
+    pub feet: IndexMap<String, (Option<TokenList>, i32)>,
 }
 
 impl Traverser for Handler {
@@ -239,7 +239,7 @@ impl Traverser for Handler {
                             note.0 = Some(children.collect());
                         } else {
                             self.feet
-                                .insert(name.to_string(), (Some(children.collect()), 0));
+                                .insert(name.to_string(), (Some(children.collect()), -1));
                         }
                     }
                 }
@@ -293,12 +293,12 @@ impl Traverser for Handler {
                                 self.exp.element(e.clone(), ctx);
                             }
                         }
-                        self.exp.push_str("\n<sup>");
+                        self.exp.push_str("\n");
                         for r in 0..=*refs {
                             self.exp
-                                .push_str(format!("<a href=\"#fnr.{n}.{r}\">{r}</a>\n"));
+                                .push_str(format!("<a href=\"#fnr.{n}.{r}\">↩</a>\n"));
                         }
-                        self.exp.push_str("</sup></li>");
+                        self.exp.push_str("</li>");
                     }
                     self.exp.push_str("</ol>");
                 }
@@ -490,10 +490,10 @@ AAAA even more
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><h2>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
-<sup><a href="#fnr.1.0">0</a>
-</sup></li><li id="fn.2"> and *another* footnote
-<sup><a href="#fnr.2.0">0</a>
-</sup></li></ol></main>"##
+<a href="#fnr.1.0">↩</a>
+</li><li id="fn.2"> and *another* footnote
+<a href="#fnr.2.0">↩</a>
+</li></ol></main>"##
         );
     }
 }
