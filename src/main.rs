@@ -3,9 +3,8 @@
 use clap::{Args, Parser, Subcommand};
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
-use regex::RegexSet;
 use serde::Deserialize;
-use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod git;
@@ -55,9 +54,16 @@ struct PreviewArgs {
 
 #[derive(Deserialize, Debug)]
 struct ClamConfig {
-    title: String,
     id: Option<String>,
     url: String,
+    feed: Option<Vec<FeedConfig>>,
+}
+
+#[derive(Deserialize, Debug)]
+struct FeedConfig {
+    title: String,
+    path: String,
+    include: Option<Vec<String>>,
     exclude: Option<Vec<String>>,
 }
 
@@ -106,29 +112,22 @@ fn generate(
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml_edit::de::from_str(&config)?;
-        let exclude = if let Some(e) = config.exclude {
-            RegexSet::new(e)?
-        } else {
-            RegexSet::empty()
-        };
+        if let Some(feeds) = config.feed {
+            let entries = atom::entries(&titles, &mtime)?;
+            let id = config.id.as_ref().unwrap_or(&config.url);
 
-        let feed = atom::entries(&titles, &mtime, &exclude)?;
-
-        let mut f = fs::File::create("feed.xml")?;
-        f.write_all(
-            atom::FeedXml {
-                title: &config.title,
-                id: config.id.as_ref().unwrap_or(&config.url),
-                url: &config.url,
-                updated: &feed.first().ok_or("no entries in feed")?.updated,
-                entries: &feed[..min(feed.len(), 42)],
+            for feed in feeds {
+                match atom::write_feed(&feed, id, &config.url, entries.as_slice()) {
+                    Ok(_) => (),
+                    Err(e) => eprintln!("skipping {}: {}", feed.path, e),
+                };
             }
-            .to_string()
-            .as_bytes(),
-        )?;
-    } else {
-        eprintln!("missing config file, skipping feed.xml creation");
+
+            return Ok(());
+        }
     }
+
+    eprintln!("no configured feeds, skipping");
 
     Ok(())
 }

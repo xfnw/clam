@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>{{ self.title }}</title>
-<id>{{ self.id }}/feed.xml</id>
-<link rel="self" href="{{ self.url }}/feed.xml"/>
+<id>{{ self.id }}/{{ self.path }}</id>
+<link rel="self" href="{{ self.url }}/{{ self.path }}"/>
 <updated>{{ self.updated }}</updated>
 %% for entry in self.entries {
 <entry>
