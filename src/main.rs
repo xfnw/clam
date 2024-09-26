@@ -9,6 +9,7 @@ use std::{collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 mod atom;
 mod git;
 mod html;
+mod shared;
 #[cfg(feature = "util")]
 mod util;
 
