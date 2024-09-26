@@ -17,8 +17,14 @@
 %% }
 </header>
 {{ Trusted(&self.body) }}
-<hr>
 <footer>
+%% if let Some(incoming) = self.incoming {
+incoming:
+%%   for (url, title) in incoming {
+<a href="{{ url }}">{{ title }}</a>
+%%   }
+%% }
+<hr>
 &copy; {{ self.year }} <i>{{ self.author }}</i> and contributors.
 last modified <time>{{ self.modified }}</time>.
 generated from commit <code>{{ self.commit }}</code>.

@@ -22,6 +22,7 @@ pub struct PageHtml<'a> {
     pub year: i32,
     pub numdir: usize,
     pub notice: Option<&'static str>,
+    pub incoming: Option<&'a [(&'a str, &'a str)]>,
 }
 
 type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
@@ -419,6 +420,7 @@ pub fn generate_page(
                 year,
                 numdir,
                 notice,
+		incoming: None,
             };
 
             let old_path = full_path.clone();

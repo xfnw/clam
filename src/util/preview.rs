@@ -121,6 +121,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
         year: 0,
         numdir,
         notice,
+	incoming: None,
     };
 
     Some(template.to_string())
