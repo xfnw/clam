@@ -20,8 +20,8 @@
 <footer>
 %% if let Some(incoming) = self.incoming {
 incoming:
-%%   for (url, title) in incoming {
-<a href="{{ url }}">{{ title }}</a>
+%%   for (path, title) in incoming {
+<a href="{% for _ in 1..self.numdir { %}../{% } %}{{ path }}">{{ title }}</a>
 %%   }
 %% }
 <hr>

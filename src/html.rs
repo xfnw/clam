@@ -14,7 +14,7 @@ use rowan::{ast::AstNode, NodeOrToken};
 use slugify::slugify;
 use std::{
     cmp::min,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     error::Error,
     fs,
     io::Write,
@@ -387,8 +387,13 @@ pub fn generate_page(
 
         let title = res.title().unwrap_or_else(|| "untitled".to_string());
 
+        let old_path = full_path.clone();
+        full_path.set_extension("html");
+
         let mypath = Rc::new(full_path.clone());
-        org_links(&res, &full_path, |l| {
+        org_links(&res, &full_path, |mut l| {
+            l.set_extension("html");
+
             if let Some(e) = links.get_mut(&l) {
                 e.push(mypath.clone());
             } else {
@@ -396,9 +401,7 @@ pub fn generate_page(
             }
         });
 
-        let old_path = full_path.clone();
-        full_path.set_extension("html");
-        titles.insert(full_path.clone(), (title, old_path, res));
+        titles.insert(full_path, (title, old_path, res));
     } else {
         let mut f = fs::File::create(full_path)?;
         f.write_all(file)?;
@@ -443,6 +446,18 @@ pub fn write_org_page(
             None
         };
 
+        let incoming: Option<HashSet<_>> = links.get(new_path).map(|l| l.iter().collect());
+        let incoming: Option<Vec<_>> = incoming.map(|l| {
+            l.iter()
+                .map(|b| {
+                    (
+                        b.to_str().unwrap(),
+                        titles.get(b.as_ref()).unwrap().0.as_ref(),
+                    )
+                })
+                .collect()
+        });
+
         let template = PageHtml {
             title,
             body: html_export.exp.finish(),
@@ -455,7 +470,7 @@ pub fn write_org_page(
             year,
             numdir,
             notice,
-            incoming: None,
+            incoming: incoming.as_deref(),
         };
 
         let mut f = fs::File::create(new_path)?;
