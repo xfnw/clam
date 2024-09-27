@@ -1,6 +1,6 @@
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
-use std::{collections::HashMap, error::Error, fs, path::PathBuf};
+use std::{collections::HashMap, error::Error, fs, path::PathBuf, rc::Rc};
 
 pub type CreateMap = HashMap<PathBuf, (Time, String)>;
 pub type ModifyMap = HashMap<PathBuf, (Time, String, Option<String>)>;
@@ -93,6 +93,7 @@ pub fn walk_callback(
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
     titles: &mut HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
+    links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Box<dyn Error>> {
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
@@ -107,7 +108,7 @@ pub fn walk_callback(
         return Err(format!("skipping symlink {}{}", dir, name).into());
     }
 
-    crate::html::generate_page(dir, name, blob.content(), org_cfg, titles)?;
+    crate::html::generate_page(dir, name, blob.content(), org_cfg, titles, links)?;
 
     Ok(())
 }

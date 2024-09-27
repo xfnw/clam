@@ -1,9 +1,8 @@
 use git2::{Blob, Commit, Repository};
 use orgize::Org;
-use rowan::ast::AstNode;
 use std::path::{Path, PathBuf};
 
-use crate::shared::syntax_links;
+use crate::shared::org_links;
 
 pub mod dot;
 pub mod jsonindex;
@@ -20,9 +19,7 @@ where
 {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
-    let document = res.document();
-    let syntax = document.syntax();
-    syntax_links(syntax, name, callback);
+    org_links(&res, name, callback);
 }
 
 /// run a function on every org file in repository

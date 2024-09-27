@@ -1,4 +1,7 @@
-use crate::git::{CreateMap, ModifyMap};
+use crate::{
+    git::{CreateMap, ModifyMap},
+    shared::org_links,
+};
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
@@ -15,7 +18,8 @@ use std::{
     error::Error,
     fs,
     io::Write,
-    path::{Path, PathBuf},
+    path::PathBuf,
+    rc::Rc,
 };
 
 #[derive(boilerplate::Boilerplate)]
@@ -374,6 +378,7 @@ pub fn generate_page(
     file: &[u8],
     org_cfg: &ParseConfig,
     titles: &mut HashMap<PathBuf, (String, PathBuf, Org)>,
+    links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Box<dyn Error>> {
     let mut full_path: PathBuf = format!("{}{}", dir, name).into();
     if let Some("org") = full_path.extension().and_then(std::ffi::OsStr::to_str) {
@@ -381,6 +386,15 @@ pub fn generate_page(
         let res = org_cfg.clone().parse(fstr);
 
         let title = res.title().unwrap_or_else(|| "untitled".to_string());
+
+        let mypath = Rc::new(full_path.clone());
+        org_links(&res, &full_path, |l| {
+            if let Some(e) = links.get_mut(&l) {
+                e.push(mypath.clone());
+            } else {
+                links.insert(l, vec![mypath.clone()]);
+            }
+        });
 
         let old_path = full_path.clone();
         full_path.set_extension("html");
@@ -393,61 +407,60 @@ pub fn generate_page(
 }
 
 pub fn write_org_page(
-    new_path: &Path,
-    title: &str,
-    full_path: &Path,
-    res: &Org,
+    titles: &HashMap<PathBuf, (String, PathBuf, Org)>,
     ctime: &CreateMap,
     mtime: &ModifyMap,
+    links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     year_ago: i64,
     short_id: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let (created, author) = ctime.get(full_path).ok_or("missing creation time")?;
-    let modified = mtime.get(full_path).ok_or("missing modification time")?.0;
+    for (new_path, (title, old_path, res)) in titles {
+        let (created, author) = ctime.get(old_path).ok_or("missing creation time")?;
+        let modified = mtime.get(old_path).ok_or("missing modification time")?.0;
 
-    let author = get_keyword(res, "AUTHOR").unwrap_or_else(|| author.to_string());
-    let lang = get_keyword(res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
-    let year = if let Some(Ok(year)) = get_keyword(res, "YEAR").map(|k| k.parse()) {
-        year
-    } else {
-        DateTime::from_timestamp(created.seconds(), 0)
-            .ok_or("broken creation date")?
-            .naive_utc()
-            .year()
-    };
+        let author = get_keyword(res, "AUTHOR").unwrap_or_else(|| author.to_string());
+        let lang = get_keyword(res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
+        let year = if let Some(Ok(year)) = get_keyword(res, "YEAR").map(|k| k.parse()) {
+            year
+        } else {
+            DateTime::from_timestamp(created.seconds(), 0)
+                .ok_or("broken creation date")?
+                .naive_utc()
+                .year()
+        };
 
-    let numdir = full_path.iter().count();
+        let numdir = old_path.iter().count();
 
-    let mut html_export = Handler {
-        numdir,
-        ..Default::default()
-    };
-    res.traverse(&mut html_export);
+        let mut html_export = Handler {
+            numdir,
+            ..Default::default()
+        };
+        res.traverse(&mut html_export);
 
-    let notice = if modified.seconds() - year_ago < 0 {
-        Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
-    } else {
-        None
-    };
+        let notice = if modified.seconds() - year_ago < 0 {
+            Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+        } else {
+            None
+        };
 
-    let template = PageHtml {
-        title,
-        body: html_export.exp.finish(),
-        lang,
-        author: &author,
-        commit: short_id,
-        modified: DateTime::from_timestamp(modified.seconds(), 0)
-            .ok_or("broken modification date")?
-            .naive_utc(),
-        year,
-        numdir,
-        notice,
-        incoming: None,
-    };
+        let template = PageHtml {
+            title,
+            body: html_export.exp.finish(),
+            lang,
+            author: &author,
+            commit: short_id,
+            modified: DateTime::from_timestamp(modified.seconds(), 0)
+                .ok_or("broken modification date")?
+                .naive_utc(),
+            year,
+            numdir,
+            notice,
+            incoming: None,
+        };
 
-    let mut f = fs::File::create(new_path)?;
-    f.write_all(&template.to_string().into_bytes())?;
-
+        let mut f = fs::File::create(new_path)?;
+        f.write_all(&template.to_string().into_bytes())?;
+    }
     Ok(())
 }
 

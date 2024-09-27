@@ -1,4 +1,4 @@
-use orgize::{ast::Link, SyntaxNode};
+use orgize::{ast::Link, Org};
 use rowan::ast::AstNode;
 use std::path::{Component, Path, PathBuf};
 
@@ -6,10 +6,12 @@ use std::path::{Component, Path, PathBuf};
 ///
 /// will give mangled paths when encountering links to
 /// external resources.
-pub fn syntax_links<F>(syntax: &SyntaxNode, name: &Path, mut callback: F)
+pub fn org_links<F>(res: &Org, name: &Path, mut callback: F)
 where
     F: FnMut(PathBuf),
 {
+    let document = res.document();
+    let syntax = document.syntax();
     for descendant in syntax.descendants() {
         let Some(link) = Link::cast(descendant) else {
             continue;

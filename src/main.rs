@@ -93,19 +93,16 @@ fn generate(
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into()?;
     let mut titles = HashMap::new();
+    let mut links = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = git::walk_callback(repo, dir, entry, org_cfg, &mut titles) {
+        if let Err(e) = git::walk_callback(repo, dir, entry, org_cfg, &mut titles, &mut links) {
             eprintln!("{}", e);
         }
         0
     })?;
 
-    for (new_path, (title, old_path, res)) in &titles {
-        html::write_org_page(
-            new_path, title, old_path, res, &ctime, &mtime, year_ago, short_id,
-        )?;
-    }
+    html::write_org_page(&titles, &ctime, &mtime, &links, year_ago, short_id)?;
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml_edit::de::from_str(&config)?;
