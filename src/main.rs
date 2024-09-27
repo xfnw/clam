@@ -1,5 +1,3 @@
-#![allow(clippy::too_many_arguments)]
-
 use clap::{Args, Parser, Subcommand};
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
