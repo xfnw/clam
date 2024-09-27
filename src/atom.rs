@@ -48,12 +48,12 @@ impl fmt::Display for AtomDateTime {
 }
 
 pub fn entries<'a>(
-    titles: &'a HashMap<PathBuf, (String, PathBuf)>,
+    titles: &'a HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
     mtime: &'a ModifyMap,
 ) -> Result<Vec<AtomEntry<'a>>, Box<dyn std::error::Error>> {
     let mut entries = vec![];
 
-    for (path, (title, old)) in titles.iter() {
+    for (path, (title, old, _)) in titles.iter() {
         let path = match path.to_str() {
             Some(p) => p,
             None => continue,

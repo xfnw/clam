@@ -95,21 +95,17 @@ fn generate(
     let mut titles = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = git::walk_callback(
-            repo,
-            dir,
-            entry,
-            org_cfg,
-            &ctime,
-            &mtime,
-            year_ago,
-            short_id,
-            &mut titles,
-        ) {
+        if let Err(e) = git::walk_callback(repo, dir, entry, org_cfg, &mut titles) {
             eprintln!("{}", e);
         }
         0
     })?;
+
+    for (new_path, (title, old_path, res)) in &titles {
+        html::write_org_page(
+            new_path, title, old_path, res, &ctime, &mtime, year_ago, short_id,
+        )?;
+    }
 
     if let Ok(config) = fs::read_to_string(".clam.toml") {
         let config: ClamConfig = toml_edit::de::from_str(&config)?;

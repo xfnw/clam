@@ -92,11 +92,7 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
-    ctime: &CreateMap,
-    mtime: &ModifyMap,
-    year_ago: i64,
-    short_id: &str,
-    titles: &mut HashMap<PathBuf, (String, PathBuf)>,
+    titles: &mut HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
 ) -> Result<(), Box<dyn Error>> {
     let object = entry.to_object(repo)?;
     let name = entry.name().ok_or("invalid unicode in a file name")?;
@@ -111,17 +107,7 @@ pub fn walk_callback(
         return Err(format!("skipping symlink {}{}", dir, name).into());
     }
 
-    crate::html::generate_page(
-        dir,
-        name,
-        blob.content(),
-        org_cfg,
-        ctime,
-        mtime,
-        year_ago,
-        short_id,
-        titles,
-    )?;
+    crate::html::generate_page(dir, name, blob.content(), org_cfg, titles)?;
 
     Ok(())
 }

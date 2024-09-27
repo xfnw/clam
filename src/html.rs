@@ -5,15 +5,22 @@ use indexmap::IndexMap;
 use orgize::{
     ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
-    ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
+    Org, ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
 };
 use rowan::{ast::AstNode, NodeOrToken};
 use slugify::slugify;
-use std::{cmp::min, collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{
+    cmp::min,
+    collections::HashMap,
+    error::Error,
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 #[derive(boilerplate::Boilerplate)]
 pub struct PageHtml<'a> {
-    pub title: String,
+    pub title: &'a str,
     pub body: String,
     pub lang: String,
     pub author: &'a str,
@@ -366,81 +373,85 @@ pub fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
+    titles: &mut HashMap<PathBuf, (String, PathBuf, Org)>,
+) -> Result<(), Box<dyn Error>> {
+    let mut full_path: PathBuf = format!("{}{}", dir, name).into();
+    if let Some("org") = full_path.extension().and_then(std::ffi::OsStr::to_str) {
+        let fstr = std::str::from_utf8(file)?;
+        let res = org_cfg.clone().parse(fstr);
+
+        let title = res.title().unwrap_or_else(|| "untitled".to_string());
+
+        let old_path = full_path.clone();
+        full_path.set_extension("html");
+        titles.insert(full_path.clone(), (title, old_path, res));
+    } else {
+        let mut f = fs::File::create(full_path)?;
+        f.write_all(file)?;
+    }
+    Ok(())
+}
+
+pub fn write_org_page(
+    new_path: &Path,
+    title: &str,
+    full_path: &Path,
+    res: &Org,
     ctime: &CreateMap,
     mtime: &ModifyMap,
     year_ago: i64,
     short_id: &str,
-    titles: &mut HashMap<PathBuf, (String, PathBuf)>,
 ) -> Result<(), Box<dyn Error>> {
-    let mut full_path: PathBuf = format!("{}{}", dir, name).into();
-    let pcontent: Option<Vec<u8>> = match full_path.extension().and_then(std::ffi::OsStr::to_str) {
-        Some("org") => {
-            let fstr = std::str::from_utf8(file)?;
-            let res = org_cfg.clone().parse(fstr);
+    let (created, author) = ctime.get(full_path).ok_or("missing creation time")?;
+    let modified = mtime.get(full_path).ok_or("missing modification time")?.0;
 
-            let title = res.title().unwrap_or_else(|| "untitled".to_string());
-
-            let (created, author) = ctime.get(&full_path).ok_or("missing creation time")?;
-            let modified = mtime.get(&full_path).ok_or("missing modification time")?.0;
-
-            let author = get_keyword(&res, "AUTHOR").unwrap_or_else(|| author.to_string());
-            let lang = get_keyword(&res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
-            let year = if let Some(Ok(year)) = get_keyword(&res, "YEAR").map(|k| k.parse()) {
-                year
-            } else {
-                DateTime::from_timestamp(created.seconds(), 0)
-                    .ok_or("broken creation date")?
-                    .naive_utc()
-                    .year()
-            };
-
-            let numdir = full_path.iter().count();
-
-            let mut html_export = Handler {
-                numdir,
-                ..Default::default()
-            };
-            res.traverse(&mut html_export);
-
-            let notice = if modified.seconds() - year_ago < 0 {
-                Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
-            } else {
-                None
-            };
-
-            let template = PageHtml {
-                title: title.clone(),
-                body: html_export.exp.finish(),
-                lang,
-                author: &author,
-                commit: short_id,
-                modified: DateTime::from_timestamp(modified.seconds(), 0)
-                    .ok_or("broken modification date")?
-                    .naive_utc(),
-                year,
-                numdir,
-                notice,
-		incoming: None,
-            };
-
-            let old_path = full_path.clone();
-            full_path.set_extension("html");
-            titles.insert(full_path.clone(), (title, old_path));
-
-            Some(template.to_string().into_bytes())
-        }
-        _ => None,
+    let author = get_keyword(res, "AUTHOR").unwrap_or_else(|| author.to_string());
+    let lang = get_keyword(res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
+    let year = if let Some(Ok(year)) = get_keyword(res, "YEAR").map(|k| k.parse()) {
+        year
+    } else {
+        DateTime::from_timestamp(created.seconds(), 0)
+            .ok_or("broken creation date")?
+            .naive_utc()
+            .year()
     };
-    let content = match &pcontent {
-        Some(c) => c,
-        None => file,
+
+    let numdir = full_path.iter().count();
+
+    let mut html_export = Handler {
+        numdir,
+        ..Default::default()
     };
-    let mut f = fs::File::create(full_path)?;
-    f.write_all(content)?;
+    res.traverse(&mut html_export);
+
+    let notice = if modified.seconds() - year_ago < 0 {
+        Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+    } else {
+        None
+    };
+
+    let template = PageHtml {
+        title,
+        body: html_export.exp.finish(),
+        lang,
+        author: &author,
+        commit: short_id,
+        modified: DateTime::from_timestamp(modified.seconds(), 0)
+            .ok_or("broken modification date")?
+            .naive_utc(),
+        year,
+        numdir,
+        notice,
+        incoming: None,
+    };
+
+    let mut f = fs::File::create(new_path)?;
+    f.write_all(&template.to_string().into_bytes())?;
+
     Ok(())
 }
 
-pub fn get_keyword(res: &orgize::Org, keyword: &str) -> Option<String> {
+pub fn get_keyword(res: &Org, keyword: &str) -> Option<String> {
     res.keywords()
         .find(|k| k.key().eq_ignore_ascii_case(keyword))
         .map(|k| k.value().trim().to_string())
