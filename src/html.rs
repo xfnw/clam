@@ -292,12 +292,12 @@ impl Traverser for Handler {
                     };
                     let fnum = fnum + 1;
                     self.exp.push_str(format!(
-                        r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}">[{fnum}]</a></sup>"##
+                        r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</a></sup>"##
                     ));
                 }
                 ctx.skip();
             }
-            Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=\"example\">"),
+            Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=example>"),
             Event::Leave(Container::FixedWidth(_)) => self.exp.push_str("</pre>"),
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
@@ -314,7 +314,7 @@ impl Traverser for Handler {
                         self.exp.push_str("\n");
                         for r in 0..=*refs {
                             self.exp
-                                .push_str(format!("<a href=\"#fnr.{n}.{r}\">↩</a>\n"));
+                                .push_str(format!("<a href=\"#fnr.{n}.{r}\" role=doc-backlink>↩</a>\n"));
                         }
                         self.exp.push_str("</li>");
                     }
@@ -528,7 +528,7 @@ AAAA even more
         assert_eq!(
             exp.exp.finish(),
             r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA
-</div></div><p>i have a footnote<sup><a id="fnr.1.0" href="#fn.1">[1]</a></sup><sup><a id="fnr.2.0" href="#fn.2">[2]</a></sup>
+</div></div><p>i have a footnote<sup><a id="fnr.1.0" href="#fn.1" role=doc-noteref>[1]</a></sup><sup><a id="fnr.2.0" href="#fn.2" role=doc-noteref>[2]</a></sup>
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
 <a href="hmm/example.org/test.html#something">should also link to .html</a>
@@ -537,9 +537,9 @@ AAAA even more
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky"><div class=chat-text><span class=chat-nick role=figure aria-label="fox says">&lt;fox&gt;</span> AAAA even more
 </div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><h2>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
-<a href="#fnr.1.0">↩</a>
+<a href="#fnr.1.0" role=doc-backlink>↩</a>
 </li><li id="fn.2"> and *another* footnote
-<a href="#fnr.2.0">↩</a>
+<a href="#fnr.2.0" role=doc-backlink>↩</a>
 </li></ol></main>"##
         );
     }
