@@ -184,10 +184,10 @@ li p:nth-of-type(1) {
     color: #141415;
   }
   a {
-    color: #0000EE;
+    color: #0000ee;
   }
   a:visited {
-    color: #551A8B;
+    color: #551a8b;
   }
   :target {
     background-color: #ee8;
