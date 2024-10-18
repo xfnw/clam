@@ -313,8 +313,9 @@ impl Traverser for Handler {
                         }
                         self.exp.push_str("\n");
                         for r in 0..=*refs {
-                            self.exp
-                                .push_str(format!("<a href=\"#fnr.{n}.{r}\" role=doc-backlink>↩</a>\n"));
+                            self.exp.push_str(format!(
+                                "<a href=\"#fnr.{n}.{r}\" role=doc-backlink>↩</a>\n"
+                            ));
                         }
                         self.exp.push_str("</li>");
                     }
