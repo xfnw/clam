@@ -39,9 +39,11 @@ enum Commands {
 struct RepoArgs {
     #[arg(required = true)]
     repository: PathBuf,
-
     #[arg(default_value = "HEAD")]
     branch: String,
+    /// override base url in feeds
+    #[arg(long)]
+    url: Option<String>,
 }
 
 #[cfg(feature = "util")]
@@ -72,6 +74,7 @@ fn generate(
     org_cfg: &ParseConfig,
     repo: &Repository,
     commit: Commit,
+    override_url: Option<&str>,
 ) -> Result<(), Box<dyn Error>> {
     let short_id = commit.as_object().short_id().unwrap();
     let short_id = short_id.as_str().unwrap();
@@ -107,9 +110,10 @@ fn generate(
         if let Some(feeds) = config.feed {
             let entries = atom::entries(&titles, &mtime)?;
             let id = config.id.as_ref().unwrap_or(&config.url);
+            let url = override_url.unwrap_or(&config.url);
 
             for feed in feeds {
-                match atom::write_feed(&feed, id, &config.url, entries.as_slice()) {
+                match atom::write_feed(&feed, id, url, entries.as_slice()) {
                     Ok(_) => (),
                     Err(e) => eprintln!("skipping {}: {}", feed.path, e),
                 };
@@ -128,7 +132,7 @@ fn main() {
     let opt = Opt::parse();
 
     match &opt.command {
-        Commands::Build(args) => open_repo(args, do_build),
+        Commands::Build(args) => open_repo(args, |r, c| do_build(r, c, args)),
         #[cfg(feature = "util")]
         Commands::Preview(args) => do_preview(args),
         #[cfg(feature = "util")]
@@ -140,10 +144,11 @@ fn main() {
     }
 }
 
-fn do_build(repo: &Repository, commit: Commit) {
+fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
     let org_cfg = org_cfg();
+    let url = args.url.as_deref();
 
-    generate(&org_cfg, repo, commit).unwrap();
+    generate(&org_cfg, repo, commit, url).unwrap();
 }
 
 #[cfg(feature = "util")]
