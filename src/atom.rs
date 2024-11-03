@@ -1,4 +1,4 @@
-use crate::{git::ModifyMap, FeedConfig};
+use crate::{config::FeedConfig, git::ModifyMap};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use regex::RegexSet;

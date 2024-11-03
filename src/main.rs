@@ -1,10 +1,10 @@
 use clap::{Args, Parser, Subcommand};
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
-use serde::Deserialize;
 use std::{collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
+mod config;
 mod git;
 mod html;
 mod shared;
@@ -53,21 +53,6 @@ struct PreviewArgs {
     bindhost: std::net::SocketAddr,
 }
 
-#[derive(Deserialize, Debug)]
-struct ClamConfig {
-    id: Option<String>,
-    url: String,
-    feed: Option<Vec<FeedConfig>>,
-}
-
-#[derive(Deserialize, Debug)]
-struct FeedConfig {
-    title: String,
-    path: String,
-    include: Option<Vec<String>>,
-    exclude: Option<Vec<String>>,
-}
-
 static STYLESHEET: &[u8] = include_bytes!("style.css");
 
 fn generate(
@@ -103,27 +88,9 @@ fn generate(
         0
     })?;
 
+    let config = config::handle_config(&titles, &mtime, override_url);
+
     html::write_org_page(&titles, &ctime, &mtime, &links, year_ago, short_id)?;
-
-    if let Ok(config) = fs::read_to_string(".clam.toml") {
-        let config: ClamConfig = toml_edit::de::from_str(&config)?;
-        if let Some(feeds) = config.feed {
-            let entries = atom::entries(&titles, &mtime)?;
-            let id = config.id.as_ref().unwrap_or(&config.url);
-            let url = override_url.unwrap_or(&config.url);
-
-            for feed in feeds {
-                match atom::write_feed(&feed, id, url, entries.as_slice()) {
-                    Ok(_) => (),
-                    Err(e) => eprintln!("skipping {}: {}", feed.path, e),
-                };
-            }
-
-            return Ok(());
-        }
-    }
-
-    eprintln!("no configured feeds, skipping");
 
     Ok(())
 }
