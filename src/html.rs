@@ -1,4 +1,5 @@
 use crate::{
+    config::ClamConfig,
     git::{CreateMap, ModifyMap},
     shared::org_links,
 };
@@ -22,7 +23,7 @@ use std::{
     rc::Rc,
 };
 
-#[derive(boilerplate::Boilerplate)]
+#[derive(boilerplate::Boilerplate, Default)]
 pub struct PageHtml<'a> {
     pub title: &'a str,
     pub body: String,
@@ -34,6 +35,8 @@ pub struct PageHtml<'a> {
     pub numdir: usize,
     pub notice: Option<&'static str>,
     pub incoming: Option<&'a [(&'a str, &'a str)]>,
+    pub header: Option<&'a str>,
+    pub footer: Option<&'a str>,
 }
 
 type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
@@ -416,12 +419,16 @@ pub fn write_org_page(
     mtime: &ModifyMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
+    config: Option<&ClamConfig>,
 ) -> Result<(), Box<dyn Error>> {
     let year_ago = std::time::SystemTime::now()
         .duration_since(std::time::SystemTime::UNIX_EPOCH)?
         .as_secs()
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into()?;
+
+    let header = if let Some(conf) = config { conf.extra_header.as_deref() } else { None };
+    let footer = if let Some(conf) = config { conf.extra_footer.as_deref() } else { None };
 
     for (new_path, (title, old_path, res)) in titles {
         let (created, author) = ctime.get(old_path).ok_or("missing creation time")?;
@@ -477,6 +484,8 @@ pub fn write_org_page(
             numdir,
             notice,
             incoming: incoming.as_deref(),
+            header,
+            footer,
         };
 
         let mut f = fs::File::create(new_path)?;

@@ -86,7 +86,7 @@ fn generate(
 
     let config = config::handle_config(&titles, &mtime, override_url);
 
-    html::write_org_page(&titles, &ctime, &mtime, &links, short_id)?;
+    html::write_org_page(&titles, &ctime, &mtime, &links, short_id, config.as_ref())?;
 
     Ok(())
 }

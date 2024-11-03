@@ -118,10 +118,9 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
         author: "unknown (preview mode)",
         commit: "dirty",
         modified: DateTime::from_timestamp(0, 0).unwrap().naive_utc(),
-        year: 0,
         numdir,
         notice,
-        incoming: None,
+        ..Default::default()
     };
 
     Some(template.to_string())

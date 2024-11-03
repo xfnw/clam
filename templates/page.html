@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{% for _ in 1..self.numdir { %}../{% } %}style.css">
+%% if let Some(header) = self.header {
+{{ Trusted(header) }}
+%% }
 <title>{{ self.title }}</title>
 </head>
 <body>
@@ -28,6 +31,11 @@ incoming:
 &copy; {{ self.year }} <i>{{ self.author }}</i> and contributors.
 last modified <time>{{ self.modified }}</time>.
 generated from commit <code>{{ self.commit }}</code>.
+%% if let Some(footer) = self.footer {
+<div>
+{{ Trusted(footer) }}
+</div>
+%% }
 </footer>
 </body>
 </html>

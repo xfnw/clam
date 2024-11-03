@@ -7,6 +7,8 @@ use std::{collections::HashMap, fs, path::PathBuf};
 pub struct ClamConfig {
     pub id: Option<String>,
     pub url: String,
+    pub extra_header: Option<String>,
+    pub extra_footer: Option<String>,
     pub feed: Option<Vec<FeedConfig>>,
 }
 
