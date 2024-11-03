@@ -73,11 +73,6 @@ fn generate(
         f.write_all(STYLESHEET)?;
     }
 
-    let year_ago = std::time::SystemTime::now()
-        .duration_since(std::time::SystemTime::UNIX_EPOCH)?
-        .as_secs()
-        - 365 * 24 * 60 * 60;
-    let year_ago: i64 = year_ago.try_into()?;
     let mut titles = HashMap::new();
     let mut links = HashMap::new();
 
@@ -90,7 +85,7 @@ fn generate(
 
     let config = config::handle_config(&titles, &mtime, override_url);
 
-    html::write_org_page(&titles, &ctime, &mtime, &links, year_ago, short_id)?;
+    html::write_org_page(&titles, &ctime, &mtime, &links, short_id)?;
 
     Ok(())
 }

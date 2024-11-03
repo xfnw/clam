@@ -415,9 +415,14 @@ pub fn write_org_page(
     ctime: &CreateMap,
     mtime: &ModifyMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-    year_ago: i64,
     short_id: &str,
 ) -> Result<(), Box<dyn Error>> {
+    let year_ago = std::time::SystemTime::now()
+        .duration_since(std::time::SystemTime::UNIX_EPOCH)?
+        .as_secs()
+        - 365 * 24 * 60 * 60;
+    let year_ago: i64 = year_ago.try_into()?;
+
     for (new_path, (title, old_path, res)) in titles {
         let (created, author) = ctime.get(old_path).ok_or("missing creation time")?;
         let modified = mtime.get(old_path).ok_or("missing modification time")?.0;
