@@ -56,7 +56,6 @@ struct PreviewArgs {
 static STYLESHEET: &[u8] = include_bytes!("style.css");
 
 fn generate(
-    org_cfg: &ParseConfig,
     repo: &Repository,
     commit: Commit,
     override_url: Option<&str>,
@@ -75,9 +74,11 @@ fn generate(
 
     let mut titles = HashMap::new();
     let mut links = HashMap::new();
+    // TODO: get this stuff from .clam.toml or something
+    let org_cfg = default_org_cfg();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = git::walk_callback(repo, dir, entry, org_cfg, &mut titles, &mut links) {
+        if let Err(e) = git::walk_callback(repo, dir, entry, &org_cfg, &mut titles, &mut links) {
             eprintln!("{}", e);
         }
         0
@@ -107,15 +108,14 @@ fn main() {
 }
 
 fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
-    let org_cfg = org_cfg();
     let url = args.url.as_deref();
 
-    generate(&org_cfg, repo, commit, url).unwrap();
+    generate(repo, commit, url).unwrap();
 }
 
 #[cfg(feature = "util")]
 fn do_preview(args: &PreviewArgs) {
-    let org_cfg = org_cfg();
+    let org_cfg = default_org_cfg();
     util::preview::serve(&org_cfg, args.bindhost);
 }
 
@@ -138,8 +138,7 @@ where
     callback(&repo, commit);
 }
 
-fn org_cfg() -> ParseConfig {
-    // TODO: get this stuff from .clam.toml or something
+fn default_org_cfg() -> ParseConfig {
     ParseConfig {
         todo_keywords: (
             ["TODO", "PENDING", "DELAYED", "RERUN"]
