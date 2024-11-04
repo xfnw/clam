@@ -10,6 +10,8 @@ pub struct ClamConfig {
     pub extra_header: Option<String>,
     pub extra_footer: Option<String>,
     #[serde(default)]
+    pub show_navigation: bool,
+    #[serde(default)]
     pub feed: Vec<FeedConfig>,
 }
 
