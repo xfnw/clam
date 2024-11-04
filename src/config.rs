@@ -9,7 +9,8 @@ pub struct ClamConfig {
     pub url: String,
     pub extra_header: Option<String>,
     pub extra_footer: Option<String>,
-    pub feed: Option<Vec<FeedConfig>>,
+    #[serde(default)]
+    pub feed: Vec<FeedConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -27,12 +28,12 @@ pub fn handle_config(
 ) -> Option<ClamConfig> {
     let config = fs::read_to_string(".clam.toml").ok()?;
     let config: ClamConfig = toml_edit::de::from_str(&config).ok()?;
-    if let Some(ref feeds) = config.feed {
+    if !config.feed.is_empty() {
         let entries = atom::entries(titles, mtime).ok()?;
         let id = config.id.as_ref().unwrap_or(&config.url);
         let url = override_url.unwrap_or(&config.url);
 
-        for feed in feeds {
+        for feed in &config.feed {
             match atom::write_feed(feed, id, url, entries.as_slice()) {
                 Ok(_) => (),
                 Err(e) => eprintln!("skipping {}: {}", feed.path, e),
