@@ -89,6 +89,9 @@ fn generate(
     })?;
 
     let config = config::handle_config(&titles, &mtime, overrides);
+    if config.is_none() {
+        eprintln!("configless, no feeds generated and overrides ignored");
+    }
 
     html::write_org_page(&titles, &ctime, &mtime, &links, short_id, config.as_ref())?;
 

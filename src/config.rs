@@ -37,7 +37,13 @@ pub fn handle_config(
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {
     let config = fs::read_to_string(".clam.toml").ok()?;
-    let mut config: ClamConfig = toml_edit::de::from_str(&config).ok()?;
+    let mut config: ClamConfig = match toml_edit::de::from_str(&config) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("could not parse config: {e}");
+            return None;
+        }
+    };
     let url = overrides.url.unwrap_or(config.url);
     let id = config.id.as_ref().unwrap_or(&url);
 
