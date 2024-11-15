@@ -58,7 +58,7 @@ static STYLESHEET: &[u8] = include_bytes!("style.css");
 fn generate(
     repo: &Repository,
     commit: Commit,
-    override_url: Option<&str>,
+    overrides: config::OverrideConfig,
 ) -> Result<(), Box<dyn Error>> {
     let short_id = commit.as_object().short_id().unwrap();
     let short_id = short_id.as_str().unwrap();
@@ -84,7 +84,7 @@ fn generate(
         0
     })?;
 
-    let config = config::handle_config(&titles, &mtime, override_url);
+    let config = config::handle_config(&titles, &mtime, overrides);
 
     html::write_org_page(&titles, &ctime, &mtime, &links, short_id, config.as_ref())?;
 
@@ -108,9 +108,11 @@ fn main() {
 }
 
 fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
-    let url = args.url.as_deref();
+    let overrides = config::OverrideConfig {
+        url: args.url.clone(),
+    };
 
-    generate(repo, commit, url).unwrap();
+    generate(repo, commit, overrides).unwrap();
 }
 
 #[cfg(feature = "util")]

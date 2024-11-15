@@ -23,25 +23,33 @@ pub struct FeedConfig {
     pub exclude: Option<Vec<String>>,
 }
 
+#[derive(Debug)]
+pub struct OverrideConfig {
+    pub url: Option<String>,
+}
+
 pub fn handle_config(
     titles: &HashMap<PathBuf, (String, PathBuf, Org)>,
     mtime: &ModifyMap,
-    override_url: Option<&str>,
+    overrides: OverrideConfig,
 ) -> Option<ClamConfig> {
     let config = fs::read_to_string(".clam.toml").ok()?;
-    let config: ClamConfig = toml_edit::de::from_str(&config).ok()?;
+    let mut config: ClamConfig = toml_edit::de::from_str(&config).ok()?;
+    let url = overrides.url.unwrap_or(config.url);
+    let id = config.id.as_ref().unwrap_or(&url);
+
     if !config.feed.is_empty() {
         let entries = atom::entries(titles, mtime).ok()?;
-        let id = config.id.as_ref().unwrap_or(&config.url);
-        let url = override_url.unwrap_or(&config.url);
 
         for feed in &config.feed {
-            match atom::write_feed(feed, id, url, entries.as_slice()) {
+            match atom::write_feed(feed, id, &url, entries.as_slice()) {
                 Ok(_) => (),
                 Err(e) => eprintln!("skipping {}: {}", feed.path, e),
             };
         }
     }
+
+    config.url = url;
 
     Some(config)
 }
