@@ -12,6 +12,8 @@ pub struct ClamConfig {
     #[serde(default)]
     pub show_navigation: bool,
     #[serde(default)]
+    pub inline: bool,
+    #[serde(default)]
     pub feed: Vec<FeedConfig>,
 }
 
@@ -26,6 +28,7 @@ pub struct FeedConfig {
 #[derive(Debug)]
 pub struct OverrideConfig {
     pub url: Option<String>,
+    pub inline: Option<bool>,
 }
 
 pub fn handle_config(
@@ -50,6 +53,7 @@ pub fn handle_config(
     }
 
     config.url = url;
+    config.inline = overrides.inline.unwrap_or(config.inline);
 
     Some(config)
 }

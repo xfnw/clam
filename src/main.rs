@@ -44,6 +44,9 @@ struct RepoArgs {
     /// override base url in feeds
     #[arg(long)]
     url: Option<String>,
+    /// override inlining css
+    #[arg(long)]
+    inline: Option<bool>,
 }
 
 #[cfg(feature = "util")]
@@ -53,7 +56,8 @@ struct PreviewArgs {
     bindhost: std::net::SocketAddr,
 }
 
-static STYLESHEET: &[u8] = include_bytes!("style.css");
+static STYLESHEET_STR: &str = include_str!("style.css");
+static STYLESHEET: &[u8] = STYLESHEET_STR.as_bytes();
 
 fn generate(
     repo: &Repository,
@@ -110,6 +114,7 @@ fn main() {
 fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
     let overrides = config::OverrideConfig {
         url: args.url.clone(),
+        inline: args.inline,
     };
 
     generate(repo, commit, overrides).unwrap();

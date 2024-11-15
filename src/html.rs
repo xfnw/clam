@@ -2,6 +2,7 @@ use crate::{
     config::ClamConfig,
     git::{CreateMap, ModifyMap},
     shared::org_links,
+    STYLESHEET_STR,
 };
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
@@ -38,6 +39,7 @@ pub struct PageHtml<'a> {
     pub header: Option<&'a str>,
     pub footer: Option<&'a str>,
     pub nav: bool,
+    pub inline: bool,
 }
 
 type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
@@ -430,14 +432,15 @@ pub fn write_org_page(
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into()?;
 
-    let (header, footer, nav) = if let Some(conf) = config {
+    let (header, footer, nav, inline) = if let Some(conf) = config {
         (
             conf.extra_header.as_deref(),
             conf.extra_footer.as_deref(),
             conf.show_navigation,
+            conf.inline,
         )
     } else {
-        (None, None, false)
+        (None, None, false, false)
     };
 
     for (new_path, (title, old_path, res)) in titles {
@@ -497,6 +500,7 @@ pub fn write_org_page(
             header,
             footer,
             nav,
+            inline,
         };
 
         let mut f = fs::File::create(new_path)?;
