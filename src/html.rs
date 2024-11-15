@@ -247,6 +247,8 @@ impl Traverser for Handler {
                 self.exp.push_str("</details>");
                 ctx.skip();
             }
+            // FIXME: this is cursed, replace with fancy new footnote stuff once merged into orgize
+            // https://github.com/PoiScript/orgize/pull/84
             Event::Enter(Container::FnDef(foot)) => {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
                 if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
