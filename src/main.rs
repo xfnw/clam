@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
-use std::{collections::HashMap, error::Error, fs, io::Write, path::PathBuf};
+use std::{collections::HashMap, env::set_current_dir, error::Error, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod config;
@@ -41,6 +41,9 @@ struct RepoArgs {
     repository: PathBuf,
     #[arg(default_value = "HEAD")]
     branch: String,
+    /// change to directory after opening repository
+    #[arg(short = 'C', long, value_name = "TARGET")]
+    chdir: Option<PathBuf>,
     /// override base url in feeds
     #[arg(long)]
     url: Option<String>,
@@ -145,6 +148,11 @@ where
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
     let commit = commit.into_commit().unwrap();
+
+    if let Some(target) = &args.chdir {
+        set_current_dir(target).expect("changing directory");
+    }
+
     callback(&repo, commit);
 }
 
