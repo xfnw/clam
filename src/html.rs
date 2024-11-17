@@ -521,7 +521,7 @@ mod tests {
     use orgize::Org;
 
     #[test]
-    fn generate_html() {
+    fn snapshot_html() {
         let res = Org::parse(
             r#"#+TITLE: you should not see this
 * meow
