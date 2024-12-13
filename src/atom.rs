@@ -1,6 +1,7 @@
-use crate::{config::FeedConfig, git::ModifyMap};
+use crate::{config::FeedConfig, git::ModifyMap, shared::URL_UNSAFE};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
+use percent_encoding::utf8_percent_encode;
 use regex::RegexSet;
 use std::{cmp::min, collections::HashMap, fmt, fs, io::Write, path::PathBuf};
 

@@ -1,6 +1,20 @@
 use orgize::{ast::Link, Org};
+use percent_encoding::{AsciiSet, CONTROLS};
 use rowan::ast::AstNode;
 use std::path::{Component, Path, PathBuf};
+
+pub const URL_UNSAFE: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'%')
+    .add(b'<')
+    .add(b'>')
+    .add(b'\\')
+    .add(b'^')
+    .add(b'`')
+    .add(b'{')
+    .add(b'|')
+    .add(b'}');
 
 /// run a function on every link in a syntax tree
 ///
