@@ -116,3 +116,49 @@ pub fn write_feed(
     f.write_all(output.as_bytes())?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::atom::*;
+
+    #[test]
+    fn snapshot_feed() {
+        let entry = AtomEntry {
+            title: "hi – there",
+            path: "🦊.html",
+            author: "fox",
+            updated: AtomDateTime::new(1734116293).unwrap(),
+            summary: Some("did you know that foxes—which are very fluffy—exist?"),
+        };
+        let entries = [&entry];
+        let feed = FeedXml {
+            title: "🦊 feed",
+            id: "tag:foxes.invalid,2024-12-13:foxfeed",
+            url: "https://foxes.invalid",
+            path: "foxfeed.xml",
+            updated: &AtomDateTime::new(1734117526).unwrap(),
+            entries: &entries,
+        }
+        .to_string();
+
+        assert_eq!(
+            feed,
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title>🦊 feed</title>
+<id>tag:foxes.invalid,2024-12-13:foxfeed/foxfeed.xml</id>
+<link rel="self" href="https://foxes.invalid/foxfeed.xml"/>
+<updated>2024-12-13T19:18:46Z</updated>
+<entry>
+<title>hi – there</title>
+<id>tag:foxes.invalid,2024-12-13:foxfeed/%F0%9F%A6%8A.html</id>
+<link rel="alternate" href="https://foxes.invalid/%F0%9F%A6%8A.html"/>
+<author><name>fox</name></author>
+<updated>2024-12-13T18:58:13Z</updated>
+<summary>did you know that foxes—which are very fluffy—exist?</summary>
+</entry>
+</feed>
+"#
+        );
+    }
+}
