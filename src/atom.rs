@@ -77,6 +77,10 @@ pub fn entries<'a>(
     Ok(entries)
 }
 
+pub fn head_updated<'a>(entries: &'a [&'a AtomEntry<'a>]) -> Option<&'a AtomDateTime> {
+    Some(&entries.first()?.updated)
+}
+
 pub fn write_feed(
     feed: &FeedConfig,
     id: &str,
@@ -108,7 +112,7 @@ pub fn write_feed(
         id,
         url,
         path: &feed.path,
-        updated: &filt.first().ok_or("no entries in feed")?.updated,
+        updated: head_updated(&filt).ok_or("no entries in feed")?,
         entries: &filt[..min(filt.len(), 42)],
     }
     .to_string();
@@ -120,6 +124,32 @@ pub fn write_feed(
 #[cfg(test)]
 mod tests {
     use crate::atom::*;
+
+    #[test]
+    fn check_updated() {
+        assert!(head_updated(&[]).is_none());
+
+        let entry1 = AtomEntry {
+            title: "",
+            path: "",
+            author: "",
+            updated: AtomDateTime::new(1633462756).unwrap(),
+            summary: None,
+        };
+        let entry2 = AtomEntry {
+            title: "",
+            path: "",
+            author: "",
+            updated: AtomDateTime::new(1169707221).unwrap(),
+            summary: None,
+        };
+        let entries = [&entry1, &entry2];
+
+        assert_eq!(
+            head_updated(&entries).unwrap().to_string(),
+            "2021-10-05T19:39:16Z"
+        );
+    }
 
     #[test]
     fn snapshot_feed() {
