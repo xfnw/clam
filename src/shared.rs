@@ -16,6 +16,8 @@ pub const URL_UNSAFE: &AsciiSet = &CONTROLS
     .add(b'|')
     .add(b'}');
 
+pub const URL_PATH_UNSAFE: &AsciiSet = &URL_UNSAFE.add(b'#').add(b'?');
+
 /// run a function on every link in a syntax tree
 ///
 /// will give mangled paths when encountering links to

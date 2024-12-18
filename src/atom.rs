@@ -1,4 +1,4 @@
-use crate::{config::FeedConfig, git::ModifyMap, shared::URL_UNSAFE};
+use crate::{config::FeedConfig, git::ModifyMap, shared::URL_PATH_UNSAFE};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;

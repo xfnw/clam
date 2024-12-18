@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>{{ self.title }}</title>
-<id>{{ self.id }}/{{ utf8_percent_encode(self.path, URL_UNSAFE) }}</id>
-<link rel="self" href="{{ self.url }}/{{ utf8_percent_encode(self.path, URL_UNSAFE) }}"/>
+<id>{{ self.id }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}</id>
+<link rel="self" href="{{ self.url }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}"/>
 <updated>{{ self.updated }}</updated>
 %% for entry in self.entries {
 <entry>
 <title>{{ entry.title }}</title>
-<id>{{ self.id }}/{{ utf8_percent_encode(entry.path, URL_UNSAFE) }}</id>
-<link rel="alternate" href="{{ self.url }}/{{ utf8_percent_encode(entry.path, URL_UNSAFE) }}"/>
+<id>{{ self.id }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
+<link rel="alternate" href="{{ self.url }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
 <author><name>{{ entry.author }}</name></author>
 <updated>{{ entry.updated }}</updated>
 %% if let Some(summary) = entry.summary {
