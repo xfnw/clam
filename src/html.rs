@@ -176,9 +176,9 @@ impl Traverser for Handler {
 
                 if let Some(state) = checked {
                     self.exp.push_str(if state {
-                        "<input type=checkbox disabled checked /> "
+                        "<input type=checkbox disabled checked> "
                     } else {
-                        "<input type=checkbox disabled /> "
+                        "<input type=checkbox disabled> "
                     })
                 }
             }
@@ -335,6 +335,7 @@ impl Traverser for Handler {
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
+            Event::LineBreak(_) => self.exp.push_str("<br>"),
             _ => self.exp.event(event, ctx),
         };
     }

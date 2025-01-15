@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ self.lang }}">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1">
 %% if self.inline {
 <style>{{ Trusted(STYLESHEET_STR) }}</style>
 %% } else {
-<link rel="stylesheet" href="{% for _ in 1..self.numdir { %}../{% } %}style.css">
+<link rel=stylesheet href="{% for _ in 1..self.numdir { %}../{% } %}style.css">
 %% }
 %% if let Some(header) = self.header {
 {{ Trusted(header) }}
