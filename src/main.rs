@@ -61,6 +61,7 @@ struct PreviewArgs {
 
 static STYLESHEET_STR: &str = include_str!("style.css");
 static STYLESHEET: &[u8] = STYLESHEET_STR.as_bytes();
+static STYLEFEED: &[u8] = include_bytes!("style.xsl");
 
 fn generate(
     repo: &Repository,
@@ -77,6 +78,8 @@ fn generate(
     {
         let mut f = fs::File::create("style.css")?;
         f.write_all(STYLESHEET)?;
+        let mut f = fs::File::create("style.xsl")?;
+        f.write_all(STYLEFEED)?;
     }
 
     let mut titles = HashMap::new();

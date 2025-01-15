@@ -3,7 +3,13 @@ use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
 use regex::RegexSet;
-use std::{cmp::min, collections::HashMap, fmt, fs, io::Write, path::PathBuf};
+use std::{
+    cmp::min,
+    collections::HashMap,
+    fmt, fs,
+    io::Write,
+    path::{Component, PathBuf},
+};
 
 #[derive(boilerplate::Boilerplate)]
 pub struct FeedXml<'a> {
@@ -11,6 +17,7 @@ pub struct FeedXml<'a> {
     pub id: &'a str,
     pub url: &'a str,
     pub path: &'a str,
+    pub numdir: usize,
     pub updated: &'a AtomDateTime,
     pub entries: &'a [&'a AtomEntry<'a>],
 }
@@ -87,9 +94,17 @@ pub fn write_feed(
     url: &str,
     entries: &[AtomEntry],
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if feed.path.starts_with('/') || feed.path.contains("./") {
+    if feed.path.components().any(|s| {
+        matches!(
+            s,
+            Component::RootDir | Component::ParentDir | Component::CurDir
+        )
+    }) {
         return Err("invalid feed path".into());
     }
+    let Some(path) = feed.path.to_str() else {
+        return Err("non-utf8 feed paths are not supported".into());
+    };
 
     let include = if let Some(e) = &feed.include {
         RegexSet::new(e)?
@@ -106,12 +121,14 @@ pub fn write_feed(
         .iter()
         .filter(|e| include.is_match(e.path) && !exclude.is_match(e.path))
         .collect();
+    let numdir = feed.path.iter().count();
 
     let output = FeedXml {
         title: &feed.title,
         id,
         url,
-        path: &feed.path,
+        path,
+        numdir,
         updated: head_updated(&filt).ok_or("no entries in feed")?,
         entries: &filt[..min(filt.len(), 42)],
     }
@@ -166,6 +183,7 @@ mod tests {
             id: "tag:foxes.invalid,2024-12-13:foxfeed",
             url: "https://foxes.invalid",
             path: "foxfeed.xml",
+            numdir: 6,
             updated: &AtomDateTime::new(1734117526).unwrap(),
             entries: &entries,
         }
@@ -174,6 +192,7 @@ mod tests {
         assert_eq!(
             feed,
             r#"<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="../../../../../style.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>🦊 feed</title>
 <id>tag:foxes.invalid,2024-12-13:foxfeed/foxfeed.xml</id>

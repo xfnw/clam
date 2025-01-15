@@ -20,7 +20,7 @@ pub struct ClamConfig {
 #[derive(Deserialize, Debug)]
 pub struct FeedConfig {
     pub title: String,
-    pub path: String,
+    pub path: PathBuf,
     pub include: Option<Vec<String>>,
     pub exclude: Option<Vec<String>>,
 }
@@ -53,7 +53,7 @@ pub fn handle_config(
         for feed in &config.feed {
             match atom::write_feed(feed, id, &url, entries.as_slice()) {
                 Ok(_) => (),
-                Err(e) => eprintln!("skipping {}: {}", feed.path, e),
+                Err(e) => eprintln!("skipping {}: {}", feed.path.display(), e),
             };
         }
     }
