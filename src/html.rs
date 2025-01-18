@@ -1,7 +1,7 @@
 use crate::{
     config::ClamConfig,
     git::{CreateMap, ModifyMap},
-    shared::org_links,
+    helpers::org_links,
     STYLESHEET_STR,
 };
 use chrono::{DateTime, Datelike, NaiveDateTime};

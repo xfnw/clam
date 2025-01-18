@@ -2,7 +2,7 @@ use git2::{Blob, Commit, Repository};
 use orgize::Org;
 use std::path::{Path, PathBuf};
 
-use crate::shared::org_links;
+use crate::helpers::org_links;
 
 pub mod dot;
 pub mod jsonindex;

@@ -6,9 +6,9 @@ use std::{collections::HashMap, env::set_current_dir, error::Error, fs, io::Writ
 mod atom;
 mod config;
 mod git;
+mod helpers;
 mod html;
 mod prereceive;
-mod shared;
 #[cfg(feature = "util")]
 mod util;
 
