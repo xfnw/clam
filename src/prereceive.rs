@@ -110,6 +110,10 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
     let tree = commit.tree().map_err(Error::Git)?;
     let parents = commit.parent_count();
 
+    if parents == 0 {
+        return Err(Error::ForcePush);
+    }
+
     for parent in 0..parents {
         let ptree = commit
             .parent(parent)
