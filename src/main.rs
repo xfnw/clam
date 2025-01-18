@@ -7,6 +7,7 @@ mod atom;
 mod config;
 mod git;
 mod html;
+mod prereceive;
 mod shared;
 #[cfg(feature = "util")]
 mod util;
@@ -33,6 +34,8 @@ enum Commands {
     /// output links between pages in graphviz dot format
     #[cfg(feature = "util")]
     Dot(RepoArgs),
+    /// hook for filtering incoming git pushes
+    PreReceive(PreReceiveArgs),
 }
 
 #[derive(Debug, Args)]
@@ -57,6 +60,29 @@ struct RepoArgs {
 struct PreviewArgs {
     #[arg(default_value = "[::]:8086")]
     bindhost: std::net::SocketAddr,
+}
+
+#[derive(Debug, Args)]
+struct PreReceiveArgs {
+    /// require commits to be signed (does not verify signatures)
+    #[arg(long)]
+    require_signing: bool,
+    /// do not allow any pages to be deleted
+    #[arg(long)]
+    no_deletion: bool,
+    /// do not allow any new pages to be created
+    #[arg(long)]
+    no_creation: bool,
+    /// require that paths of edited pages match this set of regexes
+    ///
+    /// may be specified multiple times for multiple patterns
+    #[arg(long, value_name = "PATTERN", default_value = ".")]
+    allow_pattern: Vec<String>,
+    /// do not allow edits to paths matching this set of regexes
+    ///
+    /// may be specified multiple times for multiple patterns
+    #[arg(long, value_name = "PATTERN")]
+    protect_pattern: Vec<String>,
 }
 
 static STYLESHEET_STR: &str = include_str!("style.css");
@@ -117,6 +143,7 @@ fn main() {
         Commands::Jsonindex(args) => open_repo(args, util::jsonindex::print_index),
         #[cfg(feature = "util")]
         Commands::Dot(args) => open_repo(args, util::dot::print_dot),
+        Commands::PreReceive(args) => prereceive::hook(args),
     }
 }
 
