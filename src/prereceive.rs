@@ -1,7 +1,7 @@
 use crate::PreReceiveArgs;
 use git2::{Delta, Oid, Repository};
 use regex::RegexSet;
-use std::{fmt, io};
+use std::io;
 
 #[derive(Debug)]
 pub enum Action {
@@ -10,41 +10,32 @@ pub enum Action {
     Modify,
 }
 
-#[derive(Debug)]
+#[derive(Debug, foxerror::FoxError)]
 pub enum Error {
+    /// invalid input. this is being used as a git hook, yes?
     InvalidInput,
+    /// force-pushes are not permitted
     ForcePush,
+    /// paths that are not utf-8 are not supported
     NonUTF8Path,
+    /// signing your commits is required
     NotSigned,
+    /// deleting pages is not permitted
     BadDelete(String),
+    /// creating pages is not permitted
     BadCreate(String),
+    /// editing this page is not permitted
     NotAllowed(String),
+    /// page is protected
     Protected(String),
+    /// creating new refs is not permitted
     CreateRef(String),
+    /// failed to compile regex
     BadRegex(regex::Error),
+    /// failed to read stdin
     Stdin(io::Error),
+    /// internal git error
     Git(git2::Error),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::InvalidInput => {
-                write!(f, "invalid input. this is being used as a git hook, yes?")
-            }
-            Error::ForcePush => write!(f, "force-pushes are not permitted"),
-            Error::NonUTF8Path => write!(f, "paths that are not utf-8 are not supported"),
-            Error::NotSigned => write!(f, "signing your commits is required"),
-            Error::BadDelete(p) => write!(f, "deleting pages is not permitted: {p}"),
-            Error::BadCreate(p) => write!(f, "creating pages is not permitted: {p}"),
-            Error::NotAllowed(p) => write!(f, "editing this page is not permitted: {p}"),
-            Error::Protected(p) => write!(f, "page is protected: {p}"),
-            Error::CreateRef(r) => write!(f, "creating new refs is not permitted: {r}"),
-            Error::BadRegex(e) => write!(f, "failed to compile regex: {e}"),
-            Error::Stdin(e) => write!(f, "failed to read stdin: {e}"),
-            Error::Git(e) => write!(f, "internal git error: {e}"),
-        }
-    }
 }
 
 #[derive(Debug)]

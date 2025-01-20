@@ -82,6 +82,7 @@ dependencies = [
  "boilerplate",
  "chrono",
  "clap",
+ "foxerror",
  "git2",
  "html-escaper",
  "indexmap",
@@ -205,6 +206,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "foxerror"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98e5e49ab5d067dc252b7f3b42f99f8cc5738e43f9cf2855fa8ac66f5179fb83"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
