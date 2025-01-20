@@ -1,4 +1,4 @@
-use crate::{config::FeedConfig, git::ModifyMap, helpers::URL_PATH_UNSAFE};
+use crate::{config::FeedConfig, git::ModifyMap, helpers::URL_PATH_UNSAFE, Error};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
@@ -58,7 +58,7 @@ impl fmt::Display for AtomDateTime {
 pub fn entries<'a>(
     titles: &'a HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
     mtime: &'a ModifyMap,
-) -> Result<Vec<AtomEntry<'a>>, Box<dyn std::error::Error>> {
+) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
     for (path, (title, old, _)) in titles.iter() {
@@ -67,8 +67,8 @@ pub fn entries<'a>(
             None => continue,
         };
 
-        let (updated, author, summary) = mtime.get(old).ok_or("missing modification info")?;
-        let updated = AtomDateTime::new(updated.seconds()).ok_or("broken modification date")?;
+        let (updated, author, summary) = mtime.get(old).ok_or(Error::NoModifyTime)?;
+        let updated = AtomDateTime::new(updated.seconds()).ok_or(Error::BadModifyTime)?;
         let summary = summary.as_deref();
 
         entries.push(AtomEntry {
@@ -93,26 +93,26 @@ pub fn write_feed(
     id: &str,
     url: &str,
     entries: &[AtomEntry],
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Error> {
     if feed.path.components().any(|s| {
         matches!(
             s,
             Component::RootDir | Component::ParentDir | Component::CurDir
         )
     }) {
-        return Err("invalid feed path".into());
+        return Err(Error::BadFeedPath);
     }
     let Some(path) = feed.path.to_str() else {
-        return Err("non-utf8 feed paths are not supported".into());
+        return Err(Error::NonUTF8Path);
     };
 
     let include = if let Some(e) = &feed.include {
-        RegexSet::new(e)?
+        RegexSet::new(e).map_err(Error::BadRegex)?
     } else {
-        RegexSet::new([r"."])?
+        RegexSet::new([r"."]).map_err(Error::BadRegex)?
     };
     let exclude = if let Some(e) = &feed.exclude {
-        RegexSet::new(e)?
+        RegexSet::new(e).map_err(Error::BadRegex)?
     } else {
         RegexSet::empty()
     };
@@ -129,12 +129,12 @@ pub fn write_feed(
         url,
         path,
         numdir,
-        updated: head_updated(&filt).ok_or("no entries in feed")?,
+        updated: head_updated(&filt).ok_or(Error::EmptyFeed)?,
         entries: &filt[..min(filt.len(), 42)],
     }
     .to_string();
-    let mut f = fs::File::create(&feed.path)?;
-    f.write_all(output.as_bytes())?;
+    let mut f = fs::File::create(&feed.path).map_err(Error::File)?;
+    f.write_all(output.as_bytes()).map_err(Error::File)?;
     Ok(())
 }
 

@@ -1,18 +1,16 @@
+use crate::Error;
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
-use std::{collections::HashMap, error::Error, fs, path::PathBuf, rc::Rc};
+use std::{collections::HashMap, fs, path::PathBuf, rc::Rc};
 
 pub type CreateMap = HashMap<PathBuf, (Time, String)>;
 pub type ModifyMap = HashMap<PathBuf, (Time, String, Option<String>)>;
 
-pub fn make_time_tree(
-    repo: &Repository,
-    oid: Oid,
-) -> Result<(CreateMap, ModifyMap), Box<dyn Error>> {
+pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyMap), Error> {
     macro_rules! add_times {
         ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
             for change in $diff.deltas() {
-                let path = change.new_file().path().ok_or("broken path")?;
+                let path = change.new_file().path().ok_or(Error::BadGitPath)?;
                 if let Some(entry) = $modify_time.get_mut(path) {
                     if entry.0 < $time_c {
                         entry.0 = $time_c.clone();
@@ -37,26 +35,30 @@ pub fn make_time_tree(
         };
     }
 
-    let mut revwalk = repo.revwalk()?;
-    revwalk.push(oid)?;
-    revwalk.set_sorting(git2::Sort::TIME)?;
+    let mut revwalk = repo.revwalk().map_err(Error::Git)?;
+    revwalk.push(oid).map_err(Error::Git)?;
+    revwalk.set_sorting(git2::Sort::TIME).map_err(Error::Git)?;
 
     let mut create_time: CreateMap = HashMap::new();
     let mut modify_time: ModifyMap = HashMap::new();
 
     for cid in revwalk {
-        let commit = repo.find_commit(cid?)?;
-        let tree = commit.tree()?;
+        let commit = repo
+            .find_commit(cid.map_err(Error::Git)?)
+            .map_err(Error::Git)?;
+        let tree = commit.tree().map_err(Error::Git)?;
         let parents = commit.parent_count();
         let message = commit.message().map(|s| s.to_string());
         let author = commit.author();
         let time_a = author.when();
         let time_c = commit.time();
-        let author = author.name().ok_or("broken author")?;
+        let author = author.name().ok_or(Error::BadAuthor)?;
 
         // initial commit, everything touched
         if parents == 0 {
-            let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
+            let diff = repo
+                .diff_tree_to_tree(None, Some(&tree), None)
+                .map_err(Error::Git)?;
             add_times!(
                 time_a,
                 time_c,
@@ -70,8 +72,14 @@ pub fn make_time_tree(
         }
 
         for parent in 0..parents {
-            let ptree = commit.parent(parent)?.tree()?;
-            let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
+            let ptree = commit
+                .parent(parent)
+                .map_err(Error::Git)?
+                .tree()
+                .map_err(Error::Git)?;
+            let diff = repo
+                .diff_tree_to_tree(Some(&ptree), Some(&tree), None)
+                .map_err(Error::Git)?;
             add_times!(
                 time_a,
                 time_c,
@@ -94,18 +102,18 @@ pub fn walk_callback(
     org_cfg: &ParseConfig,
     titles: &mut HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-) -> Result<(), Box<dyn Error>> {
-    let object = entry.to_object(repo)?;
-    let name = entry.name().ok_or("invalid unicode in a file name")?;
+) -> Result<(), Error> {
+    let object = entry.to_object(repo).map_err(Error::Git)?;
+    let name = entry.name().ok_or(Error::NonUTF8Path)?;
 
     let Ok(blob) = object.into_blob() else {
         // is probably a directory
-        fs::create_dir_all(format!("{}{}/", dir, name))?;
+        fs::create_dir_all(format!("{}{}/", dir, name)).map_err(Error::Dir)?;
         return Ok(());
     };
 
     if 0o120000 == entry.filemode() {
-        return Err(format!("skipping symlink {}{}", dir, name).into());
+        return Err(Error::SkipSymlink(format!("{}{}", dir, name)));
     }
 
     crate::html::generate_page(dir, name, blob.content(), org_cfg, titles, links)?;

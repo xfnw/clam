@@ -1,7 +1,8 @@
 use clap::{Args, Parser, Subcommand};
+use foxerror::FoxError;
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
-use std::{collections::HashMap, env::set_current_dir, error::Error, fs, io::Write, path::PathBuf};
+use std::{collections::HashMap, env::set_current_dir, fs, io::Write, path::PathBuf};
 
 mod atom;
 mod config;
@@ -85,6 +86,60 @@ struct PreReceiveArgs {
     protect_pattern: Vec<String>,
 }
 
+#[derive(Debug, FoxError)]
+enum Error {
+    /// invalid input. this is being used as a git hook, yes?
+    InvalidHookInput,
+    /// force-pushes are not permitted
+    ForcePush,
+    /// paths that are not utf-8 are not supported
+    NonUTF8Path,
+    /// signing your commits is required
+    NotSigned,
+    /// deleting pages is not permitted
+    BadDelete(String),
+    /// creating pages is not permitted
+    BadCreate(String),
+    /// editing this page is not permitted
+    NotAllowed(String),
+    /// page is protected
+    Protected(String),
+    /// creating new refs is not permitted
+    CreateRef(String),
+    /// failed to compile regex
+    BadRegex(regex::Error),
+    /// failed to read stdin
+    Stdin(std::io::Error),
+    /// internal git error
+    Git(git2::Error),
+    /// failed to write file
+    File(std::io::Error),
+    /// failed to write directory
+    Dir(std::io::Error),
+    /// your system clock is screwed
+    Clock(std::time::SystemTimeError),
+    /// missing creation time
+    NoCreateTime,
+    /// missing modification time
+    NoModifyTime,
+    /// creation time broken
+    BadCreateTime,
+    /// modification time broken
+    BadModifyTime,
+    /// stop using 300 billion year old software
+    TimeOverflow,
+    /// invalid feed path
+    BadFeedPath,
+    /// no entries in feed
+    EmptyFeed,
+    /// invalid path in git repository
+    BadGitPath,
+    /// broken author
+    BadAuthor,
+    /// skipping symlink
+    SkipSymlink(String),
+}
+
 static STYLESHEET_STR: &str = include_str!("style.css");
 static STYLESHEET: &[u8] = STYLESHEET_STR.as_bytes();
 static STYLEFEED: &[u8] = include_bytes!("style.xsl");
@@ -93,7 +148,7 @@ fn generate(
     repo: &Repository,
     commit: Commit,
     overrides: config::OverrideConfig,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Error> {
     let short_id = commit.as_object().short_id().unwrap();
     let short_id = short_id.as_str().unwrap();
     let oid = commit.id();
@@ -102,10 +157,10 @@ fn generate(
     let (ctime, mtime) = git::make_time_tree(repo, oid)?;
 
     {
-        let mut f = fs::File::create("style.css")?;
-        f.write_all(STYLESHEET)?;
-        let mut f = fs::File::create("style.xsl")?;
-        f.write_all(STYLEFEED)?;
+        let mut f = fs::File::create("style.css").map_err(Error::File)?;
+        f.write_all(STYLESHEET).map_err(Error::File)?;
+        let mut f = fs::File::create("style.xsl").map_err(Error::File)?;
+        f.write_all(STYLEFEED).map_err(Error::File)?;
     }
 
     let mut titles = HashMap::new();
@@ -118,7 +173,8 @@ fn generate(
             eprintln!("{}", e);
         }
         0
-    })?;
+    })
+    .map_err(Error::Git)?;
 
     let config = config::handle_config(&titles, &mtime, overrides);
     if config.is_none() {
@@ -153,7 +209,10 @@ fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
         inline: args.inline,
     };
 
-    generate(repo, commit, overrides).unwrap();
+    if let Err(e) = generate(repo, commit, overrides) {
+        eprintln!("failed to generate: {}", e);
+        std::process::exit(1);
+    }
 }
 
 #[cfg(feature = "util")]

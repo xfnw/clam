@@ -2,7 +2,7 @@ use crate::{
     config::ClamConfig,
     git::{CreateMap, ModifyMap},
     helpers::org_links,
-    STYLESHEET_STR,
+    Error, STYLESHEET_STR,
 };
 use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
@@ -17,7 +17,6 @@ use slugify::slugify;
 use std::{
     cmp::min,
     collections::{HashMap, HashSet},
-    error::Error,
     fs,
     io::Write,
     path::PathBuf,
@@ -389,10 +388,10 @@ pub fn generate_page(
     org_cfg: &ParseConfig,
     titles: &mut HashMap<PathBuf, (String, PathBuf, Org)>,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{}{}", dir, name).into();
     if let Some("org") = full_path.extension().and_then(std::ffi::OsStr::to_str) {
-        let fstr = std::str::from_utf8(file)?;
+        let fstr = std::str::from_utf8(file).map_err(|_| Error::NonUTF8Path)?;
         let res = org_cfg.clone().parse(fstr);
 
         let title = res.title().unwrap_or_else(|| "untitled".to_string());
@@ -413,8 +412,8 @@ pub fn generate_page(
 
         titles.insert(full_path, (title, old_path, res));
     } else {
-        let mut f = fs::File::create(full_path)?;
-        f.write_all(file)?;
+        let mut f = fs::File::create(full_path).map_err(Error::File)?;
+        f.write_all(file).map_err(Error::File)?;
     }
     Ok(())
 }
@@ -426,12 +425,13 @@ pub fn write_org_page(
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
     config: Option<&ClamConfig>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Error> {
     let year_ago = std::time::SystemTime::now()
-        .duration_since(std::time::SystemTime::UNIX_EPOCH)?
+        .duration_since(std::time::SystemTime::UNIX_EPOCH)
+        .map_err(Error::Clock)?
         .as_secs()
         - 365 * 24 * 60 * 60;
-    let year_ago: i64 = year_ago.try_into()?;
+    let year_ago: i64 = year_ago.try_into().map_err(|_| Error::TimeOverflow)?;
 
     let (header, footer, nav, inline) = if let Some(conf) = config {
         (
@@ -445,8 +445,8 @@ pub fn write_org_page(
     };
 
     for (new_path, (title, old_path, res)) in titles {
-        let (created, author) = ctime.get(old_path).ok_or("missing creation time")?;
-        let modified = mtime.get(old_path).ok_or("missing modification time")?.0;
+        let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
+        let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
 
         let author = get_keyword(res, "AUTHOR").unwrap_or_else(|| author.to_string());
         let lang = get_keyword(res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
@@ -454,7 +454,7 @@ pub fn write_org_page(
             year
         } else {
             DateTime::from_timestamp(created.seconds(), 0)
-                .ok_or("broken creation date")?
+                .ok_or(Error::BadCreateTime)?
                 .naive_utc()
                 .year()
         };
@@ -492,7 +492,7 @@ pub fn write_org_page(
             author: &author,
             commit: short_id,
             modified: DateTime::from_timestamp(modified.seconds(), 0)
-                .ok_or("broken modification date")?
+                .ok_or(Error::BadModifyTime)?
                 .naive_utc(),
             year,
             numdir,
@@ -504,8 +504,9 @@ pub fn write_org_page(
             inline,
         };
 
-        let mut f = fs::File::create(new_path)?;
-        f.write_all(&template.to_string().into_bytes())?;
+        let mut f = fs::File::create(new_path).map_err(Error::File)?;
+        f.write_all(&template.to_string().into_bytes())
+            .map_err(Error::File)?;
     }
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::PreReceiveArgs;
+use crate::{Error, PreReceiveArgs};
 use git2::{Delta, Oid, Repository};
 use regex::RegexSet;
 use std::io;
@@ -8,34 +8,6 @@ pub enum Action {
     Create,
     Delete,
     Modify,
-}
-
-#[derive(Debug, foxerror::FoxError)]
-pub enum Error {
-    /// invalid input. this is being used as a git hook, yes?
-    InvalidInput,
-    /// force-pushes are not permitted
-    ForcePush,
-    /// paths that are not utf-8 are not supported
-    NonUTF8Path,
-    /// signing your commits is required
-    NotSigned,
-    /// deleting pages is not permitted
-    BadDelete(String),
-    /// creating pages is not permitted
-    BadCreate(String),
-    /// editing this page is not permitted
-    NotAllowed(String),
-    /// page is protected
-    Protected(String),
-    /// creating new refs is not permitted
-    CreateRef(String),
-    /// failed to compile regex
-    BadRegex(regex::Error),
-    /// failed to read stdin
-    Stdin(io::Error),
-    /// internal git error
-    Git(git2::Error),
 }
 
 #[derive(Debug)]
@@ -142,7 +114,7 @@ fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
         let line = line.map_err(Error::Stdin)?;
         let split: Vec<_> = line.split(' ').collect();
         let [old, new, refname] = split[..] else {
-            return Err(Error::InvalidInput);
+            return Err(Error::InvalidHookInput);
         };
 
         let old = Oid::from_str(old).map_err(Error::Git)?;
