@@ -22,7 +22,7 @@
 				</xsl:attribute>
 				<xsl:value-of select="atom:title"/>
 			</a></h2>
-			<small>
+			<span>
 				updated
 				<time>
 					<xsl:attribute name="datetime">
@@ -34,7 +34,7 @@
 				<i>
 					<xsl:value-of select="atom:author"/>
 				</i>
-			</small>
+			</span>
 			<pre><xsl:value-of select="atom:summary"/></pre>
 		</article>
 		</xsl:for-each>
