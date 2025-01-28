@@ -53,7 +53,7 @@ rankdir=LR;"
 
     for page in pages {
         let pname = DotEscape(page.to_str().unwrap());
-        println!("{};", pname);
+        println!("{pname};");
         if let Some(inlinks) = links.get(page.as_ref()) {
             for link in inlinks {
                 println!("{} -> {};", DotEscape(link.to_str().unwrap()), pname);

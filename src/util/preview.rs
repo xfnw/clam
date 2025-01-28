@@ -15,7 +15,7 @@ pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
 
     // we cannot print the actual listener address, MicroHTTP does
     // not expose that... no listening on port 0 i guess :(
-    println!("listening on {}", bindhost);
+    println!("listening on {bindhost}");
 
     while let Ok(Some(client)) = server.next_client() {
         match handle_request(client, org_cfg) {

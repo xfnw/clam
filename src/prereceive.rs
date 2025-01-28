@@ -143,7 +143,7 @@ fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
 
 pub fn hook(args: &PreReceiveArgs) {
     if let Err(e) = handle(args) {
-        println!("rejecting push: {}", e);
+        println!("rejecting push: {e}");
         std::process::exit(1);
     }
 }

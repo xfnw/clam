@@ -170,7 +170,7 @@ fn generate(
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
         if let Err(e) = git::walk_callback(repo, dir, entry, &org_cfg, &mut titles, &mut links) {
-            eprintln!("{}", e);
+            eprintln!("{e}");
         }
         0
     })
@@ -210,7 +210,7 @@ fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
     };
 
     if let Err(e) = generate(repo, commit, overrides) {
-        eprintln!("failed to generate: {}", e);
+        eprintln!("failed to generate: {e}");
         std::process::exit(1);
     }
 }
@@ -249,10 +249,10 @@ fn default_org_cfg() -> ParseConfig {
     ParseConfig {
         todo_keywords: (
             ["TODO", "PENDING", "DELAYED", "RERUN"]
-                .map(|s| s.to_string())
+                .map(str::to_string)
                 .to_vec(),
             ["DONE", "RESOLVED", "FIXED", "WONTFIX"]
-                .map(|s| s.to_string())
+                .map(str::to_string)
                 .to_vec(),
         ),
         use_sub_superscript: UseSubSuperscript::Brace,

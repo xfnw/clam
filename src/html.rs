@@ -60,14 +60,13 @@ impl Traverser for Handler {
                 let id = generate_headline_id(&headline);
 
                 self.exp
-                    .push_str(format!("<h{} tabindex=-1 id=\"{}\">", lvl, id));
+                    .push_str(format!("<h{lvl} tabindex=-1 id=\"{id}\">"));
                 self.output_headline_todo(&headline);
                 for e in headline.title() {
                     self.element(e, ctx);
                 }
                 self.exp.push_str(format!(
-                    r##" <a class=see-focus href="#{}" aria-label="permalink to section">¶</a></h{}>"##,
-                    id, lvl
+                    r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h{lvl}>"##,
                 ));
             }
             Event::Enter(Container::Link(link)) => {
@@ -177,7 +176,7 @@ impl Traverser for Handler {
                 match value.next() {
                     Some("headlines") => (),
                     Some(o) => {
-                        eprintln!("TOC type {} not supported", o);
+                        eprintln!("TOC type {o} not supported");
                         ctx.skip();
                         return;
                     }
@@ -388,7 +387,7 @@ pub fn generate_page(
     titles: &mut HashMap<PathBuf, (String, PathBuf, Org)>,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
-    let mut full_path: PathBuf = format!("{}{}", dir, name).into();
+    let mut full_path: PathBuf = format!("{dir}{name}").into();
     if Some("org") == full_path.extension().and_then(std::ffi::OsStr::to_str) {
         let fstr = std::str::from_utf8(file).map_err(|_| Error::NonUTF8Path)?;
         let res = org_cfg.clone().parse(fstr);

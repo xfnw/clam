@@ -48,7 +48,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyM
             .map_err(Error::Git)?;
         let tree = commit.tree().map_err(Error::Git)?;
         let parents = commit.parent_count();
-        let message = commit.message().map(|s| s.to_string());
+        let message = commit.message().map(str::to_string);
         let author = commit.author();
         let time_a = author.when();
         let time_c = commit.time();
@@ -108,12 +108,12 @@ pub fn walk_callback(
 
     let Ok(blob) = object.into_blob() else {
         // is probably a directory
-        fs::create_dir_all(format!("{}{}/", dir, name)).map_err(Error::Dir)?;
+        fs::create_dir_all(format!("{dir}{name}/")).map_err(Error::Dir)?;
         return Ok(());
     };
 
     if 0o120_000 == entry.filemode() {
-        return Err(Error::SkipSymlink(format!("{}{}", dir, name)));
+        return Err(Error::SkipSymlink(format!("{dir}{name}")));
     }
 
     crate::html::generate_page(dir, name, blob.content(), org_cfg, titles, links)?;
