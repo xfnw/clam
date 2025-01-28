@@ -54,7 +54,7 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
             "200 OK",
             file,
             len as usize,
-            &if let Some(true) = pathb.extension().map(|e| e == "css") {
+            &if Some(true) == pathb.extension().map(|e| e == "css") {
                 vec!["Content-Type: text/css".to_string()]
             } else {
                 vec![]

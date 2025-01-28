@@ -39,7 +39,7 @@ where
         }
         let name = entry.name().unwrap();
         let name: PathBuf = format!("{dir}{}", name).into();
-        if let Some(true) = name.extension().map(|e| e == "org") {
+        if Some(true) == name.extension().map(|e| e == "org") {
             callback(name, blob);
         }
         0

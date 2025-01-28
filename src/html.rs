@@ -157,7 +157,7 @@ impl Traverser for Handler {
             Event::Enter(Container::VerseBlock(_)) => self.exp.push_str("<pre class=verse>"),
             Event::Leave(Container::VerseBlock(_)) => self.exp.push_str("</pre>"),
             Event::Enter(Container::ExportBlock(block)) => {
-                if let Some(true) = block.ty().map(|b| b.eq_ignore_ascii_case("html")) {
+                if Some(true) == block.ty().map(|b| b.eq_ignore_ascii_case("html")) {
                     self.exp.push_str(block.value());
                 }
                 ctx.skip();
@@ -390,7 +390,7 @@ pub fn generate_page(
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{}{}", dir, name).into();
-    if let Some("org") = full_path.extension().and_then(std::ffi::OsStr::to_str) {
+    if Some("org") == full_path.extension().and_then(std::ffi::OsStr::to_str) {
         let fstr = std::str::from_utf8(file).map_err(|_| Error::NonUTF8Path)?;
         let res = org_cfg.clone().parse(fstr);
 
