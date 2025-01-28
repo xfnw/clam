@@ -31,13 +31,13 @@ pub struct AtomEntry<'a> {
     pub updated: AtomDateTime,
 }
 
-/// NaiveDateTime that `Display`s to an atom feed compatible date (iso8601/rfc3339 subset)
+/// `NaiveDateTime` that `Display`s to an atom feed compatible date (iso8601/rfc3339 subset)
 /// without unnecessary allocation, as chrono gates iso8601 output behind the `alloc` feature
 #[derive(Debug)]
 pub struct AtomDateTime(pub NaiveDateTime);
 
 impl AtomDateTime {
-    /// create a new AtomDateTime from a unix timestamp
+    /// create a new `AtomDateTime` from a unix timestamp
     pub fn new(unix: i64) -> Option<Self> {
         let ts = DateTime::from_timestamp(unix, 0)?;
         Some(Self(ts.naive_utc()))
