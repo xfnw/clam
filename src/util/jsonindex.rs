@@ -36,7 +36,7 @@ impl Traverser for TextExport {
                 for e in headline.title() {
                     self.element(e, ctx);
                 }
-                self.push_str("\n")
+                self.push_str("\n");
             }
             Event::Timestamp(time) => self.push_str(time.raw()),
             Event::Text(text) => self.push_str(text),
@@ -51,7 +51,7 @@ pub fn print_index(repo: &Repository, commit: Commit) {
         let entry = get_entry(name, blob);
         println!("{}", serde_json::to_string(&entry).unwrap());
     })
-    .unwrap()
+    .unwrap();
 }
 
 fn get_entry(path: PathBuf, blob: Blob) -> Entry {

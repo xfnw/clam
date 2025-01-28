@@ -141,7 +141,7 @@ impl Traverser for Handler {
             Event::Enter(Container::VerseBlock(_)) => self.exp.push_str("<pre class=verse>"),
             Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=example>"),
             Event::Leave(Container::VerseBlock(_) | Container::FixedWidth(_)) => {
-                self.exp.push_str("</pre>")
+                self.exp.push_str("</pre>");
             }
             Event::Enter(Container::ExportBlock(block)) => {
                 if Some(true) == block.ty().map(|b| b.eq_ignore_ascii_case("html")) {
@@ -165,7 +165,7 @@ impl Traverser for Handler {
                         "<input type=checkbox disabled checked> "
                     } else {
                         "<input type=checkbox disabled> "
-                    })
+                    });
                 }
             }
             Event::Enter(Container::Keyword(keyword)) => {
