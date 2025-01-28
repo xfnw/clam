@@ -8,7 +8,7 @@ use chrono::{DateTime, Datelike, NaiveDateTime};
 use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
 use orgize::{
-    ast::{Headline, TodoType},
+    ast::{Headline, TodoType, Token},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
     Org, ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
 };
@@ -72,22 +72,7 @@ impl Traverser for Handler {
             }
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
-                let path = path.trim_start_matches("file:");
-                let path = if let Some(p) = path.strip_prefix('*') {
-                    let mut p = slugify!(p);
-                    p.insert(0, '#');
-                    p
-                } else if path.starts_with("//") || path.contains("://") {
-                    path.to_string()
-                } else if let Some(p) = path.strip_suffix(".org") {
-                    let mut p = p.to_string();
-                    p.push_str(".html");
-                    p
-                } else if path.contains(".org#") {
-                    path.replace(".org#", ".html#")
-                } else {
-                    path.to_string()
-                };
+                let path = mangle_link(path);
 
                 if link.is_image() {
                     if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
@@ -375,6 +360,24 @@ fn generate_headline_id(headline: &Headline) -> String {
     } else {
         slugify!(&txt)
     }
+}
+
+fn mangle_link(path: Token) -> String {
+    let path = path.trim_start_matches("file:");
+    if let Some(p) = path.strip_prefix('*') {
+        let mut p = slugify!(p);
+        p.insert(0, '#');
+        return p;
+    }
+    if path.starts_with("//") || path.contains("://") {
+        return path.to_string();
+    }
+    if let Some(p) = path.strip_suffix(".org") {
+        let mut p = p.to_string();
+        p.push_str(".html");
+        return p;
+    }
+    path.replace(".org#", ".html#")
 }
 
 pub fn generate_page(
