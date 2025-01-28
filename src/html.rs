@@ -139,7 +139,10 @@ impl Traverser for Handler {
                 ctx.skip();
             }
             Event::Enter(Container::VerseBlock(_)) => self.exp.push_str("<pre class=verse>"),
-            Event::Leave(Container::VerseBlock(_)) => self.exp.push_str("</pre>"),
+            Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=example>"),
+            Event::Leave(Container::VerseBlock(_) | Container::FixedWidth(_)) => {
+                self.exp.push_str("</pre>")
+            }
             Event::Enter(Container::ExportBlock(block)) => {
                 if Some(true) == block.ty().map(|b| b.eq_ignore_ascii_case("html")) {
                     self.exp.push_str(block.value());
@@ -174,13 +177,12 @@ impl Traverser for Handler {
                 let value = keyword.value();
                 let mut value = value.split_ascii_whitespace();
                 match value.next() {
-                    Some("headlines") => (),
+                    Some("headlines") | None => (),
                     Some(o) => {
                         eprintln!("TOC type {o} not supported");
                         ctx.skip();
                         return;
                     }
-                    None => (),
                 }
                 let limit: usize = if let Some(Ok(val)) = value.next().map(str::parse) {
                     val
@@ -284,8 +286,6 @@ impl Traverser for Handler {
                 }
                 ctx.skip();
             }
-            Event::Enter(Container::FixedWidth(_)) => self.exp.push_str("<pre class=example>"),
-            Event::Leave(Container::FixedWidth(_)) => self.exp.push_str("</pre>"),
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
                     self.exp.push_str("<section role=doc-endnotes aria-labelledby=__clam-footnotes><h2 id=__clam-footnotes>footnotes</h2><ol>");

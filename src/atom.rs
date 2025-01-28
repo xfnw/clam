@@ -62,9 +62,8 @@ pub fn entries<'a>(
     let mut entries = vec![];
 
     for (path, (title, old, _)) in titles {
-        let path = match path.to_str() {
-            Some(p) => p,
-            None => continue,
+        let Some(path) = path.to_str() else {
+            continue;
         };
 
         let (updated, author, summary) = mtime.get(old).ok_or(Error::NoModifyTime)?;

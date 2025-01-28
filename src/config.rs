@@ -52,7 +52,7 @@ pub fn handle_config(
 
         for feed in &config.feed {
             match atom::write_feed(feed, id, &url, entries.as_slice()) {
-                Ok(_) => (),
+                Ok(()) => (),
                 Err(e) => eprintln!("skipping {}: {}", feed.path.display(), e),
             };
         }

@@ -26,9 +26,8 @@ pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
 }
 
 fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
-    let path = match client.request() {
-        Some(p) => p,
-        None => return client.respond("400 Bad Request", b"why no request\n", &vec![]),
+    let Some(path) = client.request() else {
+        return client.respond("400 Bad Request", b"why no request\n", &vec![]);
     };
     // prevent both accessing hidden files and path traversal
     if path.contains("/.") {
