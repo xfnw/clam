@@ -254,11 +254,9 @@ impl Traverser for Handler {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
                 if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
                     let name = name.text();
-                    let def = if let Some(c) = children.next() {
-                        c.kind() == SyntaxKind::R_BRACKET
-                    } else {
-                        false
-                    };
+                    let def = children
+                        .next()
+                        .is_some_and(|c| c.kind() == SyntaxKind::R_BRACKET);
                     if def {
                         if let Some(note) = self.feet.get_mut(name) {
                             note.0 = Some(children.collect());
@@ -274,11 +272,9 @@ impl Traverser for Handler {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
                 if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
                     let name = name.text();
-                    let def = if let Some(c) = children.next() {
-                        c.kind() == SyntaxKind::COLON
-                    } else {
-                        false
-                    };
+                    let def = children
+                        .next()
+                        .is_some_and(|c| c.kind() == SyntaxKind::COLON);
                     let (fnum, rnum) = if let Some(note) = self.feet.get_full_mut(name) {
                         note.2 .1 += 1;
                         if def {
@@ -433,16 +429,14 @@ pub fn write_org_page(
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into().map_err(|_| Error::TimeOverflow)?;
 
-    let (header, footer, nav, inline) = if let Some(conf) = config {
+    let (header, footer, nav, inline) = config.map_or((None, None, false, false), |conf| {
         (
             conf.extra_header.as_deref(),
             conf.extra_footer.as_deref(),
             conf.show_navigation,
             conf.inline,
         )
-    } else {
-        (None, None, false, false)
-    };
+    });
 
     for (new_path, (title, old_path, res)) in titles {
         let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;

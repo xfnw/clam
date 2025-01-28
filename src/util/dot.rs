@@ -30,13 +30,11 @@ pub fn print_dot(repo: &Repository, commit: Commit) {
     let mut links: HashMap<PathBuf, Vec<Rc<PathBuf>>> = HashMap::new();
 
     map_org(repo, commit, |name, blob| {
-        let name = if let Some(n) = pages.get(&name).cloned() {
-            n
-        } else {
+        let name = pages.get(&name).cloned().unwrap_or_else(|| {
             let name = Rc::new(name);
             pages.insert(name.clone());
             name
-        };
+        });
         find_links(&name, blob, |l| match links.get_mut(&l) {
             Some(v) => {
                 v.push(name.clone());
