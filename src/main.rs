@@ -146,7 +146,7 @@ static STYLEFEED: &[u8] = include_bytes!("style.xsl");
 
 fn generate(
     repo: &Repository,
-    commit: Commit,
+    commit: &Commit,
     overrides: config::OverrideConfig,
 ) -> Result<(), Error> {
     let short_id = commit.as_object().short_id().unwrap();
@@ -203,7 +203,7 @@ fn main() {
     }
 }
 
-fn do_build(repo: &Repository, commit: Commit, args: &RepoArgs) {
+fn do_build(repo: &Repository, commit: &Commit, args: &RepoArgs) {
     let overrides = config::OverrideConfig {
         url: args.url.clone(),
         inline: args.inline,
@@ -222,7 +222,7 @@ fn do_preview(args: &PreviewArgs) {
 }
 
 #[cfg(feature = "util")]
-fn do_orphan(repo: &Repository, commit: Commit) {
+fn do_orphan(repo: &Repository, commit: &Commit) {
     let orphans = util::orphan::get_orphans(repo, commit);
 
     for o in orphans {
@@ -232,7 +232,7 @@ fn do_orphan(repo: &Repository, commit: Commit) {
 
 fn open_repo<F>(args: &RepoArgs, callback: F)
 where
-    F: Fn(&Repository, Commit),
+    F: Fn(&Repository, &Commit),
 {
     let repo = Repository::open(&args.repository).unwrap();
     let commit = repo.revparse_single(&args.branch).unwrap();
@@ -242,7 +242,7 @@ where
         set_current_dir(target).expect("changing directory");
     }
 
-    callback(&repo, commit);
+    callback(&repo, &commit);
 }
 
 fn default_org_cfg() -> ParseConfig {

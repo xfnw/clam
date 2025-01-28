@@ -71,7 +71,7 @@ impl Traverser for Handler {
             }
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
-                let path = mangle_link(path);
+                let path = mangle_link(&path);
 
                 if link.is_image() {
                     if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
@@ -122,7 +122,7 @@ impl Traverser for Handler {
                                         slugify!(usr), HtmlEscape(person), HtmlEscape(expression)
                                     ));
 
-                                    self.output_block_children(block, ctx);
+                                    self.output_block_children(&block, ctx);
 
                                     self.exp.push_str("</div></div>");
 
@@ -131,7 +131,7 @@ impl Traverser for Handler {
                             }
                         }
 
-                        self.output_block_children(block, ctx);
+                        self.output_block_children(&block, ctx);
 
                         self.exp.push_str("</div>");
                     }
@@ -324,7 +324,7 @@ impl Handler {
     /// output children while stripping off some exterior formatting
     fn output_block_children(
         &mut self,
-        block: orgize::ast::SpecialBlock,
+        block: &orgize::ast::SpecialBlock,
         ctx: &mut TraversalContext,
     ) {
         for child in block.syntax().children() {
@@ -361,7 +361,7 @@ fn generate_headline_id(headline: &Headline) -> String {
     }
 }
 
-fn mangle_link(path: Token) -> String {
+fn mangle_link(path: &Token) -> String {
     let path = path.trim_start_matches("file:");
     if let Some(p) = path.strip_prefix('*') {
         let mut p = slugify!(p);

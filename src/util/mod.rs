@@ -13,7 +13,7 @@ pub mod preview;
 ///
 /// will give mangled paths when encountering links to
 /// external resources.
-pub fn find_links<F>(name: &Path, blob: Blob, callback: F)
+pub fn find_links<F>(name: &Path, blob: &Blob, callback: F)
 where
     F: FnMut(PathBuf),
 {
@@ -23,7 +23,7 @@ where
 }
 
 /// run a function on every org file in repository
-pub fn map_org<F>(repo: &Repository, commit: Commit, mut callback: F) -> Result<(), git2::Error>
+pub fn map_org<F>(repo: &Repository, commit: &Commit, mut callback: F) -> Result<(), git2::Error>
 where
     F: FnMut(PathBuf, Blob),
 {

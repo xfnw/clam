@@ -40,7 +40,7 @@ impl Rules {
         Ok(())
     }
 
-    pub fn check(&self, path: &str, action: Action) -> Result<(), Error> {
+    pub fn check(&self, path: &str, action: &Action) -> Result<(), Error> {
         match action {
             Action::Create => {
                 if self.no_creation {
@@ -98,7 +98,7 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
                 _ => unreachable!(),
             };
 
-            rules.check(path, action)?;
+            rules.check(path, &action)?;
         }
     }
 

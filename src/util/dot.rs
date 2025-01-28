@@ -25,7 +25,7 @@ impl fmt::Display for DotEscape<'_> {
     }
 }
 
-pub fn print_dot(repo: &Repository, commit: Commit) {
+pub fn print_dot(repo: &Repository, commit: &Commit) {
     let mut pages = HashSet::new();
     let mut links: HashMap<PathBuf, Vec<Rc<PathBuf>>> = HashMap::new();
 
@@ -35,7 +35,7 @@ pub fn print_dot(repo: &Repository, commit: Commit) {
             pages.insert(name.clone());
             name
         });
-        find_links(&name, blob, |l| match links.get_mut(&l) {
+        find_links(&name, &blob, |l| match links.get_mut(&l) {
             Some(v) => {
                 v.push(name.clone());
             }
