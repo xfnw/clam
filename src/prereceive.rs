@@ -20,10 +20,10 @@ pub struct Rules {
 }
 
 impl Rules {
-    pub fn from_args(args: &PreReceiveArgs) -> Result<Rules, Error> {
+    pub fn from_args(args: &PreReceiveArgs) -> Result<Self, Error> {
         let allow_pattern = RegexSet::new(&args.allow_pattern).map_err(Error::BadRegex)?;
         let protect_pattern = RegexSet::new(&args.protect_pattern).map_err(Error::BadRegex)?;
-        let res = Rules {
+        let res = Self {
             require_signing: args.require_signing,
             no_deletion: args.no_deletion,
             no_creation: args.no_creation,
