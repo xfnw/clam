@@ -51,11 +51,11 @@ pub fn print_dot(repo: &Repository, commit: Commit) {
 rankdir=LR;"
     );
 
-    for page in pages.into_iter() {
+    for page in pages {
         let pname = DotEscape(page.to_str().unwrap());
         println!("{};", pname);
         if let Some(inlinks) = links.get(page.as_ref()) {
-            for link in inlinks.iter() {
+            for link in inlinks {
                 println!("{} -> {};", DotEscape(link.to_str().unwrap()), pname);
             }
         }

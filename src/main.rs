@@ -225,7 +225,7 @@ fn do_preview(args: &PreviewArgs) {
 fn do_orphan(repo: &Repository, commit: Commit) {
     let orphans = util::orphan::get_orphans(repo, commit);
 
-    for o in orphans.into_iter() {
+    for o in orphans {
         println!("{}", o.display());
     }
 }

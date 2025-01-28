@@ -61,7 +61,7 @@ pub fn entries<'a>(
 ) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
-    for (path, (title, old, _)) in titles.iter() {
+    for (path, (title, old, _)) in titles {
         let path = match path.to_str() {
             Some(p) => p,
             None => continue,
