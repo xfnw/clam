@@ -99,7 +99,7 @@ impl Traverser for Handler {
                 if let Some(mut par) = block
                     .syntax()
                     .first_child()
-                    .map(|n| n.children_with_tokens().filter_map(|t| t.into_token()))
+                    .map(|n| n.children_with_tokens().filter_map(NodeOrToken::into_token))
                 {
                     if let Some(name) = par.nth(1) {
                         let name = name.text();
@@ -182,7 +182,7 @@ impl Traverser for Handler {
                     }
                     None => (),
                 }
-                let limit: usize = if let Some(Ok(val)) = value.next().map(|v| v.parse()) {
+                let limit: usize = if let Some(Ok(val)) = value.next().map(str::parse) {
                     val
                 } else {
                     0
@@ -236,7 +236,7 @@ impl Traverser for Handler {
             // https://github.com/PoiScript/orgize/pull/84
             Event::Enter(Container::FnDef(foot)) => {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
-                if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
+                if let Some(Some(name)) = children.next().map(NodeOrToken::into_token) {
                     let name = name.text();
                     let def = children
                         .next()
@@ -254,7 +254,7 @@ impl Traverser for Handler {
             }
             Event::Enter(Container::FnRef(foot)) => {
                 let mut children = foot.syntax().children_with_tokens().skip(3);
-                if let Some(Some(name)) = children.next().map(|t| t.into_token()) {
+                if let Some(Some(name)) = children.next().map(NodeOrToken::into_token) {
                     let name = name.text();
                     let def = children
                         .next()
