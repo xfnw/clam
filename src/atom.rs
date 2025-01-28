@@ -74,8 +74,8 @@ pub fn entries<'a>(
             title,
             path,
             author,
-            updated,
             summary,
+            updated,
         });
     }
 
