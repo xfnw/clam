@@ -33,8 +33,8 @@ impl Rules {
         Ok(res)
     }
 
-    pub fn signed(&self, signed: bool) -> Result<(), Error> {
-        if self.require_signing && !signed {
+    pub fn signed(&self, is_signed: bool) -> Result<(), Error> {
+        if self.require_signing && !is_signed {
             return Err(Error::NotSigned);
         }
         Ok(())
