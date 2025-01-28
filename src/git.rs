@@ -112,7 +112,7 @@ pub fn walk_callback(
         return Ok(());
     };
 
-    if 0o120000 == entry.filemode() {
+    if 0o120_000 == entry.filemode() {
         return Err(Error::SkipSymlink(format!("{}{}", dir, name)));
     }
 

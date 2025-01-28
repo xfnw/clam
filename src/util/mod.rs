@@ -34,7 +34,7 @@ where
             return 0;
         };
         let Ok(blob) = obj.into_blob() else { return 0 };
-        if 0o120000 == entry.filemode() {
+        if 0o120_000 == entry.filemode() {
             return 0;
         }
         let name = entry.name().unwrap();
