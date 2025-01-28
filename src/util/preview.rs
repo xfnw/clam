@@ -50,10 +50,17 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
                 &vec![],
             );
         };
+        let Ok(len) = len.try_into() else {
+            return client.respond(
+                "500 Internal Service Error",
+                b"ur file is too big\n",
+                &vec![],
+            );
+        };
         return client.respond_chunked(
             "200 OK",
             file,
-            len as usize,
+            len,
             &if Some(true) == pathb.extension().map(|e| e == "css") {
                 vec!["Content-Type: text/css".to_string()]
             } else {
