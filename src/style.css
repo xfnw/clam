@@ -132,12 +132,12 @@ li p:nth-of-type(1) {
   margin: 0 5px;
 }
 
-:not(:hover) > .see-focus:not(:focus) {
+:not(:hover) > .see-focus:not(:focus):not(:active) {
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip: rect(1px 1px 1px 1px);
-  clip: rect(1px, 1px, 1px, 1px);
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
 }
 
 .todo, .done {
