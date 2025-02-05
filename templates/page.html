@@ -29,7 +29,7 @@
 {{ Trusted(&self.body) }}
 <footer>
 %% if let Some(incoming) = self.incoming {
-<nav aria-labelledby=__clam_incoming><span id=__clam_incoming>incoming</span>:
+<nav aria-labelledby=clam.incoming><span id=clam.incoming>incoming</span>:
 %%   for (path, title) in incoming {
 <a href="{% for _ in 1..self.numdir { %}../{% } %}{{ path }}">{{ title }}</a>
 %%   }

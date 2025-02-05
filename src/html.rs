@@ -288,7 +288,7 @@ impl Traverser for Handler {
             }
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
-                    self.exp.push_str("<section role=doc-endnotes aria-labelledby=__clam-footnotes><h2 id=__clam-footnotes>footnotes</h2><ol>");
+                    self.exp.push_str("<section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol>");
                     for (n, (_, (elem, refs))) in self.feet.iter().enumerate() {
                         let n = n + 1;
                         self.exp.push_str(format!("<li id=\"fn.{n}\">"));
@@ -564,7 +564,7 @@ AAAA even more
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;fox&gt;</span> AAAA even more
-</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><section role=doc-endnotes aria-labelledby=__clam-footnotes><h2 id=__clam-footnotes>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
+</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
 <a href="#fnr.1.0" role=doc-backlink>↩</a>
 </li><li id="fn.2"> and *another* footnote
 <a href="#fnr.2.0" role=doc-backlink>↩</a>
