@@ -10,9 +10,9 @@ use indexmap::IndexMap;
 use orgize::{
     ast::{Headline, TodoType, Token},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
+    rowan::{ast::AstNode, NodeOrToken},
     Org, ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
 };
-use rowan::{ast::AstNode, NodeOrToken};
 use slugify::slugify;
 use std::{
     cmp::min,

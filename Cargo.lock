@@ -90,7 +90,6 @@ dependencies = [
  "orgize",
  "percent-encoding",
  "regex",
- "rowan",
  "serde",
  "serde_json",
  "slugify",

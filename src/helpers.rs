@@ -1,6 +1,5 @@
-use orgize::{ast::Link, Org};
+use orgize::{ast::Link, rowan::ast::AstNode, Org};
 use percent_encoding::{AsciiSet, CONTROLS};
-use rowan::ast::AstNode;
 use std::path::{Component, Path, PathBuf};
 
 pub const URL_UNSAFE: &AsciiSet = &CONTROLS
