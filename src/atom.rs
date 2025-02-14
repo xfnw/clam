@@ -28,6 +28,7 @@ pub struct AtomEntry<'a> {
     pub path: &'a str,
     pub author: &'a str,
     pub summary: Option<&'a str>,
+    pub content: Option<&'a str>,
     pub updated: AtomDateTime,
 }
 
@@ -75,6 +76,7 @@ pub fn entries<'a>(
             path,
             author,
             summary,
+            content: None,
             updated,
         });
     }
@@ -151,6 +153,7 @@ mod tests {
             author: "",
             updated: AtomDateTime::new(1633462756).unwrap(),
             summary: None,
+            content: None,
         };
         let entry2 = AtomEntry {
             title: "",
@@ -158,6 +161,7 @@ mod tests {
             author: "",
             updated: AtomDateTime::new(1169707221).unwrap(),
             summary: None,
+            content: None,
         };
         let entries = [&entry1, &entry2];
 
@@ -175,6 +179,7 @@ mod tests {
             author: "fox",
             updated: AtomDateTime::new(1734116293).unwrap(),
             summary: Some("did you know that foxes—which are very fluffy—exist?"),
+            content: None,
         };
         let entries = [&entry];
         let feed = FeedXml {

@@ -15,6 +15,9 @@
 %% if let Some(summary) = entry.summary {
 <summary>{{ summary }}</summary>
 %% }
+%% if let Some(content) = entry.content {
+<content type="html">{{ content }}</content>
+%% }
 </entry>
 %% }
 </feed>
