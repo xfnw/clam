@@ -26,7 +26,7 @@ use std::{
 #[derive(boilerplate::Boilerplate, Default)]
 pub struct PageHtml<'a> {
     pub title: &'a str,
-    pub body: String,
+    pub body: &'a str,
     pub lang: String,
     pub author: &'a str,
     pub commit: &'a str,
@@ -41,7 +41,8 @@ pub struct PageHtml<'a> {
     pub inline: bool,
 }
 
-type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
+pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
+pub type Pages = HashMap<PathBuf, (String, PathBuf, Org, String)>;
 
 #[derive(Default)]
 pub struct Handler {
@@ -384,7 +385,7 @@ pub fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    titles: &mut HashMap<PathBuf, (String, PathBuf, Org)>,
+    titles: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
@@ -408,7 +409,14 @@ pub fn generate_page(
             }
         });
 
-        titles.insert(full_path, (title, old_path, res));
+        let mut html_export = Handler {
+            numdir: old_path.iter().count(),
+            ..Default::default()
+        };
+        res.traverse(&mut html_export);
+        let html = html_export.exp.finish();
+
+        titles.insert(full_path, (title, old_path, res, html));
     } else {
         let mut f = fs::File::create(full_path).map_err(Error::File)?;
         f.write_all(file).map_err(Error::File)?;
@@ -417,7 +425,7 @@ pub fn generate_page(
 }
 
 pub fn write_org_page(
-    titles: &HashMap<PathBuf, (String, PathBuf, Org)>,
+    titles: &Pages,
     ctime: &CreateMap,
     mtime: &ModifyMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
@@ -440,7 +448,7 @@ pub fn write_org_page(
         )
     });
 
-    for (new_path, (title, old_path, res)) in titles {
+    for (new_path, (title, old_path, res, html)) in titles {
         let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
         let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
 
@@ -456,12 +464,6 @@ pub fn write_org_page(
         };
 
         let numdir = old_path.iter().count();
-
-        let mut html_export = Handler {
-            numdir,
-            ..Default::default()
-        };
-        res.traverse(&mut html_export);
 
         let notice = if modified.seconds() - year_ago < 0 {
             Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
@@ -483,7 +485,7 @@ pub fn write_org_page(
 
         let template = PageHtml {
             title,
-            body: html_export.exp.finish(),
+            body: html,
             lang,
             author: &author,
             commit: short_id,

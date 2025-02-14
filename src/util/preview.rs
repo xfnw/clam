@@ -119,7 +119,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
 
     let template = PageHtml {
         title: title.as_ref(),
-        body: html_export.exp.finish(),
+        body: &html_export.exp.finish(),
         lang,
         author: "unknown (preview mode)",
         commit: "dirty",

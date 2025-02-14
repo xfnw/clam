@@ -1,7 +1,6 @@
-use crate::{atom, git::ModifyMap};
-use orgize::Org;
+use crate::{atom, git::ModifyMap, html::Pages};
 use serde::Deserialize;
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 #[derive(Deserialize, Debug)]
 pub struct ClamConfig {
@@ -32,7 +31,7 @@ pub struct OverrideConfig {
 }
 
 pub fn handle_config(
-    titles: &HashMap<PathBuf, (String, PathBuf, Org)>,
+    titles: &Pages,
     mtime: &ModifyMap,
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {

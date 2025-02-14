@@ -1,15 +1,9 @@
-use crate::{config::FeedConfig, git::ModifyMap, helpers::URL_PATH_UNSAFE, html::Handler, Error};
+use crate::{config::FeedConfig, git::ModifyMap, helpers::URL_PATH_UNSAFE, html::Pages, Error};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
 use regex::RegexSet;
-use std::{
-    cmp::min,
-    collections::HashMap,
-    fmt, fs,
-    io::Write,
-    path::{Component, PathBuf},
-};
+use std::{cmp::min, fmt, fs, io::Write, path::Component};
 
 #[derive(boilerplate::Boilerplate)]
 pub struct FeedXml<'a> {
@@ -28,7 +22,7 @@ pub struct AtomEntry<'a> {
     pub path: &'a str,
     pub author: &'a str,
     pub summary: Option<&'a str>,
-    pub content: Option<String>,
+    pub content: Option<&'a str>,
     pub updated: AtomDateTime,
 }
 
@@ -56,13 +50,10 @@ impl fmt::Display for AtomDateTime {
     }
 }
 
-pub fn entries<'a>(
-    titles: &'a HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
-    mtime: &'a ModifyMap,
-) -> Result<Vec<AtomEntry<'a>>, Error> {
+pub fn entries<'a>(titles: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
-    for (path, (title, old, res)) in titles {
+    for (path, (title, old, _, html)) in titles {
         let Some(path) = path.to_str() else {
             continue;
         };
@@ -70,13 +61,7 @@ pub fn entries<'a>(
         let (updated, author, summary) = mtime.get(old).ok_or(Error::NoModifyTime)?;
         let updated = AtomDateTime::new(updated.seconds()).ok_or(Error::BadModifyTime)?;
         let summary = summary.as_deref();
-
-        let mut html_export = Handler {
-            numdir: old.iter().count(),
-            ..Default::default()
-        };
-        res.traverse(&mut html_export);
-        let content = Some(html_export.exp.finish());
+        let content = Some(html.as_ref());
 
         entries.push(AtomEntry {
             title,

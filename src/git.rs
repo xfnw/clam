@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{html::Pages, Error};
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
 use std::{collections::HashMap, fs, path::PathBuf, rc::Rc};
@@ -100,7 +100,7 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
-    titles: &mut HashMap<PathBuf, (String, PathBuf, orgize::Org)>,
+    titles: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let object = entry.to_object(repo).map_err(Error::Git)?;
