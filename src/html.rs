@@ -385,7 +385,7 @@ pub fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    titles: &mut Pages,
+    pages: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
@@ -416,7 +416,7 @@ pub fn generate_page(
         res.traverse(&mut html_export);
         let html = html_export.exp.finish();
 
-        titles.insert(full_path, (title, old_path, res, html));
+        pages.insert(full_path, (title, old_path, res, html));
     } else {
         let mut f = fs::File::create(full_path).map_err(Error::File)?;
         f.write_all(file).map_err(Error::File)?;
@@ -425,7 +425,7 @@ pub fn generate_page(
 }
 
 pub fn write_org_page(
-    titles: &Pages,
+    pages: &Pages,
     ctime: &CreateMap,
     mtime: &ModifyMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
@@ -448,7 +448,7 @@ pub fn write_org_page(
         )
     });
 
-    for (new_path, (title, old_path, res, html)) in titles {
+    for (new_path, (title, old_path, res, html)) in pages {
         let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
         let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
 
@@ -477,7 +477,7 @@ pub fn write_org_page(
                 .map(|b| {
                     (
                         b.to_str().unwrap(),
-                        titles.get(b.as_ref()).unwrap().0.as_ref(),
+                        pages.get(b.as_ref()).unwrap().0.as_ref(),
                     )
                 })
                 .collect()

@@ -50,10 +50,10 @@ impl fmt::Display for AtomDateTime {
     }
 }
 
-pub fn entries<'a>(titles: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEntry<'a>>, Error> {
+pub fn entries<'a>(pages: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
-    for (path, (title, old, _, html)) in titles {
+    for (path, (title, old, _, html)) in pages {
         let Some(path) = path.to_str() else {
             continue;
         };

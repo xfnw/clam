@@ -31,7 +31,7 @@ pub struct OverrideConfig {
 }
 
 pub fn handle_config(
-    titles: &Pages,
+    pages: &Pages,
     mtime: &ModifyMap,
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {
@@ -47,7 +47,7 @@ pub fn handle_config(
     let id = config.id.as_ref().unwrap_or(&url);
 
     if !config.feed.is_empty() {
-        let entries = atom::entries(titles, mtime).ok()?;
+        let entries = atom::entries(pages, mtime).ok()?;
 
         for feed in &config.feed {
             match atom::write_feed(feed, id, &url, entries.as_slice()) {

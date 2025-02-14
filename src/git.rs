@@ -100,7 +100,7 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
-    titles: &mut Pages,
+    pages: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let object = entry.to_object(repo).map_err(Error::Git)?;
@@ -116,7 +116,7 @@ pub fn walk_callback(
         return Err(Error::SkipSymlink(format!("{dir}{name}")));
     }
 
-    crate::html::generate_page(dir, name, blob.content(), org_cfg, titles, links)?;
+    crate::html::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
 
     Ok(())
 }

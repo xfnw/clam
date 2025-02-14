@@ -163,25 +163,25 @@ fn generate(
         f.write_all(STYLEFEED).map_err(Error::File)?;
     }
 
-    let mut titles = HashMap::new();
+    let mut pages = HashMap::new();
     let mut links = HashMap::new();
     // TODO: get this stuff from .clam.toml or something
     let org_cfg = default_org_cfg();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = git::walk_callback(repo, dir, entry, &org_cfg, &mut titles, &mut links) {
+        if let Err(e) = git::walk_callback(repo, dir, entry, &org_cfg, &mut pages, &mut links) {
             eprintln!("{e}");
         }
         0
     })
     .map_err(Error::Git)?;
 
-    let config = config::handle_config(&titles, &mtime, overrides);
+    let config = config::handle_config(&pages, &mtime, overrides);
     if config.is_none() {
         eprintln!("configless, no feeds generated and overrides ignored");
     }
 
-    html::write_org_page(&titles, &ctime, &mtime, &links, short_id, config.as_ref())?;
+    html::write_org_page(&pages, &ctime, &mtime, &links, short_id, config.as_ref())?;
 
     Ok(())
 }
