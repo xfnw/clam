@@ -41,6 +41,13 @@ pub struct PageHtml<'a> {
     pub inline: bool,
 }
 
+#[derive(Default)]
+pub struct PageKeywords {
+    pub author: Option<String>,
+    pub language: Option<String>,
+    pub year: Option<String>,
+}
+
 pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
 pub type Pages = HashMap<PathBuf, (String, PathBuf, Org, String)>;
 
@@ -452,9 +459,10 @@ pub fn write_org_page(
         let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
         let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
 
-        let author = get_keyword(res, "AUTHOR").unwrap_or_else(|| author.to_string());
-        let lang = get_keyword(res, "LANGUAGE").unwrap_or_else(|| "en".to_string());
-        let year = if let Some(Ok(year)) = get_keyword(res, "YEAR").map(|k| k.parse()) {
+        let keywords = get_keywords(res);
+        let author = keywords.author.unwrap_or_else(|| author.to_string());
+        let lang = keywords.language.unwrap_or_else(|| "en".to_string());
+        let year = if let Some(Ok(year)) = keywords.year.map(|k| k.parse()) {
             year
         } else {
             DateTime::from_timestamp(created.seconds(), 0)
@@ -509,10 +517,24 @@ pub fn write_org_page(
     Ok(())
 }
 
-pub fn get_keyword(res: &Org, keyword: &str) -> Option<String> {
-    res.keywords()
-        .find(|k| k.key().eq_ignore_ascii_case(keyword))
-        .map(|k| k.value().trim().to_string())
+pub fn get_keywords(res: &Org) -> PageKeywords {
+    macro_rules! match_keywords {
+        ($k:ident, $kw:ident, ($($key:ident),*)) => {
+            match $k.key().to_ascii_lowercase().as_ref() {
+                $(stringify!($key) => {
+                    if $kw.$key.is_none() {
+                        $kw.$key = Some($k.value().trim().to_string());
+                    }
+                })*
+                _ => {}
+            }
+        }
+    }
+    let mut keywords = PageKeywords::default();
+    for k in res.keywords() {
+        match_keywords!(k, keywords, (author, language, year));
+    }
+    keywords
 }
 
 #[cfg(test)]
