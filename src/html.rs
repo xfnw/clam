@@ -27,7 +27,7 @@ use std::{
 pub struct PageHtml<'a> {
     pub title: &'a str,
     pub body: &'a str,
-    pub lang: String,
+    pub lang: &'a str,
     pub author: &'a str,
     pub commit: &'a str,
     pub modified: NaiveDateTime,
@@ -49,7 +49,7 @@ pub struct PageKeywords {
 }
 
 pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
-pub type Pages = HashMap<PathBuf, (String, PathBuf, Org, String)>;
+pub type Pages = HashMap<PathBuf, (String, PathBuf, PageKeywords, String)>;
 
 #[derive(Default)]
 pub struct Handler {
@@ -416,6 +416,7 @@ pub fn generate_page(
             }
         });
 
+        let keywords = get_keywords(&res);
         let mut html_export = Handler {
             numdir: old_path.iter().count(),
             ..Default::default()
@@ -423,7 +424,7 @@ pub fn generate_page(
         res.traverse(&mut html_export);
         let html = html_export.exp.finish();
 
-        pages.insert(full_path, (title, old_path, res, html));
+        pages.insert(full_path, (title, old_path, keywords, html));
     } else {
         let mut f = fs::File::create(full_path).map_err(Error::File)?;
         f.write_all(file).map_err(Error::File)?;
@@ -455,14 +456,13 @@ pub fn write_org_page(
         )
     });
 
-    for (new_path, (title, old_path, res, html)) in pages {
+    for (new_path, (title, old_path, keywords, html)) in pages {
         let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
         let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
 
-        let keywords = get_keywords(res);
-        let author = keywords.author.unwrap_or_else(|| author.to_string());
-        let lang = keywords.language.unwrap_or_else(|| "en".to_string());
-        let year = if let Some(Ok(year)) = keywords.year.map(|k| k.parse()) {
+        let author = keywords.author.as_deref().unwrap_or(author);
+        let lang = keywords.language.as_deref().unwrap_or("en");
+        let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
             year
         } else {
             DateTime::from_timestamp(created.seconds(), 0)
@@ -495,7 +495,7 @@ pub fn write_org_page(
             title,
             body: html,
             lang,
-            author: &author,
+            author,
             commit: short_id,
             modified: DateTime::from_timestamp(modified.seconds(), 0)
                 .ok_or(Error::BadModifyTime)?
