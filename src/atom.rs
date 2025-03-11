@@ -73,7 +73,7 @@ pub fn entries<'a>(pages: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEnt
         });
     }
 
-    entries.sort_by(|x, y| y.updated.0.cmp(&x.updated.0));
+    entries.sort_by(|x, y| y.updated.0.cmp(&x.updated.0).then(y.path.cmp(x.path)));
     Ok(entries)
 }
 
