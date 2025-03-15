@@ -79,6 +79,13 @@ impl Traverser for Handler {
             }
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
+
+                if let Some(meaning) = path.strip_prefix("abbr:") {
+                    self.exp
+                        .push_str(format!("<abbr title=\"{}\">", HtmlEscape(meaning)));
+                    return;
+                }
+
                 let path = mangle_link(&path);
 
                 if link.is_image() {
@@ -102,6 +109,13 @@ impl Traverser for Handler {
                     self.exp.push_str(format!("{}</a>", HtmlEscape(&path)));
                     ctx.skip();
                 }
+            }
+            Event::Leave(Container::Link(link)) => {
+                if link.path().starts_with("abbr:") {
+                    self.exp.push_str("</abbr>");
+                    return;
+                }
+                self.exp.push_str("</a>");
             }
             Event::Enter(Container::SpecialBlock(block)) => {
                 if let Some(mut par) = block
@@ -559,6 +573,7 @@ i have a footnote[fn:1:beep /boop/][fn:2]
 [[file:hmm/example.org/test.org][should link to .html]]
 [[hmm/example.org/test.org#something][should also link to .html]]
 [[hmm/example.org/][im a directory!]]
+[[abbr:Yelling In Furry Form][YIFF]] is an acronym
 [[https://example.org][webbed sight]]
 
 #+CAPTION: the libera.chat logo, but with the mountain replaced with a cat
@@ -585,6 +600,7 @@ AAAA even more
 <a href="hmm/example.org/test.html">should link to .html</a>
 <a href="hmm/example.org/test.html#something">should also link to .html</a>
 <a href="hmm/example.org/">im a directory!</a>
+<abbr title="Yelling In Furry Form">YIFF</abbr> is an acronym
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
 </p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;fox&gt;</span> AAAA even more
