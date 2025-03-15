@@ -370,7 +370,7 @@ fn generate_headline_id(headline: &Headline) -> String {
 }
 
 fn mangle_link(path: &Token) -> String {
-    let path = path.trim_start_matches("file:");
+    let path = path.strip_prefix("file:").unwrap_or(path);
     if let Some(p) = path.strip_prefix('*') {
         let mut p = slugify!(p);
         p.insert(0, '#');
@@ -556,7 +556,7 @@ i have a footnote[fn:1:beep /boop/][fn:2]
 [fn:2] and *another* footnote
 
 [[*finish writing this test][i am a heading link]]
-[[hmm/example.org/test.org][should link to .html]]
+[[file:hmm/example.org/test.org][should link to .html]]
 [[hmm/example.org/test.org#something][should also link to .html]]
 [[hmm/example.org/][im a directory!]]
 [[https://example.org][webbed sight]]

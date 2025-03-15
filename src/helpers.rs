@@ -32,9 +32,10 @@ where
             continue;
         };
         let path = link.path();
+        let path = path.strip_prefix("file:").unwrap_or(&path);
         let path = match path.split_once('#') {
             Some((p, _)) => p,
-            None => &path,
+            None => path,
         };
         let parent = name.parent().expect("borked name");
         let fullpath = parent.join(path);
