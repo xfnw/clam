@@ -146,7 +146,7 @@ li p:nth-of-type(1) {
 }
 
 .todo {
-  background: #b11;
+  background: #a11;
 }
 
 .done {
@@ -154,7 +154,7 @@ li p:nth-of-type(1) {
 }
 
 .alert, .warning, .fixme, .FIXME {
-  background: #b01111;
+  background: #701111;
 }
 
 .fixme:before, .FIXME:before {
@@ -209,7 +209,7 @@ li p:nth-of-type(1) {
     border-left: 1px solid #ddd;
   }
   .alert, .warning, .fixme, .FIXME {
-    background: #f53838;
+    background: #e53838;
   }
 }
 
