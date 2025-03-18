@@ -1,4 +1,3 @@
-use chrono::DateTime;
 use micro_http_server::{Client, MicroHTTP};
 use orgize::ParseConfig;
 use std::{
@@ -122,9 +121,6 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
         title: title.as_ref(),
         body: &html_export.exp.finish(),
         lang: &lang,
-        author: "unknown (preview mode)",
-        commit: "dirty",
-        modified: DateTime::from_timestamp(0, 0).unwrap().naive_utc(),
         numdir,
         notice,
         ..Default::default()

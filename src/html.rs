@@ -28,17 +28,21 @@ pub struct PageHtml<'a> {
     pub title: &'a str,
     pub body: &'a str,
     pub lang: &'a str,
+    pub numdir: usize,
+    pub notice: Option<&'static str>,
+    pub header: Option<&'a str>,
+    pub metadata: Option<&'a PageMetadata<'a>>,
+    pub nav: bool,
+    pub inline: bool,
+}
+
+pub struct PageMetadata<'a> {
     pub author: &'a str,
     pub commit: &'a str,
     pub modified: NaiveDateTime,
     pub year: i32,
-    pub numdir: usize,
-    pub notice: Option<&'static str>,
     pub incoming: Option<&'a [(&'a str, &'a str)]>,
-    pub header: Option<&'a str>,
     pub footer: Option<&'a str>,
-    pub nav: bool,
-    pub inline: bool,
 }
 
 #[derive(Default)]
@@ -505,23 +509,27 @@ pub fn write_org_page(
                 .collect()
         });
 
-        let template = PageHtml {
-            title,
-            body: html,
-            lang,
+        let meta = PageMetadata {
             author,
             commit: short_id,
             modified: DateTime::from_timestamp(modified.seconds(), 0)
                 .ok_or(Error::BadModifyTime)?
                 .naive_utc(),
             year,
+            incoming: incoming.as_deref(),
+            footer,
+        };
+
+        let template = PageHtml {
+            title,
+            body: html,
+            lang,
             numdir,
             notice,
-            incoming: incoming.as_deref(),
             header,
-            footer,
             nav,
             inline,
+            metadata: Some(&meta),
         };
 
         let mut f = fs::File::create(new_path).map_err(Error::File)?;

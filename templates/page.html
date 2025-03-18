@@ -27,8 +27,9 @@
 %% }
 </header>
 {{ Trusted(&self.body) }}
+%% if let Some(meta) = self.metadata {
 <footer>
-%% if let Some(incoming) = self.incoming {
+%% if let Some(incoming) = meta.incoming {
 <nav aria-labelledby=clam.incoming><span id=clam.incoming>incoming</span>:
 %%   for (path, title) in incoming {
 <a href="{% for _ in 1..self.numdir { %}../{% } %}{{ path }}">{{ title }}</a>
@@ -36,14 +37,15 @@
 </nav>
 %% }
 <hr>
-&copy; {{ self.year }} <i>{{ self.author }}</i> and contributors.
-last modified <time>{{ self.modified }}</time>.
-generated from commit <code>{{ self.commit }}</code>.
-%% if let Some(footer) = self.footer {
+&copy; {{ meta.year }} <i>{{ meta.author }}</i> and contributors.
+last modified <time>{{ meta.modified }}</time>.
+generated from commit <code>{{ meta.commit }}</code>.
+%% if let Some(footer) = meta.footer {
 <div>
 {{ Trusted(footer) }}
 </div>
 %% }
 </footer>
+%% }
 </body>
 </html>
