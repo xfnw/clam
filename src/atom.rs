@@ -93,7 +93,7 @@ pub fn write_feed(
             Component::RootDir | Component::ParentDir | Component::CurDir
         )
     }) {
-        return Err(Error::BadFeedPath);
+        return Err(Error::UnsafePath);
     }
     let Some(path) = feed.path.to_str() else {
         return Err(Error::NonUTF8Path);

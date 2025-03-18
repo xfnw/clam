@@ -128,8 +128,8 @@ enum Error {
     BadModifyTime,
     /// stop using 300 billion year old software
     TimeOverflow,
-    /// invalid feed path
-    BadFeedPath,
+    /// unsafe path
+    UnsafePath,
     /// no entries in feed
     EmptyFeed,
     /// invalid path in git repository
