@@ -19,7 +19,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
     io::Write,
-    path::PathBuf,
+    path::{Component, Path, PathBuf},
     rc::Rc,
 };
 
@@ -537,6 +537,37 @@ pub fn write_org_page(
             .map_err(Error::File)?;
     }
     Ok(())
+}
+
+pub fn write_redirect_page(path: &Path, target: &str) -> Result<(), Error> {
+    if path.components().any(|s| {
+        matches!(
+            s,
+            Component::RootDir | Component::ParentDir | Component::CurDir
+        )
+    }) {
+        return Err(Error::UnsafePath);
+    }
+    let body = format!(
+        "this page has been <a href=\"{}\">moved here</a>.",
+        HtmlEscape(&target)
+    );
+    let refresh = format!(
+        "<meta http-equiv=refresh content=\"0;URL='{}'\">",
+        HtmlEscape(&target)
+    );
+    let numdir = path.iter().count();
+    let template = PageHtml {
+        title: "redirecting...",
+        body: &body,
+        header: Some(&refresh),
+        lang: "en",
+        numdir,
+        ..Default::default()
+    };
+    let mut f = fs::File::create(path).map_err(Error::File)?;
+    f.write_all(&template.to_string().into_bytes())
+        .map_err(Error::File)
 }
 
 pub fn get_keywords(res: &Org) -> PageKeywords {

@@ -1,4 +1,8 @@
-use crate::{atom, git::ModifyMap, html::Pages};
+use crate::{
+    atom,
+    git::ModifyMap,
+    html::{write_redirect_page, Pages},
+};
 use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
@@ -14,6 +18,8 @@ pub struct ClamConfig {
     pub inline: bool,
     #[serde(default)]
     pub feed: Vec<FeedConfig>,
+    #[serde(default)]
+    pub redirect: Vec<RedirectConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -22,6 +28,12 @@ pub struct FeedConfig {
     pub path: PathBuf,
     pub include: Option<Vec<String>>,
     pub exclude: Option<Vec<String>>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct RedirectConfig {
+    pub path: PathBuf,
+    pub target: String,
 }
 
 #[derive(Debug)]
@@ -53,6 +65,12 @@ pub fn handle_config(
             if let Err(e) = atom::write_feed(feed, id, &url, entries.as_slice()) {
                 eprintln!("skipping {}: {}", feed.path.display(), e);
             };
+        }
+    }
+
+    for RedirectConfig { path, target } in &config.redirect {
+        if let Err(e) = write_redirect_page(path, target) {
+            eprintln!("skipping redirect {}: {}", path.display(), e);
         }
     }
 
