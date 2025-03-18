@@ -50,9 +50,8 @@ pub fn handle_config(
         let entries = atom::entries(pages, mtime).ok()?;
 
         for feed in &config.feed {
-            match atom::write_feed(feed, id, &url, entries.as_slice()) {
-                Ok(()) => (),
-                Err(e) => eprintln!("skipping {}: {}", feed.path.display(), e),
+            if let Err(e) = atom::write_feed(feed, id, &url, entries.as_slice()) {
+                eprintln!("skipping {}: {}", feed.path.display(), e);
             };
         }
     }
