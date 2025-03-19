@@ -315,13 +315,12 @@ impl Traverser for Handler {
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
                     self.exp.push_str("<section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol>");
-                    for (n, (_, (elem, refs))) in self.feet.iter().enumerate() {
+                    for (n, (_, (elem, refs))) in self.feet.clone().iter().enumerate() {
                         let n = n + 1;
                         self.exp.push_str(format!("<li id=\"fn.{n}\">"));
                         if let Some(elem) = elem {
                             for e in elem {
-                                // bad workaround for self.element needing &mut self
-                                self.exp.element(e.clone(), ctx);
+                                self.element(e.clone(), ctx);
                             }
                         }
                         self.exp.push_str("\n");
