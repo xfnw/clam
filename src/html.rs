@@ -43,6 +43,7 @@ pub struct PageMetadata<'a> {
     pub year: i32,
     pub incoming: Option<&'a [(&'a str, &'a str)]>,
     pub footer: Option<&'a str>,
+    pub contributors: usize,
 }
 
 #[derive(Default)]
@@ -479,6 +480,7 @@ pub fn write_org_page(
             create_time,
             modify_time,
             creator,
+            contributors,
             ..
         } = hist.get(old_path).ok_or(Error::MissingHist)?;
 
@@ -513,6 +515,8 @@ pub fn write_org_page(
                 .collect()
         });
 
+        let contributors = contributors.len() - usize::from(contributors.contains(author));
+
         let meta = PageMetadata {
             author,
             commit: short_id,
@@ -522,6 +526,7 @@ pub fn write_org_page(
             year,
             incoming: incoming.as_deref(),
             footer,
+            contributors,
         };
 
         let template = PageHtml {

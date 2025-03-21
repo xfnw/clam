@@ -37,7 +37,7 @@
 </nav>
 %% }
 <hr>
-&copy; {{ meta.year }} <i>{{ meta.author }}</i> and contributors.
+&copy; {{ meta.year }} <i>{{ meta.author }}</i>{% if meta.contributors > 0 { %} and {{ meta.contributors }} contributor{% if meta.contributors != 1 { %}s{% } } %}.
 last modified <time>{{ meta.modified }}</time>.
 generated from commit <code>{{ meta.commit }}</code>.
 %% if let Some(footer) = meta.footer {
