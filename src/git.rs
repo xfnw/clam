@@ -5,31 +5,42 @@ use std::{collections::HashMap, fs, path::PathBuf, rc::Rc};
 
 pub type CreateMap = HashMap<PathBuf, (Time, String)>;
 pub type ModifyMap = HashMap<PathBuf, (Time, String, Option<String>)>;
+pub type HistMap = HashMap<PathBuf, HistMeta>;
+
+pub struct HistMeta {
+    pub create_time: Time,
+    pub modify_time: Time,
+    pub creator: String,
+    pub last_editor: String,
+    pub last_msg: Option<String>,
+}
 
 pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyMap), Error> {
     macro_rules! add_times {
-        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $create_time:expr, $modify_time:expr) => {
+        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $metadata:expr) => {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or(Error::BadGitPath)?;
-                if let Some(entry) = $modify_time.get_mut(path) {
-                    if entry.0 < $time_c {
-                        entry.0 = $time_c.clone();
-                        entry.1 = $author.to_string();
-                        entry.2 = $message.clone();
+                if let Some(entry) = $metadata.get_mut(path) {
+                    if entry.modify_time < $time_c {
+                        entry.modify_time = $time_c.clone();
+                        entry.last_editor = $author.to_string();
+                        entry.last_msg = $message.clone();
+                    }
+                    if entry.create_time > $time_a {
+                        entry.create_time = $time_a.clone();
+                        entry.creator = $author.to_string();
                     }
                 } else {
-                    $modify_time.insert(
+                    $metadata.insert(
                         path.to_owned(),
-                        ($time_c.clone(), $author.to_string(), $message.clone()),
+                        HistMeta {
+                            create_time: $time_a.clone(),
+                            modify_time: $time_c.clone(),
+                            creator: $author.to_string(),
+                            last_editor: $author.to_string(),
+                            last_msg: $message.clone(),
+                        },
                     );
-                }
-                if let Some(entry) = $create_time.get_mut(path) {
-                    if entry.0 > $time_a {
-                        entry.0 = $time_a.clone();
-                        entry.1 = $author.to_string();
-                    }
-                } else {
-                    $create_time.insert(path.to_owned(), ($time_a.clone(), $author.to_string()));
                 }
             }
         };
@@ -39,8 +50,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyM
     revwalk.push(oid).map_err(Error::Git)?;
     revwalk.set_sorting(git2::Sort::TIME).map_err(Error::Git)?;
 
-    let mut create_time: CreateMap = HashMap::new();
-    let mut modify_time: ModifyMap = HashMap::new();
+    let mut metadata: HistMap = HashMap::new();
 
     for cid in revwalk {
         let commit = repo
@@ -59,15 +69,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyM
             let diff = repo
                 .diff_tree_to_tree(None, Some(&tree), None)
                 .map_err(Error::Git)?;
-            add_times!(
-                time_a,
-                time_c,
-                message,
-                author,
-                diff,
-                create_time,
-                modify_time
-            );
+            add_times!(time_a, time_c, message, author, diff, metadata);
             continue;
         }
 
@@ -80,16 +82,15 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyM
             let diff = repo
                 .diff_tree_to_tree(Some(&ptree), Some(&tree), None)
                 .map_err(Error::Git)?;
-            add_times!(
-                time_a,
-                time_c,
-                message,
-                author,
-                diff,
-                create_time,
-                modify_time
-            );
+            add_times!(time_a, time_c, message, author, diff, metadata);
         }
+    }
+
+    let mut create_time: CreateMap = HashMap::new();
+    let mut modify_time: ModifyMap = HashMap::new();
+    for (p, m) in metadata.drain() {
+        create_time.insert(p.clone(), (m.create_time, m.creator));
+        modify_time.insert(p, (m.modify_time, m.last_editor, m.last_msg));
     }
 
     Ok((create_time, modify_time))
