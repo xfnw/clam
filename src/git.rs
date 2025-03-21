@@ -1,7 +1,12 @@
 use crate::{html::Pages, Error};
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
-use std::{collections::HashMap, fs, path::PathBuf, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+    path::PathBuf,
+    rc::Rc,
+};
 
 pub type HistMap = HashMap<PathBuf, HistMeta>;
 
@@ -11,6 +16,7 @@ pub struct HistMeta {
     pub creator: String,
     pub last_editor: String,
     pub last_msg: Option<String>,
+    pub contributors: HashSet<String>,
 }
 
 pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
@@ -19,6 +25,9 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or(Error::BadGitPath)?;
                 if let Some(entry) = $metadata.get_mut(path) {
+                    if !entry.contributors.contains($author) {
+                        entry.contributors.insert($author.to_string());
+                    }
                     if entry.modify_time < $time_c {
                         entry.modify_time = $time_c.clone();
                         entry.last_editor = $author.to_string();
@@ -29,6 +38,8 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
                         entry.creator = $author.to_string();
                     }
                 } else {
+                    let mut contributors = HashSet::new();
+                    contributors.insert($author.to_string());
                     $metadata.insert(
                         path.to_owned(),
                         HistMeta {
@@ -37,6 +48,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
                             creator: $author.to_string(),
                             last_editor: $author.to_string(),
                             last_msg: $message.clone(),
+                            contributors,
                         },
                     );
                 }
