@@ -1,4 +1,10 @@
-use crate::{config::FeedConfig, git::ModifyMap, helpers::URL_PATH_UNSAFE, html::Pages, Error};
+use crate::{
+    config::FeedConfig,
+    git::{HistMap, HistMeta},
+    helpers::URL_PATH_UNSAFE,
+    html::Pages,
+    Error,
+};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
@@ -50,7 +56,7 @@ impl fmt::Display for AtomDateTime {
     }
 }
 
-pub fn entries<'a>(pages: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEntry<'a>>, Error> {
+pub fn entries<'a>(pages: &'a Pages, metadata: &'a HistMap) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
     for (path, (title, old, _, html)) in pages {
@@ -58,15 +64,20 @@ pub fn entries<'a>(pages: &'a Pages, mtime: &'a ModifyMap) -> Result<Vec<AtomEnt
             continue;
         };
 
-        let (updated, author, summary) = mtime.get(old).ok_or(Error::NoModifyTime)?;
-        let updated = AtomDateTime::new(updated.seconds()).ok_or(Error::BadModifyTime)?;
-        let summary = summary.as_deref();
+        let HistMeta {
+            modify_time,
+            last_editor,
+            last_msg,
+            ..
+        } = metadata.get(old).ok_or(Error::MissingHist)?;
+        let updated = AtomDateTime::new(modify_time.seconds()).ok_or(Error::BadModifyTime)?;
+        let summary = last_msg.as_deref();
         let content = Some(html.as_ref());
 
         entries.push(AtomEntry {
             title,
             path,
-            author,
+            author: last_editor,
             summary,
             content,
             updated,

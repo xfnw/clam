@@ -1,6 +1,6 @@
 use crate::{
     config::ClamConfig,
-    git::{CreateMap, ModifyMap},
+    git::{HistMap, HistMeta},
     helpers::org_links,
     Error, STYLESHEET_STR,
 };
@@ -453,8 +453,7 @@ pub fn generate_page(
 
 pub fn write_org_page(
     pages: &Pages,
-    ctime: &CreateMap,
-    mtime: &ModifyMap,
+    hist: &HistMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
     config: Option<&ClamConfig>,
@@ -476,15 +475,19 @@ pub fn write_org_page(
     });
 
     for (new_path, (title, old_path, keywords, html)) in pages {
-        let (created, author) = ctime.get(old_path).ok_or(Error::NoCreateTime)?;
-        let modified = mtime.get(old_path).ok_or(Error::NoModifyTime)?.0;
+        let HistMeta {
+            create_time,
+            modify_time,
+            creator,
+            ..
+        } = hist.get(old_path).ok_or(Error::MissingHist)?;
 
-        let author = keywords.author.as_deref().unwrap_or(author);
+        let author = keywords.author.as_deref().unwrap_or(creator);
         let lang = keywords.language.as_deref().unwrap_or("en");
         let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
             year
         } else {
-            DateTime::from_timestamp(created.seconds(), 0)
+            DateTime::from_timestamp(create_time.seconds(), 0)
                 .ok_or(Error::BadCreateTime)?
                 .naive_utc()
                 .year()
@@ -492,7 +495,7 @@ pub fn write_org_page(
 
         let numdir = old_path.iter().count();
 
-        let notice = if modified.seconds() - year_ago < 0 {
+        let notice = if modify_time.seconds() - year_ago < 0 {
             Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
         } else {
             None
@@ -513,7 +516,7 @@ pub fn write_org_page(
         let meta = PageMetadata {
             author,
             commit: short_id,
-            modified: DateTime::from_timestamp(modified.seconds(), 0)
+            modified: DateTime::from_timestamp(modify_time.seconds(), 0)
                 .ok_or(Error::BadModifyTime)?
                 .naive_utc(),
             year,

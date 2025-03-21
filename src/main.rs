@@ -118,10 +118,8 @@ enum Error {
     Dir(std::io::Error),
     /// your system clock is screwed
     Clock(std::time::SystemTimeError),
-    /// missing creation time
-    NoCreateTime,
-    /// missing modification time
-    NoModifyTime,
+    /// missing history of file
+    MissingHist,
     /// creation time broken
     BadCreateTime,
     /// modification time broken
@@ -154,7 +152,7 @@ fn generate(
     let oid = commit.id();
     let tree = commit.tree().unwrap();
 
-    let (ctime, mtime) = git::make_time_tree(repo, oid)?;
+    let hmeta = git::make_time_tree(repo, oid)?;
 
     {
         let mut f = fs::File::create("style.css").map_err(Error::File)?;
@@ -176,12 +174,12 @@ fn generate(
     })
     .map_err(Error::Git)?;
 
-    let config = config::handle_config(&pages, &mtime, overrides);
+    let config = config::handle_config(&pages, &hmeta, overrides);
     if config.is_none() {
         eprintln!("configless, no feeds generated and overrides ignored");
     }
 
-    html::write_org_page(&pages, &ctime, &mtime, &links, short_id, config.as_ref())?;
+    html::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
 
     Ok(())
 }

@@ -3,8 +3,6 @@ use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
 use std::{collections::HashMap, fs, path::PathBuf, rc::Rc};
 
-pub type CreateMap = HashMap<PathBuf, (Time, String)>;
-pub type ModifyMap = HashMap<PathBuf, (Time, String, Option<String>)>;
 pub type HistMap = HashMap<PathBuf, HistMeta>;
 
 pub struct HistMeta {
@@ -15,7 +13,7 @@ pub struct HistMeta {
     pub last_msg: Option<String>,
 }
 
-pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyMap), Error> {
+pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
     macro_rules! add_times {
         ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $metadata:expr) => {
             for change in $diff.deltas() {
@@ -86,14 +84,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<(CreateMap, ModifyM
         }
     }
 
-    let mut create_time: CreateMap = HashMap::new();
-    let mut modify_time: ModifyMap = HashMap::new();
-    for (p, m) in metadata.drain() {
-        create_time.insert(p.clone(), (m.create_time, m.creator));
-        modify_time.insert(p, (m.modify_time, m.last_editor, m.last_msg));
-    }
-
-    Ok((create_time, modify_time))
+    Ok(metadata)
 }
 
 pub fn walk_callback(

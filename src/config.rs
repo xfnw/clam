@@ -1,6 +1,6 @@
 use crate::{
     atom,
-    git::ModifyMap,
+    git::HistMap,
     html::{write_redirect_page, Pages},
 };
 use serde::Deserialize;
@@ -44,7 +44,7 @@ pub struct OverrideConfig {
 
 pub fn handle_config(
     pages: &Pages,
-    mtime: &ModifyMap,
+    metadata: &HistMap,
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {
     let config = fs::read_to_string(".clam.toml").ok()?;
@@ -59,7 +59,7 @@ pub fn handle_config(
     let id = config.id.as_ref().unwrap_or(&url);
 
     if !config.feed.is_empty() {
-        let entries = atom::entries(pages, mtime).ok()?;
+        let entries = atom::entries(pages, metadata).ok()?;
 
         for feed in &config.feed {
             if let Err(e) = atom::write_feed(feed, id, &url, entries.as_slice()) {
