@@ -111,12 +111,12 @@ pub fn write_feed(
     };
 
     let include = if let Some(e) = &feed.include {
-        RegexSet::new(e).map_err(Error::BadRegex)?
+        RegexSet::new(e)?
     } else {
-        RegexSet::new([r"."]).map_err(Error::BadRegex)?
+        RegexSet::new([r"."])?
     };
     let exclude = if let Some(e) = &feed.exclude {
-        RegexSet::new(e).map_err(Error::BadRegex)?
+        RegexSet::new(e)?
     } else {
         RegexSet::empty()
     };

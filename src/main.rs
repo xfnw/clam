@@ -107,10 +107,12 @@ enum Error {
     /// creating new refs is not permitted
     CreateRef(String),
     /// failed to compile regex
+    #[err(from)]
     BadRegex(regex::Error),
     /// failed to read stdin
     Stdin(std::io::Error),
     /// internal git error
+    #[err(from)]
     Git(git2::Error),
     /// failed to write file
     File(std::io::Error),
@@ -171,8 +173,7 @@ fn generate(
             eprintln!("{e}");
         }
         0
-    })
-    .map_err(Error::Git)?;
+    })?;
 
     let config = config::handle_config(&pages, &hmeta, overrides);
     if config.is_none() {

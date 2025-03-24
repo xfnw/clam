@@ -56,17 +56,15 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
         };
     }
 
-    let mut revwalk = repo.revwalk().map_err(Error::Git)?;
-    revwalk.push(oid).map_err(Error::Git)?;
-    revwalk.set_sorting(git2::Sort::TIME).map_err(Error::Git)?;
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push(oid)?;
+    revwalk.set_sorting(git2::Sort::TIME)?;
 
     let mut metadata: HistMap = HashMap::new();
 
     for cid in revwalk {
-        let commit = repo
-            .find_commit(cid.map_err(Error::Git)?)
-            .map_err(Error::Git)?;
-        let tree = commit.tree().map_err(Error::Git)?;
+        let commit = repo.find_commit(cid?)?;
+        let tree = commit.tree()?;
         let parents = commit.parent_count();
         let message = commit.message().map(str::to_string);
         let author = commit.author();
@@ -76,22 +74,14 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
 
         // initial commit, everything touched
         if parents == 0 {
-            let diff = repo
-                .diff_tree_to_tree(None, Some(&tree), None)
-                .map_err(Error::Git)?;
+            let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
             add_times!(time_a, time_c, message, author, diff, metadata);
             continue;
         }
 
         for parent in 0..parents {
-            let ptree = commit
-                .parent(parent)
-                .map_err(Error::Git)?
-                .tree()
-                .map_err(Error::Git)?;
-            let diff = repo
-                .diff_tree_to_tree(Some(&ptree), Some(&tree), None)
-                .map_err(Error::Git)?;
+            let ptree = commit.parent(parent)?.tree()?;
+            let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
             add_times!(time_a, time_c, message, author, diff, metadata);
         }
     }
@@ -107,7 +97,7 @@ pub fn walk_callback(
     pages: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
-    let object = entry.to_object(repo).map_err(Error::Git)?;
+    let object = entry.to_object(repo)?;
     let name = entry.name().ok_or(Error::NonUTF8Path)?;
 
     let Ok(blob) = object.into_blob() else {

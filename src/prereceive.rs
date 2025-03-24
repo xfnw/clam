@@ -21,8 +21,8 @@ pub struct Rules {
 
 impl Rules {
     pub fn from_args(args: &PreReceiveArgs) -> Result<Self, Error> {
-        let allow_pattern = RegexSet::new(&args.allow_pattern).map_err(Error::BadRegex)?;
-        let protect_pattern = RegexSet::new(&args.protect_pattern).map_err(Error::BadRegex)?;
+        let allow_pattern = RegexSet::new(&args.allow_pattern)?;
+        let protect_pattern = RegexSet::new(&args.protect_pattern)?;
         let res = Self {
             require_signing: args.require_signing,
             no_deletion: args.no_deletion,
@@ -69,8 +69,8 @@ impl Rules {
 fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error> {
     let is_signed = repo.extract_signature(&cid, None).is_ok();
     rules.signed(is_signed)?;
-    let commit = repo.find_commit(cid).map_err(Error::Git)?;
-    let tree = commit.tree().map_err(Error::Git)?;
+    let commit = repo.find_commit(cid)?;
+    let tree = commit.tree()?;
     let parents = commit.parent_count();
 
     if parents == 0 {
@@ -78,14 +78,8 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
     }
 
     for parent in 0..parents {
-        let ptree = commit
-            .parent(parent)
-            .map_err(Error::Git)?
-            .tree()
-            .map_err(Error::Git)?;
-        let diff = repo
-            .diff_tree_to_tree(Some(&ptree), Some(&tree), None)
-            .map_err(Error::Git)?;
+        let ptree = commit.parent(parent)?.tree()?;
+        let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
 
         for change in diff.deltas() {
             let Some(Ok(path)) = change.new_file().path_bytes().map(std::str::from_utf8) else {
@@ -107,7 +101,7 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
 
 fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
     let rules = Rules::from_args(args)?;
-    let repo = Repository::open_from_env().map_err(Error::Git)?;
+    let repo = Repository::open_from_env()?;
     let stdin = io::stdin().lines();
 
     for line in stdin {
@@ -117,20 +111,20 @@ fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
             return Err(Error::InvalidHookInput);
         };
 
-        let old = Oid::from_str(old).map_err(Error::Git)?;
-        let new = Oid::from_str(new).map_err(Error::Git)?;
+        let old = Oid::from_str(old)?;
+        let new = Oid::from_str(new)?;
         if old.is_zero() || new.is_zero() {
             return Err(Error::CreateRef(refname.to_string()));
         }
 
-        let mut revwalk = repo.revwalk().map_err(Error::Git)?;
-        revwalk.push(new).map_err(Error::Git)?;
-        revwalk.hide(old).map_err(Error::Git)?;
+        let mut revwalk = repo.revwalk()?;
+        revwalk.push(new)?;
+        revwalk.hide(old)?;
 
         let mut visited = false;
         for cid in revwalk {
             visited = true;
-            let cid = cid.map_err(Error::Git)?;
+            let cid = cid?;
             check_commit(&repo, &rules, cid)?;
         }
         if !visited {
