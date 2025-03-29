@@ -417,7 +417,7 @@ pub fn generate_page(
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
     if Some("org") == full_path.extension().and_then(std::ffi::OsStr::to_str) {
-        let fstr = std::str::from_utf8(file).map_err(|_| Error::NonUTF8Path)?;
+        let fstr = std::str::from_utf8(file).map_err(Error::NonUTF8Org)?;
         let res = org_cfg.clone().parse(fstr);
 
         let title = res.title().unwrap_or_else(|| "untitled".to_string());

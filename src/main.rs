@@ -94,6 +94,8 @@ enum Error {
     ForcePush,
     /// paths that are not utf-8 are not supported
     NonUTF8Path,
+    /// org files that are not utf-8 are not supported
+    NonUTF8Org(std::str::Utf8Error),
     /// signing your commits is required
     NotSigned,
     /// deleting pages is not permitted
