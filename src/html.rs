@@ -316,8 +316,7 @@ impl Traverser for Handler {
             Event::Leave(Container::Document(_)) => {
                 if !self.feet.is_empty() {
                     self.exp.push_str("<section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol>");
-                    let mut feet = IndexMap::new();
-                    feet.append(&mut self.feet);
+                    let feet = std::mem::take(&mut self.feet);
                     for (n, (_, (elem, refs))) in feet.iter().enumerate() {
                         let n = n + 1;
                         self.exp.push_str(format!("<li id=\"fn.{n}\">"));
