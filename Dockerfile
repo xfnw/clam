@@ -11,4 +11,4 @@ RUN apk add --no-cache libgcc git-daemon
 COPY --from=build /build/target/release/clam /clam
 WORKDIR /data
 EXPOSE 9418
-CMD ["git", "daemon", "--export-all", "--reuseaddr", "--enable=receive-pack", "--base-path=/data"]
+CMD ["git", "daemon", "--export-all", "--reuseaddr", "--base-path=/data"]
