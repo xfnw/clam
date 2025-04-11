@@ -114,7 +114,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
     res.traverse(&mut html_export);
 
     let notice = Some(
-            "you found my preview site. please avoid sharing the link around, don't be the reason this needs to be more complex.",
+            "you found my preview site. please avoid sharing the link around, don't be the reason this needs a more complex solution.",
         );
 
     let template = PageHtml {
