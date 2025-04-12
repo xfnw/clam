@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::html::{get_keywords, Handler, PageHtml};
+use crate::html::{get_keywords, infer_title, Handler, PageHtml};
 
 pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
     let server = MicroHTTP::new(bindhost).unwrap();
@@ -102,7 +102,7 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
     let fstr = read_to_string(path).ok()?;
     let res = org_cfg.clone().parse(fstr);
 
-    let title = res.title().unwrap_or_else(|| "untitled".to_string());
+    let title = res.title().unwrap_or_else(|| infer_title(path));
     let keywords = get_keywords(&res);
     let lang = keywords.language.unwrap_or_else(|| "en".to_string());
     let numdir = path.iter().count();

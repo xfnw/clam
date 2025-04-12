@@ -17,6 +17,7 @@ use slugify::slugify;
 use std::{
     cmp::min,
     collections::{HashMap, HashSet},
+    ffi::OsStr,
     fs,
     io::Write,
     path::{Component, Path, PathBuf},
@@ -406,6 +407,13 @@ fn mangle_link(path: &Token) -> String {
     path.replace(".org#", ".html#")
 }
 
+pub fn infer_title(filename: &Path) -> String {
+    let Some(stem) = filename.file_stem().and_then(OsStr::to_str) else {
+        return "untitled".to_string();
+    };
+    slugify!(stem, separator = " ")
+}
+
 pub fn generate_page(
     dir: &str,
     name: &str,
@@ -415,11 +423,11 @@ pub fn generate_page(
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
-    if Some("org") == full_path.extension().and_then(std::ffi::OsStr::to_str) {
+    if Some("org") == full_path.extension().and_then(OsStr::to_str) {
         let fstr = std::str::from_utf8(file).map_err(Error::NonUTF8Org)?;
         let res = org_cfg.clone().parse(fstr);
 
-        let title = res.title().unwrap_or_else(|| "untitled".to_string());
+        let title = res.title().unwrap_or_else(|| infer_title(&full_path));
 
         let old_path = full_path.clone();
         full_path.set_extension("html");
