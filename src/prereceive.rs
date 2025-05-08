@@ -118,17 +118,15 @@ fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
         }
 
         let mut revwalk = repo.revwalk()?;
+        revwalk.set_sorting(git2::Sort::TOPOLOGICAL)?;
         revwalk.push(new)?;
-        revwalk.hide(old)?;
 
-        let mut visited = false;
         for cid in revwalk {
-            visited = true;
             let cid = cid?;
+            if cid == old {
+                break;
+            }
             check_commit(&repo, &rules, cid)?;
-        }
-        if !visited {
-            return Err(Error::ForcePush);
         }
     }
 
