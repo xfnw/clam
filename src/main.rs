@@ -59,7 +59,7 @@ struct RepoArgs {
 #[cfg(feature = "util")]
 #[derive(Debug, Args)]
 struct PreviewArgs {
-    #[arg(default_value = "[::]:8086")]
+    #[arg(default_value = "[::1]:8086")]
     bindhost: std::net::SocketAddr,
 }
 
