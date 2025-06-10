@@ -53,7 +53,7 @@ impl Rules {
                 }
             }
             Action::Modify => {}
-        };
+        }
 
         if !self.allow_pattern.is_match(path) {
             return Err(Error::NotAllowed(path.to_string()));
@@ -75,19 +75,19 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
 
     if parents == 0 {
         let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-        check_deltas(rules, diff)?;
+        check_deltas(rules, &diff)?;
     }
 
     for parent in 0..parents {
         let ptree = commit.parent(parent)?.tree()?;
         let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-        check_deltas(rules, diff)?;
+        check_deltas(rules, &diff)?;
     }
 
     Ok(())
 }
 
-fn check_deltas(rules: &Rules, diff: git2::Diff<'_>) -> Result<(), Error> {
+fn check_deltas(rules: &Rules, diff: &git2::Diff<'_>) -> Result<(), Error> {
     for change in diff.deltas() {
         let Some(Ok(path)) = change.new_file().path_bytes().map(std::str::from_utf8) else {
             return Err(Error::NonUTF8Path);

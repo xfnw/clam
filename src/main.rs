@@ -1,3 +1,5 @@
+#![deny(clippy::pedantic)]
+
 use clap::{Args, Parser, Subcommand};
 use foxerror::FoxError;
 use git2::{Commit, Repository};

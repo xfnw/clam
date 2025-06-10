@@ -17,10 +17,7 @@ pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
     println!("listening on {bindhost}");
 
     while let Ok(Some(client)) = server.next_client() {
-        match handle_request(client, org_cfg) {
-            Ok(_) => (),
-            Err(_) => continue,
-        }
+        _ = handle_request(client, org_cfg);
     }
 }
 

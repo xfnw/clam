@@ -43,7 +43,7 @@ where
         match fullpath.extension().map(|e| e == "org") {
             Some(true) => (),
             _ => fullpath.push("index.org"),
-        };
+        }
         callback(fullpath);
     }
 }

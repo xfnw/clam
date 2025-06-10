@@ -64,7 +64,7 @@ pub fn handle_config(
         for feed in &config.feed {
             if let Err(e) = atom::write_feed(feed, id, &url, entries.as_slice()) {
                 eprintln!("skipping {}: {}", feed.path.display(), e);
-            };
+            }
         }
     }
 

@@ -154,7 +154,7 @@ mod tests {
             title: "",
             path: "",
             author: "",
-            updated: AtomDateTime::new(1633462756).unwrap(),
+            updated: AtomDateTime::new(1_633_462_756).unwrap(),
             summary: None,
             content: None,
         };
@@ -162,7 +162,7 @@ mod tests {
             title: "",
             path: "",
             author: "",
-            updated: AtomDateTime::new(1169707221).unwrap(),
+            updated: AtomDateTime::new(1_169_707_221).unwrap(),
             summary: None,
             content: None,
         };
@@ -180,7 +180,7 @@ mod tests {
             title: "hi – there",
             path: "🦊.html",
             author: "fox",
-            updated: AtomDateTime::new(1734116293).unwrap(),
+            updated: AtomDateTime::new(1_734_116_293).unwrap(),
             summary: Some("did you know that foxes—which are very fluffy—exist?"),
             content: None,
         };
@@ -191,7 +191,7 @@ mod tests {
             url: "https://foxes.invalid",
             path: "foxfeed.xml",
             numdir: 6,
-            updated: &AtomDateTime::new(1734117526).unwrap(),
+            updated: &AtomDateTime::new(1_734_117_526).unwrap(),
             entries: &entries,
         }
         .to_string();

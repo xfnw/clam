@@ -65,6 +65,7 @@ pub struct Handler {
 }
 
 impl Traverser for Handler {
+    #[allow(clippy::too_many_lines)]
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Headline(headline)) => {
@@ -344,7 +345,7 @@ impl Traverser for Handler {
             }
             Event::LineBreak(_) => self.exp.push_str("<br>"),
             _ => self.exp.event(event, ctx),
-        };
+        }
     }
 }
 
@@ -614,7 +615,7 @@ mod tests {
     #[test]
     fn snapshot_html() {
         let res = Org::parse(
-            r#"#+TITLE: you should not see this
+            r"#+TITLE: you should not see this
 * meow
 #+begin_chat fox
 AAAA
@@ -643,7 +644,7 @@ i have a footnote[fn:1:beep /boop/][fn:2]
 AAAA even more
 #+end_chat
 
-** DONE finish writing this test"#,
+** DONE finish writing this test",
         );
         let mut exp = Handler::default();
         res.traverse(&mut exp);
