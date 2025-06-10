@@ -74,26 +74,32 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
     let parents = commit.parent_count();
 
     if parents == 0 {
-        return Err(Error::ForcePush);
+        let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
+        check_deltas(rules, diff)?;
     }
 
     for parent in 0..parents {
         let ptree = commit.parent(parent)?.tree()?;
         let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
+        check_deltas(rules, diff)?;
+    }
 
-        for change in diff.deltas() {
-            let Some(Ok(path)) = change.new_file().path_bytes().map(std::str::from_utf8) else {
-                return Err(Error::NonUTF8Path);
-            };
-            let action = match change.status() {
-                Delta::Added => Action::Create,
-                Delta::Deleted => Action::Delete,
-                Delta::Modified => Action::Modify,
-                _ => unreachable!(),
-            };
+    Ok(())
+}
 
-            rules.check(path, &action)?;
-        }
+fn check_deltas(rules: &Rules, diff: git2::Diff<'_>) -> Result<(), Error> {
+    for change in diff.deltas() {
+        let Some(Ok(path)) = change.new_file().path_bytes().map(std::str::from_utf8) else {
+            return Err(Error::NonUTF8Path);
+        };
+        let action = match change.status() {
+            Delta::Added => Action::Create,
+            Delta::Deleted => Action::Delete,
+            Delta::Modified => Action::Modify,
+            _ => unreachable!(),
+        };
+
+        rules.check(path, &action)?;
     }
 
     Ok(())
@@ -117,20 +123,26 @@ fn handle(args: &PreReceiveArgs) -> Result<(), Error> {
             return Err(Error::CreateRef(refname.to_string()));
         }
 
-        let mut revwalk = repo.revwalk()?;
-        revwalk.set_sorting(git2::Sort::TOPOLOGICAL)?;
-        revwalk.push(new)?;
-
-        for cid in revwalk {
-            let cid = cid?;
-            if cid == old {
-                break;
-            }
-            check_commit(&repo, &rules, cid)?;
-        }
+        ensure_reachable(&rules, &repo, old, new)?;
     }
 
     Ok(())
+}
+
+fn ensure_reachable(rules: &Rules, repo: &Repository, old: Oid, new: Oid) -> Result<(), Error> {
+    let mut revwalk = repo.revwalk()?;
+    revwalk.set_sorting(git2::Sort::TOPOLOGICAL)?;
+    revwalk.push(new)?;
+
+    for cid in revwalk {
+        let cid = cid?;
+        if cid == old {
+            return Ok(());
+        }
+        check_commit(repo, rules, cid)?;
+    }
+
+    Err(Error::ForcePush)
 }
 
 pub fn hook(args: &PreReceiveArgs) {
