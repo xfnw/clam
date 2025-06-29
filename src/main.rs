@@ -271,3 +271,12 @@ fn default_org_cfg() -> ParseConfig {
         ..Default::default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn verify_clap() {
+        use clap::CommandFactory;
+        crate::Opt::command().debug_assert();
+    }
+}
