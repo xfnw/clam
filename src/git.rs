@@ -1,4 +1,4 @@
-use crate::{html::Pages, Error};
+use crate::{output::html::Pages, Error, OutputFormat};
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
 use std::{
@@ -94,6 +94,7 @@ pub fn walk_callback(
     dir: &str,
     entry: &git2::TreeEntry,
     org_cfg: &ParseConfig,
+    format: OutputFormat,
     pages: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
@@ -110,7 +111,14 @@ pub fn walk_callback(
         return Err(Error::SkipSymlink(format!("{dir}{name}")));
     }
 
-    crate::html::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
+    match format {
+        OutputFormat::Html => {
+            crate::output::html::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
+        }
+        OutputFormat::Gmi => {
+            crate::output::gmi::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
+        }
+    }
 
     Ok(())
 }

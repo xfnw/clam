@@ -609,7 +609,7 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
 
 #[cfg(test)]
 mod tests {
-    use crate::html::*;
+    use crate::output::html::*;
     use orgize::Org;
 
     #[test]

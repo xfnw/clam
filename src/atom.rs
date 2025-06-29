@@ -2,7 +2,7 @@ use crate::{
     config::FeedConfig,
     git::{HistMap, HistMeta},
     helpers::URL_PATH_UNSAFE,
-    html::Pages,
+    output::html::Pages,
     Error,
 };
 use chrono::{DateTime, NaiveDateTime};

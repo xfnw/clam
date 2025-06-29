@@ -1,7 +1,8 @@
 use crate::{
     atom,
     git::HistMap,
-    html::{write_redirect_page, Pages},
+    output::html::{write_redirect_page, Pages},
+    OutputFormat,
 };
 use serde::Deserialize;
 use std::{fs, path::PathBuf};
@@ -40,6 +41,7 @@ pub struct RedirectConfig {
 pub struct OverrideConfig {
     pub url: Option<String>,
     pub inline: Option<bool>,
+    pub format: OutputFormat,
 }
 
 pub fn handle_config(

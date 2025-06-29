@@ -10,7 +10,7 @@ mod atom;
 mod config;
 mod git;
 mod helpers;
-mod html;
+mod output;
 mod prereceive;
 #[cfg(feature = "util")]
 mod util;
@@ -166,6 +166,7 @@ fn generate(
     let short_id = short_id.as_str().unwrap();
     let oid = commit.id();
     let tree = commit.tree().unwrap();
+    let format = overrides.format;
 
     let hmeta = git::make_time_tree(repo, oid)?;
 
@@ -182,7 +183,9 @@ fn generate(
     let org_cfg = default_org_cfg();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = git::walk_callback(repo, dir, entry, &org_cfg, &mut pages, &mut links) {
+        if let Err(e) =
+            git::walk_callback(repo, dir, entry, &org_cfg, format, &mut pages, &mut links)
+        {
             eprintln!("{e}");
         }
         0
@@ -193,7 +196,14 @@ fn generate(
         eprintln!("configless, no feeds generated and overrides ignored");
     }
 
-    html::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
+    match format {
+        OutputFormat::Html => {
+            output::html::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
+        }
+        OutputFormat::Gmi => {
+            output::gmi::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
+        }
+    }
 
     Ok(())
 }
@@ -219,6 +229,7 @@ fn do_build(repo: &Repository, commit: &Commit, args: &RepoArgs) {
     let overrides = config::OverrideConfig {
         url: args.url.clone(),
         inline: args.inline,
+        format: args.format,
     };
 
     if let Err(e) = generate(repo, commit, overrides) {
