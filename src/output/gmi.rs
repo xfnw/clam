@@ -1,6 +1,6 @@
 use crate::{config::ClamConfig, git::HistMap, output::Pages, Error};
 use orgize::ParseConfig;
-use std::{collections::HashMap, path::PathBuf, rc::Rc};
+use std::{collections::HashMap, path::{Path, PathBuf}, rc::Rc};
 
 pub fn write_org_page(
     _pages: &Pages,
@@ -20,5 +20,9 @@ pub fn generate_page(
     _pages: &mut Pages,
     _links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
+    todo!()
+}
+
+pub fn write_redirect_page(_path: &Path, _target: &str) -> Result<(), Error> {
     todo!()
 }

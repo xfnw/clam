@@ -196,14 +196,7 @@ fn generate(
         eprintln!("configless, no feeds generated and overrides ignored");
     }
 
-    match format {
-        OutputFormat::Html => {
-            output::html::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
-        }
-        OutputFormat::Gmi => {
-            output::gmi::write_org_page(&pages, &hmeta, &links, short_id, config.as_ref())?;
-        }
-    }
+    output::write_org_page(format, &pages, &hmeta, &links, short_id, config.as_ref())?;
 
     Ok(())
 }

@@ -111,14 +111,7 @@ pub fn walk_callback(
         return Err(Error::SkipSymlink(format!("{dir}{name}")));
     }
 
-    match format {
-        OutputFormat::Html => {
-            crate::output::html::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
-        }
-        OutputFormat::Gmi => {
-            crate::output::gmi::generate_page(dir, name, blob.content(), org_cfg, pages, links)?;
-        }
-    }
+    crate::output::generate_page(format, dir, name, blob.content(), org_cfg, pages, links)?;
 
     Ok(())
 }

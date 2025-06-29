@@ -1,11 +1,14 @@
 use chrono::NaiveDateTime;
-use orgize::{rowan::NodeOrToken, Org, SyntaxNode, SyntaxToken};
+use orgize::{rowan::NodeOrToken, Org, ParseConfig, SyntaxNode, SyntaxToken};
 use slugify::slugify;
 use std::{
     collections::HashMap,
     ffi::OsStr,
     path::{Path, PathBuf},
+    rc::Rc,
 };
+
+use crate::{config::ClamConfig, git::HistMap, Error, OutputFormat};
 
 pub mod gmi;
 pub mod html;
@@ -55,4 +58,40 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
         match_keywords!(k, keywords, (author, language, year));
     }
     keywords
+}
+
+pub fn write_org_page(
+    format: OutputFormat,
+    pages: &Pages,
+    hist: &HistMap,
+    links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
+    short_id: &str,
+    config: Option<&ClamConfig>,
+) -> Result<(), Error> {
+    match format {
+        OutputFormat::Html => html::write_org_page(pages, hist, links, short_id, config),
+        OutputFormat::Gmi => gmi::write_org_page(pages, hist, links, short_id, config),
+    }
+}
+
+pub fn generate_page(
+    format: OutputFormat,
+    dir: &str,
+    name: &str,
+    file: &[u8],
+    org_cfg: &ParseConfig,
+    pages: &mut Pages,
+    links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
+) -> Result<(), Error> {
+    match format {
+        OutputFormat::Html => html::generate_page(dir, name, file, org_cfg, pages, links),
+        OutputFormat::Gmi => gmi::generate_page(dir, name, file, org_cfg, pages, links),
+    }
+}
+
+pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> Result<(), Error> {
+    match format {
+        OutputFormat::Html => html::write_redirect_page(path, target),
+        OutputFormat::Gmi => gmi::write_redirect_page(path, target),
+    }
 }

@@ -1,7 +1,7 @@
 use crate::{
     atom,
     git::HistMap,
-    output::{html::write_redirect_page, Pages},
+    output::{write_redirect_page, Pages},
     OutputFormat,
 };
 use serde::Deserialize;
@@ -71,7 +71,7 @@ pub fn handle_config(
     }
 
     for RedirectConfig { path, target } in &config.redirect {
-        if let Err(e) = write_redirect_page(path, target) {
+        if let Err(e) = write_redirect_page(overrides.format, path, target) {
             eprintln!("skipping redirect {}: {}", path.display(), e);
         }
     }
