@@ -50,6 +50,9 @@ struct RepoArgs {
     /// change to directory after opening repository
     #[arg(short = 'C', long, value_name = "TARGET")]
     chdir: Option<PathBuf>,
+    /// output format
+    #[arg(long, default_value = "html")]
+    format: OutputFormat,
     /// override base url in feeds
     #[arg(long)]
     url: Option<String>,
@@ -142,6 +145,12 @@ enum Error {
     BadAuthor,
     /// skipping symlink
     SkipSymlink(String),
+}
+
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+enum OutputFormat {
+    Html,
+    Gmi,
 }
 
 static STYLESHEET_STR: &str = include_str!("style.css");
