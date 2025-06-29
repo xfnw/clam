@@ -1,4 +1,4 @@
-use crate::{output::html::Pages, Error, OutputFormat};
+use crate::{output::Pages, Error, OutputFormat};
 use git2::{Oid, Repository, Time};
 use orgize::ParseConfig;
 use std::{

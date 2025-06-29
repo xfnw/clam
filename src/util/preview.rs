@@ -7,7 +7,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::output::html::{get_keywords, infer_title, Handler, PageHtml};
+use crate::output::{
+    get_keywords,
+    html::{Handler, PageHtml},
+    infer_title,
+};
 
 pub fn serve(org_cfg: &ParseConfig, bindhost: SocketAddr) {
     let server = MicroHTTP::new(bindhost).unwrap();

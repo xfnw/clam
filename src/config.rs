@@ -1,7 +1,7 @@
 use crate::{
     atom,
     git::HistMap,
-    output::html::{write_redirect_page, Pages},
+    output::{html::write_redirect_page, Pages},
     OutputFormat,
 };
 use serde::Deserialize;

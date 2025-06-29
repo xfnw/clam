@@ -2,16 +2,17 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::org_links,
+    output::{get_keywords, infer_title, PageMetadata, Pages, TokenList},
     Error, STYLESHEET_STR,
 };
-use chrono::{DateTime, Datelike, NaiveDateTime};
+use chrono::{DateTime, Datelike};
 use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
 use orgize::{
     ast::{Headline, TodoType, Token},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
     rowan::{ast::AstNode, NodeOrToken},
-    Org, ParseConfig, SyntaxKind, SyntaxNode, SyntaxToken,
+    ParseConfig, SyntaxKind,
 };
 use slugify::slugify;
 use std::{
@@ -36,26 +37,6 @@ pub struct PageHtml<'a> {
     pub nav: bool,
     pub inline: bool,
 }
-
-pub struct PageMetadata<'a> {
-    pub author: &'a str,
-    pub commit: &'a str,
-    pub modified: NaiveDateTime,
-    pub year: i32,
-    pub incoming: Option<&'a [(&'a str, &'a str)]>,
-    pub footer: Option<&'a str>,
-    pub contributors: usize,
-}
-
-#[derive(Default)]
-pub struct PageKeywords {
-    pub author: Option<String>,
-    pub language: Option<String>,
-    pub year: Option<String>,
-}
-
-pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
-pub type Pages = HashMap<PathBuf, (String, PathBuf, PageKeywords, String)>;
 
 #[derive(Default)]
 pub struct Handler {
@@ -408,13 +389,6 @@ fn mangle_link(path: &Token) -> String {
     path.replace(".org#", ".html#")
 }
 
-pub fn infer_title(filename: &Path) -> String {
-    let Some(stem) = filename.file_stem().and_then(OsStr::to_str) else {
-        return "untitled".to_string();
-    };
-    slugify!(stem, separator = " ")
-}
-
 pub fn generate_page(
     dir: &str,
     name: &str,
@@ -585,26 +559,6 @@ pub fn write_redirect_page(path: &Path, target: &str) -> Result<(), Error> {
     let mut f = fs::File::create(path).map_err(Error::File)?;
     f.write_all(&template.to_string().into_bytes())
         .map_err(Error::File)
-}
-
-pub fn get_keywords(res: &Org) -> PageKeywords {
-    macro_rules! match_keywords {
-        ($k:ident, $kw:ident, ($($key:ident),*)) => {
-            match $k.key().to_ascii_lowercase().as_ref() {
-                $(stringify!($key) => {
-                    if $kw.$key.is_none() {
-                        $kw.$key = Some($k.value().trim().to_string());
-                    }
-                })*
-                _ => {}
-            }
-        }
-    }
-    let mut keywords = PageKeywords::default();
-    for k in res.keywords() {
-        match_keywords!(k, keywords, (author, language, year));
-    }
-    keywords
 }
 
 #[cfg(test)]

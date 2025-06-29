@@ -1,4 +1,4 @@
-use crate::{config::ClamConfig, git::HistMap, output::html::Pages, Error};
+use crate::{config::ClamConfig, git::HistMap, output::Pages, Error};
 use orgize::ParseConfig;
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 
