@@ -1,6 +1,38 @@
 use crate::{config::ClamConfig, git::HistMap, output::Pages, Error};
-use orgize::ParseConfig;
-use std::{collections::HashMap, path::{Path, PathBuf}, rc::Rc};
+use orgize::{
+    export::{Container, Event, TraversalContext, Traverser},
+    ParseConfig,
+};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
+
+#[derive(Default)]
+struct GmiExport {
+    output: String,
+}
+
+impl GmiExport {
+    fn push_str(&mut self, s: impl AsRef<str>) {
+        self.output += s.as_ref();
+    }
+    fn finish(self) -> String {
+        self.output
+    }
+}
+
+impl Traverser for GmiExport {
+    fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
+        match event {
+            Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            // TODO: combine paragraphs into one line
+            Event::Text(text) => self.push_str(text),
+            _ => (),
+        }
+    }
+}
 
 pub fn write_org_page(
     _pages: &Pages,
