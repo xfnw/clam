@@ -1,13 +1,27 @@
-use crate::{config::ClamConfig, git::HistMap, output::Pages, Error};
+use crate::{
+    config::ClamConfig,
+    git::HistMap,
+    helpers::URL_PATH_UNSAFE,
+    output::{PageMetadata, Pages},
+    Error,
+};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
     ParseConfig,
 };
+use percent_encoding::utf8_percent_encode;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     rc::Rc,
 };
+
+#[derive(boilerplate::Boilerplate)]
+struct PageGmi<'a> {
+    title: &'a str,
+    body: &'a str,
+    metadata: Option<&'a PageMetadata<'a>>,
+}
 
 #[derive(Default)]
 struct GmiExport {
