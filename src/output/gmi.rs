@@ -2,12 +2,13 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::{org_links, URL_PATH_UNSAFE},
-    output::{get_keywords, infer_title, PageMetadata, Pages},
+    output::{get_keywords, infer_title, NodeOrToken, PageMetadata, Pages},
     Error,
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
+    rowan::ast::AstNode,
     ParseConfig,
 };
 use percent_encoding::utf8_percent_encode;
@@ -51,6 +52,20 @@ impl GmiExport {
     fn finish(self) -> String {
         self.output
     }
+    /// output children while stripping off some exterior formatting
+    fn output_block_children(
+        &mut self,
+        block: &orgize::ast::SpecialBlock,
+        ctx: &mut TraversalContext,
+    ) {
+        for child in block.syntax().children() {
+            for sub in child.children() {
+                for e in sub.children_with_tokens() {
+                    self.element(e, ctx);
+                }
+            }
+        }
+    }
 }
 
 impl Traverser for GmiExport {
@@ -72,6 +87,39 @@ impl Traverser for GmiExport {
             Event::Leave(Container::Paragraph(_)) => {
                 // TODO: output links here
                 self.push_str("\n\n");
+            }
+            Event::Enter(Container::SpecialBlock(block)) => {
+                if let Some(mut par) = block
+                    .syntax()
+                    .first_child()
+                    .map(|n| n.children_with_tokens().filter_map(NodeOrToken::into_token))
+                {
+                    if let Some(name) = par.nth(1) {
+                        let name = name.text();
+
+                        if name.eq_ignore_ascii_case("chat") {
+                            if let Some(usr) = par.next() {
+                                let usr = usr.text().trim();
+                                if !usr.is_empty() {
+                                    if let Some((person, expression)) = usr.rsplit_once('/') {
+                                        self.push_str(format!("<{person} is {expression}> "));
+                                    } else {
+                                        self.push_str(format!("<{usr}> "));
+                                    }
+
+                                    self.output_block_children(&block, ctx);
+
+                                    self.push_str("\n\n");
+
+                                    return ctx.skip();
+                                }
+                            }
+                        }
+                        self.push_str(format!("```{name}\n"));
+                        self.output_block_children(&block, ctx);
+                        self.push_str("```\n\n");
+                    }
+                }
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
