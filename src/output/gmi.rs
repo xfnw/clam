@@ -57,6 +57,10 @@ impl Traverser for GmiExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
+            Event::Leave(Container::Paragraph(_)) => {
+                // TODO: output links here
+                self.push_str("\n\n");
+            }
             Event::Text(text) => self.push_join(text),
             Event::Cookie(cookie) => {
                 self.push_str(cookie.raw());
