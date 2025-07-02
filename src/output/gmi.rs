@@ -20,6 +20,7 @@ use std::{
 struct PageGmi<'a> {
     title: &'a str,
     body: &'a str,
+    numdir: usize,
     metadata: Option<&'a PageMetadata<'a>>,
 }
 
