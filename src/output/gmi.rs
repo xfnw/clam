@@ -49,6 +49,10 @@ impl Traverser for GmiExport {
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
             // TODO: combine paragraphs into one line
             Event::Text(text) => self.push_str(text),
+            Event::Cookie(cookie) => {
+                self.push_str(cookie.raw());
+            }
+            Event::LineBreak(_) => self.output.push('\n'),
             _ => (),
         }
     }
