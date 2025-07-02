@@ -18,6 +18,7 @@ pub struct FeedXml<'a> {
     pub url: &'a str,
     pub path: &'a str,
     pub numdir: usize,
+    pub is_html: bool,
     pub updated: &'a AtomDateTime,
     pub entries: &'a [&'a AtomEntry<'a>],
 }
@@ -97,6 +98,7 @@ pub fn write_feed(
     id: &str,
     url: &str,
     entries: &[AtomEntry],
+    is_html: bool,
 ) -> Result<(), Error> {
     if feed.path.components().any(|s| {
         matches!(
@@ -133,6 +135,7 @@ pub fn write_feed(
         url,
         path,
         numdir,
+        is_html,
         updated: head_updated(&filt).ok_or(Error::EmptyFeed)?,
         entries: &filt[..min(filt.len(), 42)],
     }
@@ -191,6 +194,7 @@ mod tests {
             url: "https://foxes.invalid",
             path: "foxfeed.xml",
             numdir: 6,
+            is_html: true,
             updated: &AtomDateTime::new(1_734_117_526).unwrap(),
             entries: &entries,
         }

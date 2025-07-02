@@ -64,7 +64,13 @@ pub fn handle_config(
         let entries = atom::entries(pages, metadata).ok()?;
 
         for feed in &config.feed {
-            if let Err(e) = atom::write_feed(feed, id, &url, entries.as_slice()) {
+            if let Err(e) = atom::write_feed(
+                feed,
+                id,
+                &url,
+                entries.as_slice(),
+                matches!(overrides.format, OutputFormat::Html),
+            ) {
                 eprintln!("skipping {}: {}", feed.path.display(), e);
             }
         }

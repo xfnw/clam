@@ -5,6 +5,7 @@ use crate::{
     output::{get_keywords, infer_title, PageMetadata, Pages},
     Error,
 };
+use chrono::{DateTime, Datelike};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
     ParseConfig,
@@ -18,7 +19,6 @@ use std::{
     path::{Path, PathBuf},
     rc::Rc,
 };
-use chrono::{DateTime, Datelike};
 
 #[derive(boilerplate::Boilerplate)]
 struct PageGmi<'a> {
