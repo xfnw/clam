@@ -38,6 +38,16 @@ impl GmiExport {
     fn push_str(&mut self, s: impl AsRef<str>) {
         self.output += s.as_ref();
     }
+    fn push_join(&mut self, s: impl AsRef<str>) {
+        let mut splitted = s.as_ref().split('\n');
+        if let Some(l) = splitted.next() {
+            self.output += l;
+            for l in splitted {
+                self.output.push(' ');
+                self.output += l.trim_start();
+            }
+        }
+    }
     fn finish(self) -> String {
         self.output
     }
@@ -47,8 +57,7 @@ impl Traverser for GmiExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
-            // TODO: combine paragraphs into one line
-            Event::Text(text) => self.push_str(text),
+            Event::Text(text) => self.push_join(text),
             Event::Cookie(cookie) => {
                 self.push_str(cookie.raw());
             }
