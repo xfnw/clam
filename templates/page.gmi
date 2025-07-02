@@ -1,4 +1,8 @@
 # {{ self.title }}
+%% if let Some(notice) = self.notice {
+
+> {{ notice }}
+%% }
 
 {{ self.body }}
 

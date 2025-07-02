@@ -24,6 +24,7 @@ struct PageGmi<'a> {
     title: &'a str,
     body: &'a str,
     numdir: usize,
+    notice: Option<&'static str>,
     metadata: Option<&'a PageMetadata<'a>>,
 }
 
