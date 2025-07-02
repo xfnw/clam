@@ -1,6 +1,6 @@
 use crate::{
     config::ClamConfig,
-    git::HistMap,
+    git::{HistMap, HistMeta},
     helpers::{org_links, URL_PATH_UNSAFE},
     output::{get_keywords, infer_title, PageMetadata, Pages},
     Error,
@@ -11,13 +11,14 @@ use orgize::{
 };
 use percent_encoding::utf8_percent_encode;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     ffi::OsStr,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
     rc::Rc,
 };
+use chrono::{DateTime, Datelike};
 
 #[derive(boilerplate::Boilerplate)]
 struct PageGmi<'a> {
@@ -96,13 +97,85 @@ pub fn generate_page(
 }
 
 pub fn write_org_page(
-    _pages: &Pages,
-    _hist: &HistMap,
-    _links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-    _short_id: &str,
+    pages: &Pages,
+    hist: &HistMap,
+    links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
+    short_id: &str,
     _config: Option<&ClamConfig>,
 ) -> Result<(), Error> {
-    todo!()
+    let year_ago = std::time::SystemTime::now()
+        .duration_since(std::time::SystemTime::UNIX_EPOCH)
+        .map_err(Error::Clock)?
+        .as_secs()
+        - 365 * 24 * 60 * 60;
+    let year_ago: i64 = year_ago.try_into().map_err(|_| Error::TimeOverflow)?;
+
+    for (new_path, (title, old_path, keywords, html)) in pages {
+        let HistMeta {
+            create_time,
+            modify_time,
+            creator,
+            contributors,
+            ..
+        } = hist.get(old_path).ok_or(Error::MissingHist)?;
+
+        let author = keywords.author.as_deref().unwrap_or(creator);
+        let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
+            year
+        } else {
+            DateTime::from_timestamp(create_time.seconds(), 0)
+                .ok_or(Error::BadCreateTime)?
+                .naive_utc()
+                .year()
+        };
+
+        let numdir = old_path.iter().count();
+
+        let notice = if modify_time.seconds() - year_ago < 0 {
+            Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+        } else {
+            None
+        };
+
+        let incoming: Option<HashSet<_>> = links.get(new_path).map(|l| l.iter().collect());
+        let incoming: Option<Vec<_>> = incoming.map(|l| {
+            l.iter()
+                .map(|b| {
+                    (
+                        b.to_str().unwrap(),
+                        pages.get(b.as_ref()).unwrap().0.as_ref(),
+                    )
+                })
+                .collect()
+        });
+
+        let contributors = contributors.len() - usize::from(contributors.contains(author));
+
+        let meta = PageMetadata {
+            author,
+            commit: short_id,
+            modified: DateTime::from_timestamp(modify_time.seconds(), 0)
+                .ok_or(Error::BadModifyTime)?
+                .naive_utc(),
+            year,
+            incoming: incoming.as_deref(),
+            footer: None,
+            contributors,
+        };
+
+        let template = PageGmi {
+            title,
+            body: html,
+            numdir,
+            notice,
+            metadata: Some(&meta),
+        };
+
+        let mut f = File::create(new_path).map_err(Error::File)?;
+        f.write_all(&template.to_string().into_bytes())
+            .map_err(Error::File)?;
+    }
+    Ok(())
 }
 
 pub fn write_redirect_page(_path: &Path, _target: &str) -> Result<(), Error> {
