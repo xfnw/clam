@@ -49,16 +49,6 @@ impl Traverser for GmiExport {
     }
 }
 
-pub fn write_org_page(
-    _pages: &Pages,
-    _hist: &HistMap,
-    _links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-    _short_id: &str,
-    _config: Option<&ClamConfig>,
-) -> Result<(), Error> {
-    todo!()
-}
-
 pub fn generate_page(
     _dir: &str,
     _name: &str,
@@ -66,6 +56,16 @@ pub fn generate_page(
     _org_cfg: &ParseConfig,
     _pages: &mut Pages,
     _links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
+) -> Result<(), Error> {
+    todo!()
+}
+
+pub fn write_org_page(
+    _pages: &Pages,
+    _hist: &HistMap,
+    _links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
+    _short_id: &str,
+    _config: Option<&ClamConfig>,
 ) -> Result<(), Error> {
     todo!()
 }
