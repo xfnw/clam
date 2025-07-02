@@ -56,6 +56,19 @@ impl GmiExport {
 impl Traverser for GmiExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
+            Event::Enter(Container::Headline(headline)) => {
+                // gemtext does not allow more than 3 heading levels, but just continuing to add
+                // more #'s when there are deeper headings is the least bad way to handle it...
+                for _ in 0..=headline.level() {
+                    self.output.push('#');
+                }
+                self.output.push(' ');
+                // TODO: output TODO
+                for e in headline.title() {
+                    self.element(e, ctx);
+                }
+                self.output.push('\n');
+            }
             Event::Enter(Container::Keyword(_)) => ctx.skip(),
             Event::Leave(Container::Paragraph(_)) => {
                 // TODO: output links here
