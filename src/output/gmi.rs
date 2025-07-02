@@ -69,11 +69,11 @@ impl Traverser for GmiExport {
                 }
                 self.output.push('\n');
             }
-            Event::Enter(Container::Keyword(_)) => ctx.skip(),
             Event::Leave(Container::Paragraph(_)) => {
                 // TODO: output links here
                 self.push_str("\n\n");
             }
+            Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
             Event::Cookie(cookie) => {
                 self.push_str(cookie.raw());
