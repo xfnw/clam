@@ -12,25 +12,25 @@ use regex::RegexSet;
 use std::{cmp::min, fmt, fs, io::Write, path::Component};
 
 #[derive(boilerplate::Boilerplate)]
-pub struct FeedXml<'a> {
-    pub title: &'a str,
-    pub id: &'a str,
-    pub url: &'a str,
-    pub path: &'a str,
-    pub numdir: usize,
-    pub is_html: bool,
-    pub updated: &'a AtomDateTime,
-    pub entries: &'a [&'a AtomEntry<'a>],
+struct FeedXml<'a> {
+    title: &'a str,
+    id: &'a str,
+    url: &'a str,
+    path: &'a str,
+    numdir: usize,
+    is_html: bool,
+    updated: &'a AtomDateTime,
+    entries: &'a [&'a AtomEntry<'a>],
 }
 
 #[derive(Debug)]
 pub struct AtomEntry<'a> {
-    pub title: &'a str,
-    pub path: &'a str,
-    pub author: &'a str,
-    pub summary: Option<&'a str>,
-    pub content: Option<&'a str>,
-    pub updated: AtomDateTime,
+    title: &'a str,
+    path: &'a str,
+    author: &'a str,
+    summary: Option<&'a str>,
+    content: Option<&'a str>,
+    updated: AtomDateTime,
 }
 
 /// `NaiveDateTime` that `Display`s to an atom feed compatible date (iso8601/rfc3339 subset)
