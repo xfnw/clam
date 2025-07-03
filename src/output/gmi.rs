@@ -104,6 +104,7 @@ macro_rules! output_block {
 }
 
 impl Traverser for GmiExport {
+    #[allow(clippy::too_many_lines)]
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
             Event::Enter(Container::Headline(headline)) => {
@@ -191,6 +192,22 @@ impl Traverser for GmiExport {
                     if t == "gmi" || t == "gemini" {
                         self.push_str(block.value());
                     }
+                }
+            }
+            Event::Enter(Container::ListItem(item)) => {
+                // gemtext doesnt support nested lists, but a noncompliant document is better than
+                // discarding semantic information...
+                for _ in 0..item.indent() {
+                    self.output.push(' ');
+                }
+                match item.bullet().as_ref() {
+                    "-" => self.push_str("* "),
+                    a => self.push_str(a),
+                }
+                if let Some(check) = item.checkbox() {
+                    self.output.push('[');
+                    self.push_str(check);
+                    self.push_str("] ");
                 }
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
