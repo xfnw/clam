@@ -117,7 +117,8 @@ impl Traverser for GmiExport {
                         }
                         self.push_str(format!("```{name}\n"));
                         self.output_block_children(&block, ctx);
-                        self.push_str("```\n\n");
+                        self.push_str("\n```\n\n");
+                        ctx.skip();
                     }
                 }
             }
