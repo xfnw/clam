@@ -123,6 +123,18 @@ impl Traverser for GmiExport {
                 // TODO: output links here
                 self.push_str("\n\n");
             }
+            Event::Enter(Container::Link(link)) => {
+                if link.path().starts_with("abbr:") {
+                    return;
+                }
+            }
+            Event::Leave(Container::Link(link)) => {
+                if let Some(meaning) = link.path().strip_prefix("abbr:") {
+                    self.push_str(" (");
+                    self.push_str(meaning);
+                    self.output.push(')');
+                }
+            }
             Event::Enter(Container::SpecialBlock(block)) => {
                 if let Some(mut par) = block
                     .syntax()
