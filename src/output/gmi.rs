@@ -174,6 +174,13 @@ impl Traverser for GmiExport {
                 output_block!(self, block);
                 ctx.skip();
             }
+            Event::Enter(Container::ExportBlock(block)) => {
+                if let Some(t) = block.ty() {
+                    if t == "gmi" || t == "gemini" {
+                        self.push_str(block.value());
+                    }
+                }
+            }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
             Event::Cookie(cookie) => {
