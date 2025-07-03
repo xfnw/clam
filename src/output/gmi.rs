@@ -9,7 +9,7 @@ use chrono::{DateTime, Datelike};
 use orgize::{
     export::{Container, Event, TraversalContext, Traverser},
     rowan::ast::AstNode,
-    ParseConfig,
+    ParseConfig, SyntaxKind,
 };
 use percent_encoding::utf8_percent_encode;
 use std::{
@@ -91,7 +91,8 @@ impl Traverser for GmiExport {
             Event::Enter(Container::SpecialBlock(block)) => {
                 if let Some(mut par) = block
                     .syntax()
-                    .first_child()
+                    .children()
+                    .find(|c| c.kind() == SyntaxKind::BLOCK_BEGIN)
                     .map(|n| n.children_with_tokens().filter_map(NodeOrToken::into_token))
                 {
                     if let Some(name) = par.nth(1) {

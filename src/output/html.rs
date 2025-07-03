@@ -108,7 +108,8 @@ impl Traverser for Handler {
             Event::Enter(Container::SpecialBlock(block)) => {
                 if let Some(mut par) = block
                     .syntax()
-                    .first_child()
+                    .children()
+                    .find(|c| c.kind() == SyntaxKind::BLOCK_BEGIN)
                     .map(|n| n.children_with_tokens().filter_map(NodeOrToken::into_token))
                 {
                     if let Some(name) = par.nth(1) {
