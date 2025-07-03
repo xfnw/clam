@@ -7,6 +7,7 @@ use crate::{
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
+    ast::filter_token,
     export::{Container, Event, TraversalContext, Traverser},
     rowan::ast::AstNode,
     ParseConfig, SyntaxKind,
@@ -68,6 +69,40 @@ impl GmiExport {
     }
 }
 
+macro_rules! output_block {
+    ($self:expr, $block:expr) => {
+        $self.push_str("```");
+
+        for t in $block
+            .syntax()
+            .children()
+            .find(|c| c.kind() == SyntaxKind::BLOCK_BEGIN)
+            .into_iter()
+            .flat_map(|n| n.children_with_tokens())
+            .filter_map(NodeOrToken::into_token)
+            .skip(1)
+        {
+            $self.push_str(t.text());
+        }
+
+        // does the same thing as [`orgize::ast::SourceBlock::value`] since the other kinds
+        // of blocks do not have an equivalent function (yet, hopefully?)
+        // TODO: remove me once orgize gets `value` functions for the rest of the blocks
+        for t in $block
+            .syntax()
+            .children()
+            .find(|e| e.kind() == SyntaxKind::BLOCK_CONTENT)
+            .into_iter()
+            .flat_map(|n| n.children_with_tokens())
+            .filter_map(filter_token(SyntaxKind::TEXT))
+        {
+            $self.push_str(t);
+        }
+
+        $self.push_str("```\n\n");
+    };
+}
+
 impl Traverser for GmiExport {
     fn event(&mut self, event: Event, ctx: &mut TraversalContext) {
         match event {
@@ -122,6 +157,22 @@ impl Traverser for GmiExport {
                         ctx.skip();
                     }
                 }
+            }
+            Event::Enter(Container::SourceBlock(block)) => {
+                output_block!(self, block);
+                ctx.skip();
+            }
+            Event::Enter(Container::ExampleBlock(block)) => {
+                output_block!(self, block);
+                ctx.skip();
+            }
+            Event::Enter(Container::VerseBlock(block)) => {
+                output_block!(self, block);
+                ctx.skip();
+            }
+            Event::Enter(Container::FixedWidth(block)) => {
+                output_block!(self, block);
+                ctx.skip();
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
