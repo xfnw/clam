@@ -7,7 +7,6 @@
 {{ self.body }}
 %% if let Some(meta) = self.metadata {
 %%   if let Some(incoming) = meta.incoming {
-
 incoming:
 %%     for (path, title) in incoming {
 => {% for _ in 1..self.numdir { %}../{% } %}{{ utf8_percent_encode(path, URL_PATH_UNSAFE) }} {{ title }}
