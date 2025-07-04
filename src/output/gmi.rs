@@ -2,12 +2,12 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::{org_links, URL_PATH_UNSAFE},
-    output::{get_keywords, infer_title, NodeOrToken, PageMetadata, Pages},
+    output::{get_keywords, infer_title, mangle_link, NodeOrToken, PageMetadata, Pages, TokenList},
     Error,
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
-    ast::filter_token,
+    ast::{filter_token, Token},
     export::{Container, Event, TraversalContext, Traverser},
     rowan::ast::AstNode,
     ParseConfig, SyntaxKind,
@@ -31,9 +31,23 @@ struct PageGmi<'a> {
     metadata: Option<&'a PageMetadata<'a>>,
 }
 
+#[derive(Debug)]
+struct LinkLine {
+    path: Token,
+    label: LinkLabel,
+}
+
+#[derive(Debug)]
+enum LinkLabel {
+    Path,
+    Caption(Token),
+    Description(TokenList),
+}
+
 #[derive(Default)]
 struct GmiExport {
     output: String,
+    links: Vec<LinkLine>,
 }
 
 impl GmiExport {
@@ -124,13 +138,48 @@ impl Traverser for GmiExport {
                 self.output.push('\n');
             }
             Event::Leave(Container::Paragraph(_)) => {
-                // TODO: output links here
-                self.push_str("\n\n");
+                if !self.output.ends_with('\n') {
+                    self.push_str("\n\n");
+                }
+                if !self.links.is_empty() {
+                    let links = std::mem::take(&mut self.links);
+                    for LinkLine { path, label } in links {
+                        self.push_str("=> ");
+                        self.push_str(mangle_link(&path, ".gmi", ".gmi#"));
+                        match label {
+                            LinkLabel::Path => (),
+                            LinkLabel::Caption(c) => {
+                                self.output.push(' ');
+                                self.push_str(c.trim());
+                            }
+                            LinkLabel::Description(d) => {
+                                self.output.push(' ');
+                                for e in d {
+                                    self.element(e, ctx);
+                                }
+                            }
+                        }
+                        self.output.push('\n');
+                    }
+
+                    self.output.push('\n');
+                }
             }
             Event::Enter(Container::Link(link)) => {
-                if link.path().starts_with("abbr:") {
+                let path = link.path();
+                if path.starts_with("abbr:") {
                     return;
                 }
+
+                let label = if link.has_description() {
+                    LinkLabel::Description(link.description().collect())
+                } else if let Some(caption) = link.caption().and_then(|k| k.value()) {
+                    LinkLabel::Caption(caption)
+                } else {
+                    LinkLabel::Path
+                };
+
+                self.links.push(LinkLine { path, label });
             }
             Event::Leave(Container::Link(link)) => {
                 if let Some(meaning) = link.path().strip_prefix("abbr:") {
