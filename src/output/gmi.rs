@@ -264,6 +264,9 @@ impl Traverser for GmiExport {
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
+            Event::Timestamp(timestamp) => {
+                self.push_str(timestamp.raw());
+            }
             Event::Cookie(cookie) => {
                 self.push_str(cookie.raw());
             }
