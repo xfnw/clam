@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use orgize::{rowan::NodeOrToken, Org, ParseConfig, SyntaxNode, SyntaxToken};
+use orgize::{ast::Token, rowan::NodeOrToken, Org, ParseConfig, SyntaxNode, SyntaxToken};
 use slugify::slugify;
 use std::{
     collections::HashMap,
@@ -94,4 +94,22 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
         OutputFormat::Html => html::write_redirect_page(path, target),
         OutputFormat::Gmi => gmi::write_redirect_page(path, target),
     }
+}
+
+pub fn mangle_link(path: &Token, suffix: &str, asuffix: &str) -> String {
+    let path = path.strip_prefix("file:").unwrap_or(path);
+    if let Some(p) = path.strip_prefix('*') {
+        let mut p = slugify!(p);
+        p.insert(0, '#');
+        return p;
+    }
+    if path.starts_with("//") || path.contains("://") {
+        return path.to_string();
+    }
+    if let Some(p) = path.strip_suffix(".org") {
+        let mut p = p.to_string();
+        p.push_str(suffix);
+        return p;
+    }
+    path.replace(".org#", asuffix)
 }

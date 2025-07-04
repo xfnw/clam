@@ -2,14 +2,14 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::org_links,
-    output::{get_keywords, infer_title, PageMetadata, Pages, TokenList},
+    output::{get_keywords, infer_title, mangle_link, PageMetadata, Pages, TokenList},
     Error, STYLESHEET_STR,
 };
 use chrono::{DateTime, Datelike};
 use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
 use orgize::{
-    ast::{Headline, TodoType, Token},
+    ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
     rowan::{ast::AstNode, NodeOrToken},
     ParseConfig, SyntaxKind,
@@ -74,7 +74,7 @@ impl Traverser for Handler {
                     return;
                 }
 
-                let path = mangle_link(&path);
+                let path = mangle_link(&path, ".html", ".html#");
 
                 if link.is_image() {
                     if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
@@ -370,24 +370,6 @@ fn generate_headline_id(headline: &Headline) -> String {
     } else {
         slugify!(&txt)
     }
-}
-
-fn mangle_link(path: &Token) -> String {
-    let path = path.strip_prefix("file:").unwrap_or(path);
-    if let Some(p) = path.strip_prefix('*') {
-        let mut p = slugify!(p);
-        p.insert(0, '#');
-        return p;
-    }
-    if path.starts_with("//") || path.contains("://") {
-        return path.to_string();
-    }
-    if let Some(p) = path.strip_suffix(".org") {
-        let mut p = p.to_string();
-        p.push_str(".html");
-        return p;
-    }
-    path.replace(".org#", ".html#")
 }
 
 pub fn generate_page(
