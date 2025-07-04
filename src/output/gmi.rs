@@ -273,6 +273,16 @@ impl Traverser for GmiExport {
                     self.push_str(check);
                     self.push_str("] ");
                 }
+                if item
+                    .syntax()
+                    .children()
+                    .any(|n| n.kind() == SyntaxKind::LIST_ITEM_TAG)
+                {
+                    for e in item.tag() {
+                        self.element(e, ctx);
+                    }
+                    self.push_str("::");
+                }
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
