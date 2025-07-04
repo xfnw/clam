@@ -81,6 +81,7 @@ impl GmiExport {
                 for e in sub.children_with_tokens() {
                     self.element(e, ctx);
                 }
+                self.output.push('\n');
             }
         }
     }
@@ -210,15 +211,14 @@ impl Traverser for GmiExport {
 
                                     self.output_block_children(&block, ctx);
 
-                                    self.push_str("\n\n");
-
+                                    self.output.push('\n');
                                     return ctx.skip();
                                 }
                             }
                         }
                         self.push_str(format!("```{name}\n"));
                         self.output_block_children(&block, ctx);
-                        self.push_str("\n```\n\n");
+                        self.push_str("```\n\n");
                         ctx.skip();
                     }
                 }
