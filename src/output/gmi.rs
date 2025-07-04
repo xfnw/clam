@@ -226,7 +226,7 @@ impl Traverser for GmiExport {
             Event::Enter(Container::QuoteBlock(block)) => {
                 for child in block.syntax().children() {
                     for sub in child.children() {
-                    self.push_str("> ");
+                        self.push_str("> ");
                         for e in sub.children_with_tokens() {
                             self.element(e, ctx);
                         }
