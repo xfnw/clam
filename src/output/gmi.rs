@@ -45,8 +45,11 @@ impl GmiExport {
         if let Some(l) = splitted.next() {
             self.output += l;
             for l in splitted {
-                self.output.push(' ');
-                self.output += l.trim_start();
+                let l = l.trim_start();
+                if !l.is_empty() {
+                    self.output.push(' ');
+                    self.output += l;
+                }
             }
         }
     }
