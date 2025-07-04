@@ -253,7 +253,7 @@ impl Traverser for GmiExport {
                     self.output.push(' ');
                 }
                 match item.bullet().as_ref() {
-                    "-" => self.push_str("* "),
+                    "- " => self.push_str("* "),
                     a => self.push_str(a),
                 }
                 if let Some(check) = item.checkbox() {
