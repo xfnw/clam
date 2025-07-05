@@ -283,6 +283,22 @@ impl Traverser for GmiExport {
                     }
                     self.push_str("::");
                 }
+
+                for child in item.syntax().children() {
+                    for sub in child.children() {
+                        for e in sub.children_with_tokens() {
+                            self.element(e, ctx);
+                        }
+                        if !self.output.ends_with('\n') {
+                            self.output.push('\n');
+                        }
+                    }
+                }
+
+                ctx.skip();
+            }
+            Event::Leave(Container::List(_)) => {
+                self.output.push('\n');
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
