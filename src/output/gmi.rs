@@ -67,6 +67,34 @@ impl GmiExport {
             }
         }
     }
+    fn next(&mut self, ctx: &mut TraversalContext) {
+        while !self.output.ends_with("\n\n") {
+            self.output.push('\n');
+        }
+        if !self.links.is_empty() {
+            let links = std::mem::take(&mut self.links);
+            for LinkLine { path, label } in links {
+                self.push_str("=> ");
+                self.push_str(mangle_link(&path, ".gmi", ".gmi#"));
+                match label {
+                    LinkLabel::Path => (),
+                    LinkLabel::Caption(c) => {
+                        self.output.push(' ');
+                        self.push_str(c.trim());
+                    }
+                    LinkLabel::Description(d) => {
+                        self.output.push(' ');
+                        for e in d {
+                            self.element(e, ctx);
+                        }
+                    }
+                }
+                self.output.push('\n');
+            }
+
+            self.output.push('\n');
+        }
+    }
     fn finish(self) -> String {
         self.output
     }
@@ -138,33 +166,8 @@ impl Traverser for GmiExport {
                 }
                 self.output.push('\n');
             }
-            Event::Leave(Container::Paragraph(_)) => {
-                if !self.output.ends_with('\n') {
-                    self.push_str("\n\n");
-                }
-                if !self.links.is_empty() {
-                    let links = std::mem::take(&mut self.links);
-                    for LinkLine { path, label } in links {
-                        self.push_str("=> ");
-                        self.push_str(mangle_link(&path, ".gmi", ".gmi#"));
-                        match label {
-                            LinkLabel::Path => (),
-                            LinkLabel::Caption(c) => {
-                                self.output.push(' ');
-                                self.push_str(c.trim());
-                            }
-                            LinkLabel::Description(d) => {
-                                self.output.push(' ');
-                                for e in d {
-                                    self.element(e, ctx);
-                                }
-                            }
-                        }
-                        self.output.push('\n');
-                    }
-
-                    self.output.push('\n');
-                }
+            Event::Leave(Container::Paragraph(_)) | Event::Leave(Container::List(_)) => {
+                self.next(ctx);
             }
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
@@ -211,7 +214,7 @@ impl Traverser for GmiExport {
 
                                     self.output_block_children(&block, ctx);
 
-                                    self.output.push('\n');
+                                    self.next(ctx);
                                     return ctx.skip();
                                 }
                             }
@@ -219,6 +222,7 @@ impl Traverser for GmiExport {
                         self.push_str(format!("```{name}\n"));
                         self.output_block_children(&block, ctx);
                         self.push_str("```\n\n");
+                        self.next(ctx);
                         ctx.skip();
                     }
                 }
@@ -233,6 +237,7 @@ impl Traverser for GmiExport {
                         self.push_str("\n\n");
                     }
                 }
+                self.next(ctx);
                 ctx.skip();
             }
             Event::Enter(Container::SourceBlock(block)) => {
@@ -296,9 +301,6 @@ impl Traverser for GmiExport {
                 }
 
                 ctx.skip();
-            }
-            Event::Leave(Container::List(_)) => {
-                self.output.push('\n');
             }
             Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
