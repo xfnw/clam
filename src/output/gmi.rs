@@ -22,7 +22,7 @@ use std::{
     rc::Rc,
 };
 
-#[derive(boilerplate::Boilerplate)]
+#[derive(boilerplate::Boilerplate, Default)]
 struct PageGmi<'a> {
     title: &'a str,
     body: &'a str,
@@ -445,6 +445,17 @@ pub fn write_org_page(
     Ok(())
 }
 
-pub fn write_redirect_page(_path: &Path, _target: &str) -> String {
-    todo!()
+pub fn write_redirect_page(path: &Path, target: &str) -> String {
+    let body = format!(
+        "=> {} this page has moved here",
+        utf8_percent_encode(target, URL_PATH_UNSAFE)
+    );
+    let numdir = path.iter().count();
+    let template = PageGmi {
+        title: "redirect",
+        body: &body,
+        numdir,
+        ..Default::default()
+    };
+    template.to_string()
 }
