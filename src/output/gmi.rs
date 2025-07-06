@@ -167,7 +167,7 @@ impl Traverser for GmiExport {
                 }
                 self.output.push('\n');
             }
-            Event::Leave(Container::Paragraph(_)) | Event::Leave(Container::List(_)) => {
+            Event::Leave(Container::Paragraph(_) | Container::List(_)) => {
                 self.next(ctx);
             }
             Event::Enter(Container::Link(link)) => {
