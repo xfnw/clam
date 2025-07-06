@@ -268,6 +268,26 @@ impl Traverser for GmiExport {
                     }
                 }
             }
+            Event::Enter(Container::OrgTable(_)) => {
+                self.push_str("```table\n");
+            }
+            Event::Leave(Container::OrgTable(_)) => {
+                self.push_str("```\n\n");
+                self.next(ctx);
+            }
+            Event::Enter(Container::OrgTableCell(_)) => {
+                self.push_str("| ");
+            }
+            Event::Leave(Container::OrgTableCell(_)) => {
+                self.output.push(' ');
+            }
+            Event::Leave(Container::OrgTableRow(row)) => {
+                if row.is_rule() {
+                    self.output.push('\n');
+                } else {
+                    self.push_str("|\n");
+                }
+            }
             Event::Enter(Container::ListItem(item)) => {
                 // gemtext doesnt support nested lists, but a noncompliant document is better than
                 // discarding semantic information...
