@@ -45,7 +45,7 @@ enum LinkLabel {
 }
 
 #[derive(Default)]
-struct GmiExport {
+pub struct GmiExport {
     output: String,
     links: Vec<LinkLine>,
 }
@@ -95,7 +95,7 @@ impl GmiExport {
             self.output.push('\n');
         }
     }
-    fn finish(self) -> String {
+    pub fn finish(self) -> String {
         self.output
     }
     /// output children while stripping off some exterior formatting
