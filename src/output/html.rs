@@ -21,7 +21,7 @@ use std::{
     ffi::OsStr,
     fs,
     io::Write,
-    path::{Component, Path, PathBuf},
+    path::{Path, PathBuf},
     rc::Rc,
 };
 
@@ -517,15 +517,7 @@ pub fn write_org_page(
     Ok(())
 }
 
-pub fn write_redirect_page(path: &Path, target: &str) -> Result<(), Error> {
-    if path.components().any(|s| {
-        matches!(
-            s,
-            Component::RootDir | Component::ParentDir | Component::CurDir
-        )
-    }) {
-        return Err(Error::UnsafePath);
-    }
+pub fn write_redirect_page(path: &Path, target: &str) -> String {
     let body = format!(
         "this page has been <a href=\"{}\">moved here</a>.",
         HtmlEscape(&target)
@@ -543,9 +535,7 @@ pub fn write_redirect_page(path: &Path, target: &str) -> Result<(), Error> {
         numdir,
         ..Default::default()
     };
-    let mut f = fs::File::create(path).map_err(Error::File)?;
-    f.write_all(&template.to_string().into_bytes())
-        .map_err(Error::File)
+    template.to_string()
 }
 
 #[cfg(test)]

@@ -445,6 +445,6 @@ pub fn write_org_page(
     Ok(())
 }
 
-pub fn write_redirect_page(_path: &Path, _target: &str) -> Result<(), Error> {
+pub fn write_redirect_page(_path: &Path, _target: &str) -> String {
     todo!()
 }

@@ -4,6 +4,9 @@ use slugify::slugify;
 use std::{
     collections::HashMap,
     ffi::OsStr,
+    fs::File,
+    io::Write,
+    path::Component,
     path::{Path, PathBuf},
     rc::Rc,
 };
@@ -90,10 +93,22 @@ pub fn generate_page(
 }
 
 pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> Result<(), Error> {
-    match format {
+    if path.components().any(|s| {
+        matches!(
+            s,
+            Component::RootDir | Component::ParentDir | Component::CurDir
+        )
+    }) {
+        return Err(Error::UnsafePath);
+    }
+
+    let content = match format {
         OutputFormat::Html => html::write_redirect_page(path, target),
         OutputFormat::Gmi => gmi::write_redirect_page(path, target),
-    }
+    };
+
+    let mut f = File::create(path).map_err(Error::File)?;
+    f.write_all(&content.into_bytes()).map_err(Error::File)
 }
 
 pub fn mangle_link(path: &Token, suffix: &str, asuffix: &str) -> String {
