@@ -110,7 +110,11 @@ impl Traverser for Handler {
                     .syntax()
                     .children()
                     .find(|c| c.kind() == SyntaxKind::BLOCK_BEGIN)
-                    .map(|n| n.children_with_tokens().filter_map(NodeOrToken::into_token))
+                    .map(|n| {
+                        n.children_with_tokens()
+                            .filter_map(NodeOrToken::into_token)
+                            .skip_while(|t| t.kind() != SyntaxKind::TEXT)
+                    })
                 {
                     if let Some(name) = par.nth(1) {
                         let name = name.text();
