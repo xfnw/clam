@@ -126,15 +126,19 @@ impl Traverser for Handler {
                             if let Some(usr) = par.next() {
                                 let usr = usr.text().trim();
                                 if !usr.is_empty() {
-                                    let (person, expression) =
-                                        usr.rsplit_once('/').unwrap_or((usr, usr));
+                                    let (person, desc) =
+                                        if let Some((person, expression)) = usr.rsplit_once('/') {
+                                            (person, format!("{person} is {expression}"))
+                                        } else {
+                                            (usr, usr.to_string())
+                                        };
                                     self.exp.push_str("<img class=chat-head width=64 src=\"");
                                     for _ in 1..self.numdir {
                                         self.exp.push_str("../");
                                     }
                                     self.exp.push_str(format!(
-                                        r#"faces/{}.png" alt="{} is {} says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;{1}&gt;</span> "#,
-                                        slugify!(usr), HtmlEscape(person), HtmlEscape(expression)
+                                        r#"faces/{}.png" alt="{} says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;{}&gt;</span> "#,
+                                        slugify!(usr), HtmlEscape(desc), HtmlEscape(person)
                                     ));
 
                                     self.output_block_children(&block, ctx);
@@ -581,7 +585,7 @@ AAAA even more
         res.traverse(&mut exp);
         assert_eq!(
             exp.exp.finish(),
-            r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox is fox says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;fox&gt;</span> AAAA
+            r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;fox&gt;</span> AAAA
 </div></div><p>i have a footnote<sup><a id="fnr.1.0" href="#fn.1" role=doc-noteref>[1]</a></sup><sup><a id="fnr.2.0" href="#fn.2" role=doc-noteref>[2]</a></sup>
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
