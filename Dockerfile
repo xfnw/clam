@@ -1,12 +1,11 @@
 FROM alpine:latest AS build
 RUN apk add --no-cache rust cargo
 WORKDIR /build
-RUN mkdir src && echo 'fn main() {}' > src/main.rs
+RUN mkdir src && echo 'fn main() {panic!()}' > src/main.rs
 ADD Cargo.* ./
 RUN cargo build -r --no-default-features
 ADD templates templates
-ADD src/* src/
-RUN touch src/main.rs
+ADD src src
 RUN cargo build -r --no-default-features
 FROM alpine:latest
 RUN apk add --no-cache libgcc git-daemon
