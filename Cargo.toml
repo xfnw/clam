@@ -21,7 +21,7 @@ regex = { version = "1.10.5", default-features = false, features = ["std"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = { version = "1.0.125", optional = true }
 slugify = "0.1.0"
-toml_edit = { version = "0.22.12", default-features = false, features = ["serde", "parse"] }
+toml_edit = { version = "0.23", default-features = false, features = ["serde", "parse"] }
 
 [features]
 default = ["util"]
