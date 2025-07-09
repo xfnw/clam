@@ -6,6 +6,7 @@ ADD Cargo.* ./
 RUN cargo build -r --no-default-features
 ADD templates templates
 ADD src src
+RUN touch src/main.rs
 RUN cargo build -r --no-default-features
 FROM alpine:latest
 RUN apk add --no-cache libgcc git-daemon
