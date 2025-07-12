@@ -16,44 +16,46 @@ struct Entry {
 
 pub fn print_index(repo: &Repository, commit: &Commit) {
     map_files(repo, commit, |name, blob| {
-        let entry = match name
+        let Some(entry) = (match name
             .extension()
             .and_then(OsStr::to_str)
             .map(str::to_ascii_lowercase)
             .as_deref()
         {
             Some("org") => get_entry_org(name, &blob),
-            Some("txt") => get_entry_raw(name, &blob),
-            _ => return,
+            Some("htm" | "html") => return,
+            _ => get_entry_raw(name, &blob),
+        }) else {
+            return;
         };
         println!("{}", serde_json::to_string(&entry).unwrap());
     })
     .unwrap();
 }
 
-fn get_entry_org(mut path: PathBuf, blob: &Blob) -> Entry {
+fn get_entry_org(mut path: PathBuf, blob: &Blob) -> Option<Entry> {
     path.set_extension("html");
 
-    let fstr = std::str::from_utf8(blob.content()).unwrap();
+    let fstr = std::str::from_utf8(blob.content()).ok()?;
     let res = Org::parse(fstr);
     let title = res.title().unwrap_or_else(|| infer_title(&path));
     let mut export = GmiExport::default();
     res.traverse(&mut export);
 
-    Entry {
+    Some(Entry {
         title,
         path,
         content: export.finish(),
-    }
+    })
 }
 
-fn get_entry_raw(path: PathBuf, blob: &Blob) -> Entry {
-    let fstr = str::from_utf8(blob.content()).unwrap();
+fn get_entry_raw(path: PathBuf, blob: &Blob) -> Option<Entry> {
+    let fstr = str::from_utf8(blob.content()).ok()?;
     let title = infer_title(&path);
 
-    Entry {
+    Some(Entry {
         title,
         path,
         content: fstr.to_string(),
-    }
+    })
 }
