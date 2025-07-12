@@ -27,6 +27,18 @@ pub fn map_org<F>(repo: &Repository, commit: &Commit, mut callback: F) -> Result
 where
     F: FnMut(PathBuf, Blob),
 {
+    map_files(repo, commit, |name, blob| {
+        if Some(true) == name.extension().map(|e| e == "org") {
+            callback(name, blob);
+        }
+    })
+}
+
+/// run a function on every file in repository
+pub fn map_files<F>(repo: &Repository, commit: &Commit, mut callback: F) -> Result<(), git2::Error>
+where
+    F: FnMut(PathBuf, Blob),
+{
     let tree = commit.tree()?;
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
@@ -39,9 +51,7 @@ where
         }
         let name = entry.name().unwrap();
         let name: PathBuf = format!("{dir}{name}").into();
-        if Some(true) == name.extension().map(|e| e == "org") {
-            callback(name, blob);
-        }
+        callback(name, blob);
         0
     })
 }
