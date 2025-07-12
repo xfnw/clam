@@ -1,4 +1,7 @@
-use crate::{output::gmi::GmiExport, util::map_org};
+use crate::{
+    output::{gmi::GmiExport, infer_title},
+    util::map_org,
+};
 use git2::{Blob, Commit, Repository};
 use orgize::Org;
 use serde::Serialize;
@@ -23,7 +26,7 @@ pub fn print_index(repo: &Repository, commit: &Commit) {
 fn get_entry(path: PathBuf, blob: &Blob) -> Entry {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);
-    let title = res.title().unwrap_or_else(|| "untitled".to_string());
+    let title = res.title().unwrap_or_else(|| infer_title(&path));
     let mut export = GmiExport::default();
     res.traverse(&mut export);
 
