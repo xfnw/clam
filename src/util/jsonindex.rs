@@ -1,9 +1,9 @@
 use crate::{
+    default_org_cfg,
     output::{gmi::GmiExport, infer_title},
     util::map_files,
 };
 use git2::{Blob, Commit, Repository};
-use orgize::Org;
 use serde::Serialize;
 use std::{ffi::OsStr, path::PathBuf};
 
@@ -37,7 +37,7 @@ fn get_entry_org(mut path: PathBuf, blob: &Blob) -> Option<Entry> {
     path.set_extension("html");
 
     let fstr = std::str::from_utf8(blob.content()).ok()?;
-    let res = Org::parse(fstr);
+    let res = default_org_cfg().parse(fstr);
     let title = res.title().unwrap_or_else(|| infer_title(&path));
     let mut export = GmiExport::default();
     res.traverse(&mut export);
