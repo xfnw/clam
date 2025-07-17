@@ -25,6 +25,16 @@ impl fmt::Display for DotEscape<'_> {
     }
 }
 
+fn eat_file_index(url: &mut Url) {
+    let Some("index.org") = url.path_segments().and_then(|mut i| i.next_back()) else {
+        return;
+    };
+    let Ok(mut segments) = url.path_segments_mut() else {
+        return;
+    };
+    segments.pop().push("");
+}
+
 pub fn print_dot(repo: &Repository, commit: &Commit) {
     println!(
         r"digraph L {{
@@ -35,14 +45,18 @@ rankdir=LR;"
     map_org(repo, commit, |name, blob| {
         let fstr = std::str::from_utf8(blob.content()).unwrap();
         let res = Org::parse(fstr);
-        let base = Url::from_file_path(Path::new("/").join(name))
+        let mut base = Url::from_file_path(Path::new("/").join(name))
             .expect("current path should fit in a file url");
+        eat_file_index(&mut base);
         let from = DotEscape(base.as_str());
         org_urls(&res, &base, |mut url| {
-            if url.scheme() == "abbr" {
-                return;
+            match url.scheme() {
+                "abbr" => return,
+                "file" => {}
+                _ => (),
             }
             url.set_fragment(None);
+            eat_file_index(&mut url);
             println!("{from} -> {};", DotEscape(url.as_str()));
         });
         println!("{from} [color=black];");
