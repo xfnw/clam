@@ -38,7 +38,8 @@ rankdir=LR;"
         let base = Url::from_file_path(Path::new("/").join(name))
             .expect("current path should fit in a file url");
         let from = DotEscape(base.as_str());
-        org_urls(&res, &base, |url| {
+        org_urls(&res, &base, |mut url| {
+            url.set_fragment(None);
             println!("{from} -> {};", DotEscape(url.as_str()));
         });
         println!("{from} [color=black];");
