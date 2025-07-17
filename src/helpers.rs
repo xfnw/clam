@@ -18,7 +18,7 @@ pub const URL_UNSAFE: &AsciiSet = &CONTROLS
 
 pub const URL_PATH_UNSAFE: &AsciiSet = &URL_UNSAFE.add(b'#').add(b'?');
 
-/// run a function on every link in a syntax tree, as a [`PathBuf`]
+/// run a function on every link in a syntax tree, as a [`Path`]
 ///
 /// will skip links to external resources, and adds `index.org` to links to directories, use
 /// [`org_urls`] if you do not want that
