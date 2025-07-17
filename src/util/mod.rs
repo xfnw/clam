@@ -1,8 +1,7 @@
+use crate::helpers::org_links;
 use git2::{Blob, Commit, Repository};
 use orgize::Org;
 use std::path::{Path, PathBuf};
-
-use crate::helpers::org_links;
 
 pub mod dot;
 pub mod jsonindex;
@@ -10,9 +9,6 @@ pub mod orphan;
 pub mod preview;
 
 /// run a function on every link in an org document
-///
-/// will give mangled paths when encountering links to
-/// external resources.
 pub fn find_links<F>(name: &Path, blob: &Blob, callback: F)
 where
     F: FnMut(&Path),

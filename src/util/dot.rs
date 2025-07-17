@@ -1,11 +1,11 @@
-use super::{find_links, map_org};
+use crate::{helpers::org_urls, util::map_org};
 use git2::{Commit, Repository};
+use orgize::Org;
 use std::{
-    collections::{HashMap, HashSet},
     fmt::{self, Write},
-    path::PathBuf,
-    rc::Rc,
+    path::Path,
 };
+use url::Url;
 
 struct DotEscape<'a>(&'a str);
 
@@ -26,40 +26,24 @@ impl fmt::Display for DotEscape<'_> {
 }
 
 pub fn print_dot(repo: &Repository, commit: &Commit) {
-    let mut pages = HashSet::new();
-    let mut links: HashMap<PathBuf, Vec<Rc<PathBuf>>> = HashMap::new();
-
-    map_org(repo, commit, |name, blob| {
-        let name = pages.get(&name).cloned().unwrap_or_else(|| {
-            let name = Rc::new(name);
-            pages.insert(name.clone());
-            name
-        });
-        find_links(&name, &blob, |l| match links.get_mut(l) {
-            Some(v) => {
-                v.push(name.clone());
-            }
-            None => {
-                links.insert(l.to_owned(), vec![name.clone()]);
-            }
-        });
-    })
-    .unwrap();
-
     println!(
         r"digraph L {{
+node [color=gray];
 rankdir=LR;"
     );
 
-    for page in pages {
-        let pname = DotEscape(page.to_str().unwrap());
-        println!("{pname};");
-        if let Some(inlinks) = links.get(page.as_ref()) {
-            for link in inlinks {
-                println!("{} -> {};", DotEscape(link.to_str().unwrap()), pname);
-            }
-        }
-    }
+    map_org(repo, commit, |name, blob| {
+        let fstr = std::str::from_utf8(blob.content()).unwrap();
+        let res = Org::parse(fstr);
+        let base = Url::from_file_path(Path::new("/").join(name))
+            .expect("current path should fit in a file url");
+        let from = DotEscape(base.as_str());
+        org_urls(&res, &base, |url| {
+            println!("{from} -> {};", DotEscape(url.as_str()));
+        });
+        println!("{from} [color=black];");
+    })
+    .unwrap();
 
     println!("}}");
 }
