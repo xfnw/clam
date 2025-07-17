@@ -26,7 +26,9 @@ pub fn org_links<F>(res: &Org, name: &Path, mut callback: F)
 where
     F: FnMut(&Path),
 {
-    org_urls(res, name, |url| {
+    let fileroot = Url::from_file_path(Path::new("/").join(name))
+        .expect("current path should fit in a file url");
+    org_urls(res, &fileroot, |url| {
         if url.scheme() != "file" {
             return;
         }
@@ -42,19 +44,17 @@ where
 }
 
 /// run a function on every link in a syntax tree, as a [`Url`]
-pub fn org_urls<F>(res: &Org, name: &Path, mut callback: F)
+pub fn org_urls<F>(res: &Org, base: &Url, mut callback: F)
 where
     F: FnMut(Url),
 {
-    let fileroot = Url::from_file_path(Path::new("/").join(name))
-        .expect("current path should fit in a file url");
     let document = res.document();
     let syntax = document.syntax();
     for descendant in syntax.descendants() {
         let Some(link) = Link::cast(descendant) else {
             continue;
         };
-        let Ok(url) = fileroot.join(&link.path()) else {
+        let Ok(url) = base.join(&link.path()) else {
             continue;
         };
         callback(url);
