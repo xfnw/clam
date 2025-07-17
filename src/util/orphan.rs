@@ -8,7 +8,7 @@ pub fn get_orphans(repo: &Repository, commit: &Commit) -> HashSet<PathBuf> {
 
     map_org(repo, commit, |name, blob| {
         find_links(&name, &blob, |l| {
-            links.insert(l);
+            links.insert(l.to_owned());
         });
         pages.insert(name);
     })

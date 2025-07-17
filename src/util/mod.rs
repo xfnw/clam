@@ -15,7 +15,7 @@ pub mod preview;
 /// external resources.
 pub fn find_links<F>(name: &Path, blob: &Blob, callback: F)
 where
-    F: FnMut(PathBuf),
+    F: FnMut(&Path),
 {
     let fstr = std::str::from_utf8(blob.content()).unwrap();
     let res = Org::parse(fstr);

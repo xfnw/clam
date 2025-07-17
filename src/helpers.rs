@@ -1,6 +1,6 @@
 use orgize::{ast::Link, rowan::ast::AstNode, Org};
 use percent_encoding::{AsciiSet, CONTROLS};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use url::Url;
 
 pub const URL_UNSAFE: &AsciiSet = &CONTROLS
@@ -24,20 +24,19 @@ pub const URL_PATH_UNSAFE: &AsciiSet = &URL_UNSAFE.add(b'#').add(b'?');
 /// [`org_urls`] if you do not want that
 pub fn org_links<F>(res: &Org, name: &Path, mut callback: F)
 where
-    F: FnMut(PathBuf),
+    F: FnMut(&Path),
 {
     org_urls(res, name, |url| {
         if url.scheme() != "file" {
             return;
         }
-        let Ok(fullpath) = url.to_file_path() else {
+        let Ok(mut fullpath) = url.to_file_path() else {
             return;
         };
-        // wasteful :(
-        let mut fullpath = fullpath.strip_prefix("/").unwrap().to_owned();
         if url.path().ends_with('/') {
             fullpath.push("index.org");
         }
+        let fullpath = fullpath.strip_prefix("/").unwrap();
         callback(fullpath);
     });
 }

@@ -399,7 +399,8 @@ pub fn generate_page(
         full_path.set_extension("html");
 
         let mypath = Rc::new(full_path.clone());
-        org_links(&res, &full_path, |mut l| {
+        org_links(&res, &full_path, |l| {
+            let mut l = l.to_owned();
             l.set_extension("html");
 
             if let Some(e) = links.get_mut(&l) {
