@@ -1,5 +1,6 @@
 use orgize::{ast::Link, rowan::ast::AstNode, Org};
 use percent_encoding::{AsciiSet, CONTROLS};
+use slugify::slugify;
 use std::path::Path;
 use url::Url;
 
@@ -54,7 +55,12 @@ where
         let Some(link) = Link::cast(descendant) else {
             continue;
         };
-        let Ok(url) = base.join(&link.path()) else {
+        let path = &link.path();
+        let Ok(url) = (if let Some(p) = path.strip_prefix('*') {
+            base.join(&format!("#{}", slugify!(p)))
+        } else {
+            base.join(path)
+        }) else {
             continue;
         };
         callback(url);
