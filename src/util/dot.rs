@@ -39,6 +39,9 @@ rankdir=LR;"
             .expect("current path should fit in a file url");
         let from = DotEscape(base.as_str());
         org_urls(&res, &base, |mut url| {
+            if url.scheme() == "abbr" {
+                return;
+            }
             url.set_fragment(None);
             println!("{from} -> {};", DotEscape(url.as_str()));
         });
