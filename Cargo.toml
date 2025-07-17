@@ -22,6 +22,7 @@ serde = { version = "1.0.197", features = ["derive"] }
 serde_json = { version = "1.0.125", optional = true }
 slugify = "0.1.0"
 toml_edit = { version = "0.23", default-features = false, features = ["serde", "parse"] }
+url = "2.5.4"
 
 [features]
 default = ["util"]
