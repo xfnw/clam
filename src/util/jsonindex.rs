@@ -2,6 +2,7 @@ use crate::{
     default_org_cfg,
     output::{gmi::GmiExport, infer_title},
     util::map_files,
+    OutputFormat, RepoArgs,
 };
 use git2::{Blob, Commit, Repository};
 use serde::Serialize;
@@ -14,7 +15,7 @@ struct Entry {
     content: String,
 }
 
-pub fn print_index(repo: &Repository, commit: &Commit) {
+pub fn print_index(repo: &Repository, commit: &Commit, args: &RepoArgs) {
     map_files(repo, commit, |name, blob| {
         let Some(entry) = (match name
             .extension()
@@ -22,7 +23,7 @@ pub fn print_index(repo: &Repository, commit: &Commit) {
             .map(str::to_ascii_lowercase)
             .as_deref()
         {
-            Some("org") => get_entry_org(name, &blob),
+            Some("org") => get_entry_org(name, &blob, args.format),
             Some("htm" | "html") => return,
             _ => get_entry_raw(name, &blob),
         }) else {
@@ -33,8 +34,11 @@ pub fn print_index(repo: &Repository, commit: &Commit) {
     .unwrap();
 }
 
-fn get_entry_org(mut path: PathBuf, blob: &Blob) -> Option<Entry> {
-    path.set_extension("html");
+fn get_entry_org(mut path: PathBuf, blob: &Blob, outfmt: OutputFormat) -> Option<Entry> {
+    path.set_extension(match outfmt {
+        OutputFormat::Html => "html",
+        OutputFormat::Gmi => "gmi",
+    });
 
     let fstr = std::str::from_utf8(blob.content()).ok()?;
     let res = default_org_cfg().parse(fstr);

@@ -211,7 +211,9 @@ fn main() {
         #[cfg(feature = "util")]
         Commands::Orphan(args) => open_repo(args, do_orphan),
         #[cfg(feature = "util")]
-        Commands::Jsonindex(args) => open_repo(args, util::jsonindex::print_index),
+        Commands::Jsonindex(args) => {
+            open_repo(args, |r, c| util::jsonindex::print_index(r, c, args));
+        }
         #[cfg(feature = "util")]
         Commands::Dot(args) => open_repo(args, util::dot::print_dot),
         Commands::PreReceive(args) => prereceive::hook(args),
