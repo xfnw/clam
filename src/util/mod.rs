@@ -24,7 +24,7 @@ where
     F: FnMut(PathBuf, Blob),
 {
     map_files(repo, commit, |name, blob| {
-        if Some(true) == name.extension().map(|e| e == "org") {
+        if name.extension().is_some_and(|e| e == "org") {
             callback(name, blob);
         }
     })

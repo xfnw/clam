@@ -163,7 +163,7 @@ impl Traverser for Handler {
                 self.exp.push_str("</pre>");
             }
             Event::Enter(Container::ExportBlock(block)) => {
-                if Some(true) == block.ty().map(|b| b.eq_ignore_ascii_case("html")) {
+                if block.ty().is_some_and(|b| b.eq_ignore_ascii_case("html")) {
                     self.exp.push_str(block.value());
                 }
                 ctx.skip();
