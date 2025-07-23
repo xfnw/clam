@@ -98,18 +98,29 @@ pub fn walk_callback(
     pages: &mut Pages,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
-    let object = entry.to_object(repo)?;
     let name = entry.name().ok_or(Error::NonUTF8Path)?;
 
-    let Ok(blob) = object.into_blob() else {
-        // is probably a directory
-        fs::create_dir_all(format!("{dir}{name}/")).map_err(Error::Dir)?;
-        return Ok(());
-    };
-
-    if 0o120_000 == entry.filemode() {
-        return Err(Error::SkipSymlink(format!("{dir}{name}")));
+    match entry.filemode() {
+        // normal files
+        0o100_644 | 0o100_755 => (),
+        // directories
+        0o040_000 => {
+            fs::create_dir_all(format!("{dir}{name}/")).map_err(Error::Dir)?;
+            return Ok(());
+        }
+        // symlinks
+        0o120_000 => {
+            return Err(Error::SkipSymlink(format!("{dir}{name}")));
+        }
+        // git submodules
+        0o160_000 => {
+            return Err(Error::SkipSubmodule(format!("{dir}{name}")));
+        }
+        any => eprintln!("unknown filemode {any:o} for {dir}{name}"),
     }
+
+    let object = entry.to_object(repo)?;
+    let blob = object.into_blob().map_err(|_| Error::NotABlob)?;
 
     crate::output::generate_page(format, dir, name, blob.content(), org_cfg, pages, links)?;
 

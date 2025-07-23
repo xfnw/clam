@@ -145,6 +145,10 @@ enum Error {
     BadAuthor,
     /// skipping symlink
     SkipSymlink(String),
+    /// skipping submodule
+    SkipSubmodule(String),
+    /// tried to turn a git object into a blob that was not a blob
+    NotABlob,
 }
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
