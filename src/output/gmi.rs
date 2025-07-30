@@ -1,16 +1,16 @@
 use crate::{
+    Error,
     config::ClamConfig,
     git::{HistMap, HistMeta},
-    helpers::{org_links, URL_PATH_UNSAFE},
-    output::{get_keywords, infer_title, mangle_link, NodeOrToken, PageMetadata, Pages, TokenList},
-    Error,
+    helpers::{URL_PATH_UNSAFE, org_links},
+    output::{NodeOrToken, PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
-    ast::{filter_token, Token},
+    ParseConfig, SyntaxKind,
+    ast::{Token, filter_token},
     export::{Container, Event, TraversalContext, Traverser},
     rowan::ast::AstNode,
-    ParseConfig, SyntaxKind,
 };
 use percent_encoding::utf8_percent_encode;
 use std::{
@@ -406,7 +406,9 @@ pub fn write_org_page(
         let numdir = old_path.iter().count();
 
         let notice = if modify_time.seconds() - year_ago < 0 {
-            Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+            Some(
+                "this page was last updated over a year ago. facts and circumstances may have changed since.",
+            )
         } else {
             None
         };

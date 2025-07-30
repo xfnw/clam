@@ -1,9 +1,9 @@
 use crate::{
+    Error,
     config::FeedConfig,
     git::{HistMap, HistMeta},
     helpers::URL_PATH_UNSAFE,
     output::Pages,
-    Error,
 };
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;

@@ -1,7 +1,7 @@
 use micro_http_server::{Client, MicroHTTP};
 use orgize::ParseConfig;
 use std::{
-    fs::{read_to_string, File},
+    fs::{File, read_to_string},
     io::Result,
     net::SocketAddr,
     path::{Path, PathBuf},
@@ -115,8 +115,8 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
     res.traverse(&mut html_export);
 
     let notice = Some(
-            "you found my preview site. please avoid sharing the link around, don't be the reason this needs a more complex solution.",
-        );
+        "you found my preview site. please avoid sharing the link around, don't be the reason this needs a more complex solution.",
+    );
 
     let template = PageHtml {
         title: title.as_ref(),

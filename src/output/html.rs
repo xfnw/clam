@@ -1,18 +1,18 @@
 use crate::{
+    Error, STYLESHEET_STR,
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::org_links,
-    output::{get_keywords, infer_title, mangle_link, PageMetadata, Pages, TokenList},
-    Error, STYLESHEET_STR,
+    output::{PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
 };
 use chrono::{DateTime, Datelike};
 use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
 use orgize::{
+    ParseConfig, SyntaxKind,
     ast::{Headline, TodoType},
     export::{Container, Event, HtmlEscape, HtmlExport, TraversalContext, Traverser},
-    rowan::{ast::AstNode, NodeOrToken},
-    ParseConfig, SyntaxKind,
+    rowan::{NodeOrToken, ast::AstNode},
 };
 use slugify::slugify;
 use std::{
@@ -62,8 +62,8 @@ impl Traverser for Handler {
                     self.element(e, ctx);
                 }
                 self.exp.push_str(format!(
-                    r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h{lvl}>"##,
-                ));
+r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h{lvl}>"##,
+));
             }
             Event::Enter(Container::Link(link)) => {
                 let path = link.path();
@@ -281,11 +281,11 @@ impl Traverser for Handler {
                         .next()
                         .is_some_and(|c| c.kind() == SyntaxKind::COLON);
                     let (fnum, rnum) = if let Some(note) = self.feet.get_full_mut(name) {
-                        note.2 .1 += 1;
+                        note.2.1 += 1;
                         if def {
-                            note.2 .0 = Some(children.collect());
+                            note.2.0 = Some(children.collect());
                         }
-                        (note.0, note.2 .1)
+                        (note.0, note.2.1)
                     } else {
                         let n = self.feet.len();
                         self.feet.insert(
@@ -300,8 +300,8 @@ impl Traverser for Handler {
                     };
                     let fnum = fnum + 1;
                     self.exp.push_str(format!(
-                        r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</a></sup>"##
-                    ));
+r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</a></sup>"##
+));
                 }
                 ctx.skip();
             }
@@ -472,7 +472,9 @@ pub fn write_org_page(
         let numdir = old_path.iter().count();
 
         let notice = if modify_time.seconds() - year_ago < 0 {
-            Some("this page was last updated over a year ago. facts and circumstances may have changed since.")
+            Some(
+                "this page was last updated over a year ago. facts and circumstances may have changed since.",
+            )
         } else {
             None
         };

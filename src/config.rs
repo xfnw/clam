@@ -1,8 +1,7 @@
 use crate::{
-    atom,
+    OutputFormat, atom,
     git::HistMap,
-    output::{write_redirect_page, Pages},
-    OutputFormat,
+    output::{Pages, write_redirect_page},
 };
 use serde::Deserialize;
 use std::{fs, path::PathBuf};

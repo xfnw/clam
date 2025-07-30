@@ -1,4 +1,4 @@
-use orgize::{ast::Link, rowan::ast::AstNode, Org};
+use orgize::{Org, ast::Link, rowan::ast::AstNode};
 use percent_encoding::{AsciiSet, CONTROLS};
 use slugify::slugify;
 use std::path::Path;

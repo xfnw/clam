@@ -1,8 +1,7 @@
 use crate::{
-    default_org_cfg,
+    OutputFormat, RepoArgs, default_org_cfg,
     output::{gmi::GmiExport, infer_title},
     util::map_files,
-    OutputFormat, RepoArgs,
 };
 use git2::{Blob, Commit, Repository};
 use serde::Serialize;

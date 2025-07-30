@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use orgize::{ast::Token, rowan::NodeOrToken, Org, ParseConfig, SyntaxNode, SyntaxToken};
+use orgize::{Org, ParseConfig, SyntaxNode, SyntaxToken, ast::Token, rowan::NodeOrToken};
 use slugify::slugify;
 use std::{
     collections::HashMap,
@@ -11,7 +11,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{config::ClamConfig, git::HistMap, Error, OutputFormat};
+use crate::{Error, OutputFormat, config::ClamConfig, git::HistMap};
 
 pub mod gmi;
 pub mod html;
