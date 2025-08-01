@@ -103,8 +103,12 @@ fn generate_entry(
 
         (title, body)
     } else {
-        // TODO: include other kinds of files that are utf-8
-        return Ok(());
+        let Ok(fstr) = str::from_utf8(file) else {
+            return Ok(());
+        };
+        let title = infer_title(&bpath);
+        let body = format!("<pre>{}</pre>", HtmlEscape(&fstr));
+        (title, body)
     };
 
     entries.push(Entry {
