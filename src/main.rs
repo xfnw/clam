@@ -190,9 +190,17 @@ fn generate(
     let org_cfg = default_org_cfg();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) =
-            git::walk_callback(repo, dir, entry, &org_cfg, format, &mut pages, &mut links)
-        {
+        if let Err(e) = git::walk_callback(repo, dir, entry, |name, blob| {
+            crate::output::generate_page(
+                format,
+                dir,
+                name,
+                blob.content(),
+                &org_cfg,
+                &mut pages,
+                &mut links,
+            )
+        }) {
             eprintln!("{e}");
         }
         0

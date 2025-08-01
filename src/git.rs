@@ -1,11 +1,9 @@
-use crate::{Error, OutputFormat, output::Pages};
+use crate::Error;
 use git2::{Oid, Repository, Time};
-use orgize::ParseConfig;
 use std::{
     collections::{HashMap, HashSet},
     fs,
     path::PathBuf,
-    rc::Rc,
 };
 
 pub type HistMap = HashMap<PathBuf, HistMeta>;
@@ -89,15 +87,15 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
     Ok(metadata)
 }
 
-pub fn walk_callback(
+pub fn walk_callback<F>(
     repo: &Repository,
     dir: &str,
     entry: &git2::TreeEntry,
-    org_cfg: &ParseConfig,
-    format: OutputFormat,
-    pages: &mut Pages,
-    links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-) -> Result<(), Error> {
+    callback: F,
+) -> Result<(), Error>
+where
+    F: FnOnce(&str, git2::Blob) -> Result<(), Error>,
+{
     let name = entry.name().ok_or(Error::NonUTF8Path)?;
 
     match entry.filemode() {
@@ -122,7 +120,5 @@ pub fn walk_callback(
     let object = entry.to_object(repo)?;
     let blob = object.into_blob().map_err(|_| Error::NotABlob)?;
 
-    crate::output::generate_page(format, dir, name, blob.content(), org_cfg, pages, links)?;
-
-    Ok(())
+    callback(name, blob)
 }
