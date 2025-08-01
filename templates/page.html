@@ -23,10 +23,10 @@
 %% }
 <h1>{{ self.title }}</h1>
 %% if let Some(notice) = self.notice {
-<aside class=box>{{ Trusted(&notice) }}</aside>
+<aside class=box>{{ Trusted(notice) }}</aside>
 %% }
 </header>
-{{ Trusted(&self.body) }}
+{{ Trusted(self.body) }}
 %% if let Some(meta) = self.metadata {
 <footer>
 %% if let Some(incoming) = meta.incoming {
