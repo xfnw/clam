@@ -111,6 +111,7 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
     f.write_all(&content.into_bytes()).map_err(Error::File)
 }
 
+// FIXME: use an actual url parser
 pub fn mangle_link(path: &Token, suffix: &str, asuffix: &str) -> String {
     let path = path.strip_prefix("file:").unwrap_or(path);
     if let Some(p) = path.strip_prefix('*') {
