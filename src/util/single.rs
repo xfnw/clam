@@ -1,5 +1,6 @@
 use git2::{Commit, Repository};
 use html_escaper::{Escape, Trusted};
+use orgize::export::{Container, Event, HtmlEscape, Traverser};
 use slugify::slugify;
 use url::Url;
 
@@ -12,6 +13,39 @@ struct Entry<'a> {
     title: &'a str,
     slug: String,
     body: &'a str,
+}
+
+#[derive(Default)]
+struct LinkSlugExport {
+    exp: crate::output::html::Handler,
+}
+
+impl Traverser for LinkSlugExport {
+    fn event(&mut self, event: orgize::export::Event, ctx: &mut orgize::export::TraversalContext) {
+        match event {
+            Event::Enter(Container::Link(ref link)) => {
+                let path = link.path();
+
+                // FIXME: would be nice to turn local images into data uris
+                if path.starts_with("abbr:") || link.is_image() {
+                    self.exp.event(event, ctx);
+                    return;
+                }
+
+                let path = slug_url(path);
+
+                self.exp
+                    .exp
+                    .push_str(format!("<a href=\"{}\">", HtmlEscape(&path)));
+
+                if !link.has_description() {
+                    self.exp.exp.push_str(format!("{}</a>", HtmlEscape(&path)));
+                    ctx.skip();
+                }
+            }
+            _ => self.exp.event(event, ctx),
+        }
+    }
 }
 
 fn slug_url(url: impl AsRef<str>) -> String {
