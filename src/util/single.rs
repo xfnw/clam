@@ -1,4 +1,4 @@
-use crate::{Error, output::infer_title};
+use crate::{Error, STYLESHEET_STR, output::infer_title};
 use git2::{Commit, Repository};
 use html_escaper::{Escape, Trusted};
 use orgize::{
