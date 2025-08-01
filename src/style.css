@@ -1,7 +1,10 @@
+html {
+  color-scheme: dark light;
+}
+
 body {
   background: #141415;
   color: #cdcdcd;
-  color-scheme: dark light;
   font-family: sans-serif;
   max-width: 44em;
   margin: 0 auto;
