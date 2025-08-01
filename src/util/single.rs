@@ -6,7 +6,7 @@ use orgize::{
     export::{Container, Event, HtmlEscape, Traverser},
 };
 use slugify::slugify;
-use std::{ffi::OsStr, path::PathBuf};
+use std::{ffi::OsStr, path::Path};
 use url::Url;
 
 #[derive(boilerplate::Boilerplate)]
@@ -20,8 +20,8 @@ struct Entry {
     body: String,
 }
 
-#[derive(Default)]
 struct LinkSlugExport {
+    myurl: Url,
     exp: crate::output::html::Handler,
 }
 
@@ -37,7 +37,7 @@ impl Traverser for LinkSlugExport {
                     return;
                 }
 
-                let path = slug_url(path);
+                let path = slug_url(path, &self.myurl);
 
                 self.exp
                     .exp
@@ -53,19 +53,23 @@ impl Traverser for LinkSlugExport {
     }
 }
 
-fn slug_url(url: impl AsRef<str>) -> String {
+fn slug_url(url: impl AsRef<str>, current: &Url) -> String {
     let url = url.as_ref();
     if let Some(f) = url.strip_prefix('*') {
         return format!("#{}", slugify!(f));
     }
-    // grumble grumble url not having a consistent Err type
-    // so i cant use .and_then()
-    if let Ok(Ok(url)) = Url::from_directory_path("/").map(|u| u.join(url)) {
+    if let Ok(url) = current.join(url) {
         if url.scheme() == "file" {
             return if let Some(f) = url.fragment() {
                 format!("#{f}")
             } else {
-                format!("#{}", slugify!(url.path()))
+                let slug = slugify!(url.path());
+                let mindex = if url.path().ends_with('/') {
+                    "-index-org"
+                } else {
+                    ""
+                };
+                format!("#{slug}{mindex}")
             };
         }
     }
@@ -80,7 +84,7 @@ fn generate_entry(
     entries: &mut Vec<Entry>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
-    let bpath = PathBuf::from(&full_path);
+    let bpath = Path::new("/").join(&full_path);
     let (title, body) = if bpath
         .extension()
         .and_then(OsStr::to_str)
@@ -90,7 +94,10 @@ fn generate_entry(
         let res = org_cfg.clone().parse(fstr);
         let title = res.title().unwrap_or_else(|| infer_title(&bpath));
 
-        let mut html_export = LinkSlugExport::default();
+        let mut html_export = LinkSlugExport {
+            myurl: Url::from_file_path(&bpath).unwrap(),
+            exp: crate::output::html::Handler::default(),
+        };
         res.traverse(&mut html_export);
         let body = html_export.exp.exp.finish();
 
