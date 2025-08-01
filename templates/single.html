@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<style>article:not(#index-org,:target,:has(:target)),:root:has(:target) article#index-org:not(:has(:target)){display:none}html{color-scheme:dark light}body{font-family:sans-serif;max-width:44em;margin:0 auto}</style>
+</head>
+<body>
+%% for entry in self.entries {
+<article id="{{ entry.slug }}">
+<h1>{{ entry.title }}</h1>
+{{ Trusted(&entry.body) }}
+</article>
+%% }
+</body>
+</html>
