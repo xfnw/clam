@@ -389,7 +389,11 @@ pub fn generate_page(
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
-    if Some("org") == full_path.extension().and_then(OsStr::to_str) {
+    if full_path
+        .extension()
+        .and_then(OsStr::to_str)
+        .is_some_and(|s| s.eq_ignore_ascii_case("org"))
+    {
         let fstr = std::str::from_utf8(file).map_err(Error::NonUTF8Org)?;
         let res = org_cfg.clone().parse(fstr);
 
