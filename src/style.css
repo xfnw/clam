@@ -193,7 +193,7 @@ li p:nth-of-type(1) {
     color: #551a8b;
   }
   :target {
-    background-color: #ee8;
+    background: #ee8;
   }
   thead tr td, th, summary, input {
     background: #ccc;
