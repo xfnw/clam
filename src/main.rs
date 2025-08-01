@@ -37,6 +37,9 @@ enum Commands {
     /// output links between pages in graphviz dot format
     #[cfg(feature = "util")]
     Dot(RepoArgs),
+    /// output page content as a single html file
+    #[cfg(feature = "util")]
+    Single(RepoArgs),
     /// hook for filtering incoming git pushes
     PreReceive(PreReceiveArgs),
 }
@@ -220,6 +223,8 @@ fn main() {
         }
         #[cfg(feature = "util")]
         Commands::Dot(args) => open_repo(args, util::dot::print_dot),
+        #[cfg(feature = "util")]
+        Commands::Single(args) => open_repo(args, util::single::print_html),
         Commands::PreReceive(args) => prereceive::hook(args),
     }
 }
