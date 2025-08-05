@@ -3,7 +3,7 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::org_links,
-    output::{PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
+    output::{Page, PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
 };
 use chrono::{DateTime, Datelike};
 use html_escaper::{Escape, Trusted};
@@ -422,7 +422,15 @@ pub fn generate_page(
         res.traverse(&mut html_export);
         let html = html_export.exp.finish();
 
-        pages.insert(full_path, (title, old_path, keywords, html));
+        pages.insert(
+            full_path,
+            Page {
+                title,
+                old_path,
+                keywords,
+                html,
+            },
+        );
     } else {
         let mut f = fs::File::create(full_path).map_err(Error::File)?;
         f.write_all(file).map_err(Error::File)?;
@@ -453,7 +461,16 @@ pub fn write_org_page(
         )
     });
 
-    for (new_path, (title, old_path, keywords, html)) in pages {
+    for (
+        new_path,
+        Page {
+            title,
+            old_path,
+            keywords,
+            html,
+        },
+    ) in pages
+    {
         let HistMeta {
             create_time,
             modify_time,
@@ -489,7 +506,7 @@ pub fn write_org_page(
                 .map(|b| {
                     (
                         b.to_str().unwrap(),
-                        pages.get(b.as_ref()).unwrap().0.as_ref(),
+                        pages.get(b.as_ref()).unwrap().title.as_ref(),
                     )
                 })
                 .collect()

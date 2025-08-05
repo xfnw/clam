@@ -3,7 +3,7 @@ use crate::{
     config::FeedConfig,
     git::{HistMap, HistMeta},
     helpers::URL_PATH_UNSAFE,
-    output::Pages,
+    output::{Page, Pages},
 };
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
@@ -60,7 +60,16 @@ impl fmt::Display for AtomDateTime {
 pub fn entries<'a>(pages: &'a Pages, metadata: &'a HistMap) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
-    for (path, (title, old, _, html)) in pages {
+    for (
+        path,
+        Page {
+            title,
+            old_path,
+            html,
+            ..
+        },
+    ) in pages
+    {
         let Some(path) = path.to_str() else {
             continue;
         };
@@ -70,7 +79,7 @@ pub fn entries<'a>(pages: &'a Pages, metadata: &'a HistMap) -> Result<Vec<AtomEn
             last_editor,
             last_msg,
             ..
-        } = metadata.get(old).ok_or(Error::MissingHist)?;
+        } = metadata.get(old_path).ok_or(Error::MissingHist)?;
         let updated = AtomDateTime::new(modify_time.seconds()).ok_or(Error::BadModifyTime)?;
         let summary = last_msg.as_deref();
         let content = Some(html.as_ref());

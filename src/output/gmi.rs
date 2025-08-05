@@ -3,7 +3,9 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::{URL_PATH_UNSAFE, org_links},
-    output::{NodeOrToken, PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
+    output::{
+        NodeOrToken, Page, PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link,
+    },
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
@@ -366,7 +368,15 @@ pub fn generate_page(
         res.traverse(&mut gmi_export);
         let gmi = gmi_export.finish();
 
-        pages.insert(full_path, (title, old_path, keywords, gmi));
+        pages.insert(
+            full_path,
+            Page {
+                title,
+                old_path,
+                keywords,
+                html: gmi,
+            },
+        );
     } else {
         let mut f = File::create(full_path).map_err(Error::File)?;
         f.write_all(file).map_err(Error::File)?;
@@ -388,7 +398,16 @@ pub fn write_org_page(
         - 365 * 24 * 60 * 60;
     let year_ago: i64 = year_ago.try_into().map_err(|_| Error::TimeOverflow)?;
 
-    for (new_path, (title, old_path, keywords, html)) in pages {
+    for (
+        new_path,
+        Page {
+            title,
+            old_path,
+            keywords,
+            html,
+        },
+    ) in pages
+    {
         let HistMeta {
             create_time,
             modify_time,
@@ -423,7 +442,7 @@ pub fn write_org_page(
                 .map(|b| {
                     (
                         b.to_str().unwrap(),
-                        pages.get(b.as_ref()).unwrap().0.as_ref(),
+                        pages.get(b.as_ref()).unwrap().title.as_ref(),
                     )
                 })
                 .collect()

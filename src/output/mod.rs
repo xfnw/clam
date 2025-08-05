@@ -17,7 +17,14 @@ pub mod gmi;
 pub mod html;
 
 pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
-pub type Pages = HashMap<PathBuf, (String, PathBuf, PageKeywords, String)>;
+pub type Pages = HashMap<PathBuf, Page>;
+
+pub struct Page {
+    pub title: String,
+    pub old_path: PathBuf,
+    pub keywords: PageKeywords,
+    pub html: String,
+}
 
 pub struct PageMetadata<'a> {
     pub author: &'a str,
