@@ -1,4 +1,7 @@
-use crate::{Error, STYLESHEET_STR, output::infer_title};
+use crate::{
+    Error, STYLESHEET_STR,
+    output::{PageKeywords, get_keywords, infer_title},
+};
 use git2::{Commit, Repository};
 use html_escaper::{Escape, Trusted};
 use orgize::{
@@ -6,17 +9,23 @@ use orgize::{
     export::{Container, Event, HtmlEscape, Traverser},
 };
 use slugify::slugify;
-use std::{ffi::OsStr, path::Path};
+use std::{collections::HashMap, ffi::OsStr, path::Path};
 use url::Url;
 
 #[derive(boilerplate::Boilerplate)]
 struct SingleHtml<'a> {
-    entries: &'a [Entry],
+    entries: &'a [Entry<'a>],
 }
 
-struct Entry {
+struct Entry<'a> {
+    title: &'a str,
+    slug: &'a str,
+    body: &'a str,
+}
+
+struct Page {
     title: String,
-    slug: String,
+    keywords: PageKeywords,
     body: String,
 }
 
@@ -76,16 +85,16 @@ fn slug_url(url: impl AsRef<str>, current: &Url) -> String {
     url.to_string()
 }
 
-fn generate_entry(
+fn generate_page(
     dir: &str,
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    entries: &mut Vec<Entry>,
+    pages: &mut HashMap<String, Page>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
     let bpath = Path::new("/").join(&full_path);
-    let (title, body) = if bpath
+    let page = if bpath
         .extension()
         .and_then(OsStr::to_str)
         .is_some_and(|s| s.eq_ignore_ascii_case("org"))
@@ -93,47 +102,60 @@ fn generate_entry(
         let fstr = str::from_utf8(file).map_err(Error::NonUTF8Org)?;
         let res = org_cfg.clone().parse(fstr);
         let title = res.title().unwrap_or_else(|| infer_title(&bpath));
+        let keywords = get_keywords(&res);
 
         let mut html_export = LinkSlugExport {
             myurl: Url::from_file_path(&bpath).unwrap(),
             exp: crate::output::html::Handler::default(),
         };
         res.traverse(&mut html_export);
-        let body = html_export.exp.exp.finish();
+        let html = html_export.exp.exp.finish();
 
-        (title, body)
+        Page {
+            title,
+            keywords,
+            body: html,
+        }
     } else {
         let Ok(fstr) = str::from_utf8(file) else {
             return Ok(());
         };
         let title = infer_title(&bpath);
-        let body = format!("<pre>{}</pre>", HtmlEscape(&fstr));
-        (title, body)
+        let html = format!("<pre>{}</pre>", HtmlEscape(&fstr));
+        Page {
+            title,
+            keywords: PageKeywords::default(),
+            body: html,
+        }
     };
 
-    entries.push(Entry {
-        title,
-        slug: slugify!(&full_path),
-        body,
-    });
+    if pages.insert(slugify!(&full_path), page).is_some() {
+        // grumble grumble insert does not give back key ownership >:(
+        return Err(Error::SlugExists(slugify!(&full_path)));
+    }
 
     Ok(())
 }
 
 pub fn print_html(repo: &Repository, commit: &Commit) {
     let tree = commit.tree().unwrap();
-    let mut entries = vec![];
     let org_cfg = crate::default_org_cfg();
+    let mut pages = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
         if let Err(e) = crate::git::walk_callback(repo, dir, entry, |name, blob| {
-            generate_entry(dir, name, blob.content(), &org_cfg, &mut entries)
+            generate_page(dir, name, blob.content(), &org_cfg, &mut pages)
         }) {
             eprintln!("{e}");
         }
         0
     })
     .unwrap();
+
+    let entries: Vec<_> = pages
+        .iter()
+        .map(|(slug, Page { title, body, .. })| Entry { title, slug, body })
+        .collect();
 
     println!("{}", SingleHtml { entries: &entries });
 }

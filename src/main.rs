@@ -152,6 +152,8 @@ enum Error {
     SkipSubmodule(String),
     /// tried to turn a git object into a blob that was not a blob
     NotABlob,
+    /// page with duplicate slug exists, overwriting it
+    SlugExists(String),
 }
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]

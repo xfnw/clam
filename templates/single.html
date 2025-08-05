@@ -10,7 +10,7 @@
 %% for entry in self.entries {
 <article id="{{ entry.slug }}">
 <h1>{{ entry.title }}</h1>
-{{ Trusted(&entry.body) }}
+{{ Trusted(entry.body) }}
 </article>
 %% }
 </body>
