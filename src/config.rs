@@ -1,10 +1,10 @@
 use crate::{
     OutputFormat, atom,
     git::HistMap,
-    output::{Pages, write_redirect_page},
+    output::{Page, write_redirect_page},
 };
 use serde::Deserialize;
-use std::{fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 #[derive(Deserialize, Debug)]
 pub struct ClamConfig {
@@ -44,7 +44,7 @@ pub struct OverrideConfig {
 }
 
 pub fn handle_config(
-    pages: &Pages,
+    pages: &HashMap<PathBuf, Page>,
     metadata: &HistMap,
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {

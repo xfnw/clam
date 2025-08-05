@@ -3,7 +3,7 @@ use crate::{
     config::ClamConfig,
     git::{HistMap, HistMeta},
     helpers::org_links,
-    output::{Page, PageMetadata, Pages, TokenList, get_keywords, infer_title, mangle_link},
+    output::{Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
 };
 use chrono::{DateTime, Datelike};
 use html_escaper::{Escape, Trusted};
@@ -385,7 +385,7 @@ pub fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    pages: &mut Pages,
+    pages: &mut HashMap<PathBuf, Page>,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     let mut full_path: PathBuf = format!("{dir}{name}").into();
@@ -439,7 +439,7 @@ pub fn generate_page(
 }
 
 pub fn write_org_page(
-    pages: &Pages,
+    pages: &HashMap<PathBuf, Page>,
     hist: &HistMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,

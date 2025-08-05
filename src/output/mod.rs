@@ -17,7 +17,6 @@ pub mod gmi;
 pub mod html;
 
 pub type TokenList = Vec<NodeOrToken<SyntaxNode, SyntaxToken>>;
-pub type Pages = HashMap<PathBuf, Page>;
 
 pub struct Page {
     pub title: String,
@@ -72,7 +71,7 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
 
 pub fn write_org_page(
     format: OutputFormat,
-    pages: &Pages,
+    pages: &HashMap<PathBuf, Page>,
     hist: &HistMap,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
@@ -90,7 +89,7 @@ pub fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    pages: &mut Pages,
+    pages: &mut HashMap<PathBuf, Page>,
     links: &mut HashMap<PathBuf, Vec<Rc<PathBuf>>>,
 ) -> Result<(), Error> {
     match format {

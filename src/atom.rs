@@ -3,13 +3,19 @@ use crate::{
     config::FeedConfig,
     git::{HistMap, HistMeta},
     helpers::URL_PATH_UNSAFE,
-    output::{Page, Pages},
+    output::Page,
 };
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
 use regex::RegexSet;
-use std::{cmp::min, fmt, fs, io::Write, path::Component};
+use std::{
+    cmp::min,
+    collections::HashMap,
+    fmt, fs,
+    io::Write,
+    path::{Component, PathBuf},
+};
 
 #[derive(boilerplate::Boilerplate)]
 struct FeedXml<'a> {
@@ -57,7 +63,10 @@ impl fmt::Display for AtomDateTime {
     }
 }
 
-pub fn entries<'a>(pages: &'a Pages, metadata: &'a HistMap) -> Result<Vec<AtomEntry<'a>>, Error> {
+pub fn entries<'a>(
+    pages: &'a HashMap<PathBuf, Page>,
+    metadata: &'a HistMap,
+) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 
     for (
