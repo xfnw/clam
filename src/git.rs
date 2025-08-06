@@ -6,6 +6,7 @@ use std::{
     path::PathBuf,
 };
 
+#[derive(Debug)]
 pub struct HistMeta {
     pub create_time: Time,
     pub modify_time: Time,
