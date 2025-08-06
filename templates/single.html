@@ -11,6 +11,24 @@
 <article id="{{ entry.slug }}">
 <h1>{{ entry.title }}</h1>
 {{ Trusted(entry.body) }}
+<footer>
+%% if let Some(incoming) = &entry.metadata.incoming {
+<nav aria-labelledby="clam.incoming.{{ entry.slug }}"><span id="clam.incoming.{{ entry.slug }}">incoming</span>:
+%%   for (path, title) in incoming {
+<a href="#{{ path }}">{{ title }}</a>
+%%   }
+</nav>
+%% }
+<hr>
+&copy; {{ entry.metadata.year }} <i>{{ entry.metadata.author }}</i>{% if entry.metadata.contributors > 0 { %} and {{ entry.metadata.contributors }} contributor{% if entry.metadata.contributors != 1 { %}s{% } } %}.
+last modified <time>{{ entry.metadata.modified }}</time>.
+generated from commit <code>{{ entry.metadata.commit }}</code>.
+%% if let Some(footer) = entry.metadata.footer {
+<div>
+{{ Trusted(footer) }}
+</div>
+%% }
+</footer>
 </article>
 %% }
 </body>
