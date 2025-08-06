@@ -155,6 +155,7 @@ enum Error {
     /// tried to turn a git object into a blob that was not a blob
     NotABlob,
     /// page with duplicate slug exists, overwriting it
+    #[cfg(feature = "util")]
     SlugExists(String),
 }
 
