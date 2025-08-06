@@ -156,7 +156,7 @@ fn generate_page(
 fn generate_entry<'a>(
     slug: &'a str,
     page: &'a Page,
-    _links: &'a HashMap<String, Vec<Rc<String>>>,
+    _links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
     _hist: &'a HistMap,
 ) -> Entry<'a> {
     let Page {
