@@ -18,12 +18,15 @@ pub struct HistMeta {
 
 pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, HistMeta>, Error> {
     macro_rules! add_times {
-        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $metadata:expr) => {
+        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $committer:expr, $diff:expr, $metadata:expr) => {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or(Error::BadGitPath)?;
                 if let Some(entry) = $metadata.get_mut(path) {
                     if !entry.contributors.contains($author) {
                         entry.contributors.insert($author.to_string());
+                    }
+                    if !entry.contributors.contains($committer) {
+                        entry.contributors.insert($committer.to_string());
                     }
                     if entry.modify_time < $time_c {
                         entry.modify_time = $time_c.clone();
@@ -37,6 +40,9 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
                 } else {
                     let mut contributors = HashSet::new();
                     contributors.insert($author.to_string());
+                    if $author != $committer {
+                        contributors.insert($committer.to_string());
+                    }
                     $metadata.insert(
                         path.to_owned(),
                         HistMeta {
@@ -66,21 +72,23 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let parents = commit.parent_count();
         let message = commit.message().map(str::to_string);
         let author = commit.author_with_mailmap(&mailmap)?;
+        let committer = commit.committer_with_mailmap(&mailmap)?;
         let time_a = author.when();
         let time_c = commit.time();
         let author = author.name().ok_or(Error::BadAuthor)?;
+        let committer = committer.name().ok_or(Error::BadCommitter)?;
 
         // initial commit, everything touched
         if parents == 0 {
             let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            add_times!(time_a, time_c, message, author, diff, metadata);
+            add_times!(time_a, time_c, message, author, committer, diff, metadata);
             continue;
         }
 
         for parent in 0..parents {
             let ptree = commit.parent(parent)?.tree()?;
             let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-            add_times!(time_a, time_c, message, author, diff, metadata);
+            add_times!(time_a, time_c, message, author, committer, diff, metadata);
         }
     }
 

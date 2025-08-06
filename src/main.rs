@@ -146,6 +146,8 @@ enum Error {
     BadGitPath,
     /// broken author
     BadAuthor,
+    /// broken committer
+    BadCommitter,
     /// skipping symlink
     SkipSymlink(String),
     /// skipping submodule
