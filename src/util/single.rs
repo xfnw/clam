@@ -1,5 +1,6 @@
 use crate::{
     Error, STYLESHEET_STR,
+    helpers::org_links,
     output::{PageKeywords, get_keywords, infer_title},
 };
 use git2::{Commit, Repository};
@@ -9,7 +10,7 @@ use orgize::{
     export::{Container, Event, HtmlEscape, Traverser},
 };
 use slugify::slugify;
-use std::{collections::HashMap, ffi::OsStr, path::Path};
+use std::{collections::HashMap, ffi::OsStr, path::Path, rc::Rc};
 use url::Url;
 
 #[derive(boilerplate::Boilerplate)]
@@ -91,6 +92,7 @@ fn generate_page(
     file: &[u8],
     org_cfg: &ParseConfig,
     pages: &mut HashMap<String, Page>,
+    links: &mut HashMap<String, Vec<Rc<String>>>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
     let bpath = Path::new("/").join(&full_path);
@@ -103,6 +105,17 @@ fn generate_page(
         let res = org_cfg.clone().parse(fstr);
         let title = res.title().unwrap_or_else(|| infer_title(&bpath));
         let keywords = get_keywords(&res);
+
+        let myslug = Rc::new(slugify!(&full_path));
+        org_links(&res, &bpath, |l| {
+            let l = slugify!(l.to_str().unwrap());
+
+            if let Some(e) = links.get_mut(&l) {
+                e.push(myslug.clone());
+            } else {
+                links.insert(l, vec![myslug.clone()]);
+            }
+        });
 
         let mut html_export = LinkSlugExport {
             myurl: Url::from_file_path(&bpath).unwrap(),
@@ -139,12 +152,14 @@ fn generate_page(
 
 pub fn print_html(repo: &Repository, commit: &Commit) {
     let tree = commit.tree().unwrap();
+    let hmeta = crate::git::make_time_tree(repo, commit.id()).unwrap();
     let org_cfg = crate::default_org_cfg();
     let mut pages = HashMap::new();
+    let mut links = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
         if let Err(e) = crate::git::walk_callback(repo, dir, entry, |name, blob| {
-            generate_page(dir, name, blob.content(), &org_cfg, &mut pages)
+            generate_page(dir, name, blob.content(), &org_cfg, &mut pages, &mut links)
         }) {
             eprintln!("{e}");
         }
