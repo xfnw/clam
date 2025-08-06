@@ -6,8 +6,6 @@ use std::{
     path::PathBuf,
 };
 
-pub type HistMap = HashMap<PathBuf, HistMeta>;
-
 pub struct HistMeta {
     pub create_time: Time,
     pub modify_time: Time,
@@ -17,7 +15,7 @@ pub struct HistMeta {
     pub contributors: HashSet<String>,
 }
 
-pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
+pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, HistMeta>, Error> {
     macro_rules! add_times {
         ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $diff:expr, $metadata:expr) => {
             for change in $diff.deltas() {
@@ -58,7 +56,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HistMap, Error> {
     revwalk.push(oid)?;
     revwalk.set_sorting(git2::Sort::TIME)?;
 
-    let mut metadata: HistMap = HashMap::new();
+    let mut metadata: HashMap<PathBuf, HistMeta> = HashMap::new();
 
     for cid in revwalk {
         let commit = repo.find_commit(cid?)?;

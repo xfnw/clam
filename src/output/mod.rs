@@ -1,3 +1,4 @@
+use crate::{Error, OutputFormat, config::ClamConfig, git::HistMeta};
 use chrono::NaiveDateTime;
 use orgize::{Org, ParseConfig, SyntaxNode, SyntaxToken, ast::Token, rowan::NodeOrToken};
 use slugify::slugify;
@@ -10,8 +11,6 @@ use std::{
     path::{Path, PathBuf},
     rc::Rc,
 };
-
-use crate::{Error, OutputFormat, config::ClamConfig, git::HistMap};
 
 pub mod gmi;
 pub mod html;
@@ -72,7 +71,7 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
 pub fn write_org_page(
     format: OutputFormat,
     pages: &HashMap<PathBuf, Page>,
-    hist: &HistMap,
+    hist: &HashMap<PathBuf, HistMeta>,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
     config: Option<&ClamConfig>,

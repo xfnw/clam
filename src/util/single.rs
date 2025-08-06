@@ -1,6 +1,6 @@
 use crate::{
     Error, STYLESHEET_STR,
-    git::HistMap,
+    git::HistMeta,
     helpers::org_links,
     output::{Page, PageKeywords, get_keywords, infer_title},
 };
@@ -157,7 +157,7 @@ fn generate_entry<'a>(
     slug: &'a str,
     page: &'a Page,
     _links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
-    _hist: &'a HistMap,
+    _hist: &'a HashMap<PathBuf, HistMeta>,
 ) -> Entry<'a> {
     let Page {
         title,

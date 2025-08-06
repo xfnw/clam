@@ -1,10 +1,4 @@
-use crate::{
-    Error,
-    config::FeedConfig,
-    git::{HistMap, HistMeta},
-    helpers::URL_PATH_UNSAFE,
-    output::Page,
-};
+use crate::{Error, config::FeedConfig, git::HistMeta, helpers::URL_PATH_UNSAFE, output::Page};
 use chrono::{DateTime, NaiveDateTime};
 use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
@@ -65,7 +59,7 @@ impl fmt::Display for AtomDateTime {
 
 pub fn entries<'a>(
     pages: &'a HashMap<PathBuf, Page>,
-    metadata: &'a HistMap,
+    metadata: &'a HashMap<PathBuf, HistMeta>,
 ) -> Result<Vec<AtomEntry<'a>>, Error> {
     let mut entries = vec![];
 

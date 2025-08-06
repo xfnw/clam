@@ -1,6 +1,6 @@
 use crate::{
     OutputFormat, atom,
-    git::HistMap,
+    git::HistMeta,
     output::{Page, write_redirect_page},
 };
 use serde::Deserialize;
@@ -45,7 +45,7 @@ pub struct OverrideConfig {
 
 pub fn handle_config(
     pages: &HashMap<PathBuf, Page>,
-    metadata: &HistMap,
+    metadata: &HashMap<PathBuf, HistMeta>,
     overrides: OverrideConfig,
 ) -> Option<ClamConfig> {
     let config = fs::read_to_string(".clam.toml").ok()?;

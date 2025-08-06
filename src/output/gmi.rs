@@ -1,7 +1,7 @@
 use crate::{
     Error,
     config::ClamConfig,
-    git::{HistMap, HistMeta},
+    git::HistMeta,
     helpers::{URL_PATH_UNSAFE, org_links},
     output::{NodeOrToken, Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
 };
@@ -384,7 +384,7 @@ pub fn generate_page(
 
 pub fn write_org_page(
     pages: &HashMap<PathBuf, Page>,
-    hist: &HistMap,
+    hist: &HashMap<PathBuf, HistMeta>,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
     short_id: &str,
     _config: Option<&ClamConfig>,
