@@ -53,6 +53,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         };
     }
 
+    let mailmap = repo.mailmap()?;
     let mut revwalk = repo.revwalk()?;
     revwalk.push(oid)?;
     revwalk.set_sorting(git2::Sort::TIME)?;
@@ -64,7 +65,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let tree = commit.tree()?;
         let parents = commit.parent_count();
         let message = commit.message().map(str::to_string);
-        let author = commit.author();
+        let author = commit.author_with_mailmap(&mailmap)?;
         let time_a = author.when();
         let time_c = commit.time();
         let author = author.name().ok_or(Error::BadAuthor)?;
