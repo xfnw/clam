@@ -22,7 +22,7 @@ pub struct Page {
     pub title: String,
     pub old_path: PathBuf,
     pub keywords: PageKeywords,
-    pub html: String,
+    pub body: String,
 }
 
 pub struct PageMetadata<'a> {

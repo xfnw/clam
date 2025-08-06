@@ -428,7 +428,7 @@ pub fn generate_page(
                 title,
                 old_path,
                 keywords,
-                html,
+                body: html,
             },
         );
     } else {
@@ -467,7 +467,7 @@ pub fn write_org_page(
             title,
             old_path,
             keywords,
-            html,
+            body: html,
         },
     ) in pages
     {

@@ -74,7 +74,7 @@ pub fn entries<'a>(
         Page {
             title,
             old_path,
-            html,
+            body: html,
             ..
         },
     ) in pages
