@@ -521,7 +521,7 @@ pub fn write_org_page(
                 .ok_or(Error::BadModifyTime)?
                 .naive_utc(),
             year,
-            incoming: incoming.as_deref(),
+            incoming,
             footer,
             contributors,
         };

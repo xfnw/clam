@@ -29,7 +29,7 @@ pub struct PageMetadata<'a> {
     pub commit: &'a str,
     pub modified: NaiveDateTime,
     pub year: i32,
-    pub incoming: Option<&'a [(&'a str, &'a str)]>,
+    pub incoming: Option<Vec<(&'a str, &'a str)>>,
     pub footer: Option<&'a str>,
     pub contributors: usize,
 }
