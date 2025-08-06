@@ -71,8 +71,10 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let tree = commit.tree()?;
         let parents = commit.parent_count();
         let message = commit.message().map(str::to_string);
-        let author = commit.author_with_mailmap(&mailmap)?;
-        let committer = commit.committer_with_mailmap(&mailmap)?;
+        let author = commit.author();
+        let author = mailmap.resolve_signature(&author).unwrap_or(author);
+        let committer = commit.committer();
+        let committer = mailmap.resolve_signature(&committer).unwrap_or(committer);
         let time_a = author.when();
         let time_c = commit.time();
         let author = author.name().ok_or(Error::BadAuthor)?;
