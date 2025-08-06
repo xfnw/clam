@@ -109,7 +109,7 @@ fn generate_page(
 
         let myslug = Rc::new(slugify!(&full_path));
         org_links(&res, &bpath, |l| {
-            let l = slugify!(l.to_str().unwrap());
+            let l = l.to_owned();
 
             if let Some(e) = links.get_mut(&l) {
                 e.push(myslug.clone());
