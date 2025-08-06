@@ -92,7 +92,7 @@ fn generate_page(
     file: &[u8],
     org_cfg: &ParseConfig,
     pages: &mut HashMap<String, Page>,
-    links: &mut HashMap<String, Vec<Rc<String>>>,
+    links: &mut HashMap<PathBuf, Vec<Rc<String>>>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
     let old_path = PathBuf::from(&full_path);
