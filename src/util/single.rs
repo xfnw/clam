@@ -1,5 +1,6 @@
 use crate::{
     Error, STYLESHEET_STR,
+    git::HistMap,
     helpers::org_links,
     output::{PageKeywords, get_keywords, infer_title},
 };
@@ -150,6 +151,20 @@ fn generate_page(
     Ok(())
 }
 
+fn generate_entry<'a>(
+    slug: &'a str,
+    page: &'a Page,
+    _links: &'a HashMap<String, Vec<Rc<String>>>,
+    _hist: &'a HistMap,
+) -> Entry<'a> {
+    let Page {
+        title,
+        keywords: _,
+        body,
+    } = page;
+    Entry { title, slug, body }
+}
+
 pub fn print_html(repo: &Repository, commit: &Commit) {
     let tree = commit.tree().unwrap();
     let hmeta = crate::git::make_time_tree(repo, commit.id()).unwrap();
@@ -169,7 +184,7 @@ pub fn print_html(repo: &Repository, commit: &Commit) {
 
     let entries: Vec<_> = pages
         .iter()
-        .map(|(slug, Page { title, body, .. })| Entry { title, slug, body })
+        .map(|(slug, page)| generate_entry(slug, page, &links, &hmeta))
         .collect();
 
     println!("{}", SingleHtml { entries: &entries });
