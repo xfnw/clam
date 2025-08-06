@@ -2,7 +2,7 @@ use crate::{
     Error, STYLESHEET_STR,
     git::HistMap,
     helpers::org_links,
-    output::{PageKeywords, get_keywords, infer_title},
+    output::{Page, PageKeywords, get_keywords, infer_title},
 };
 use git2::{Commit, Repository};
 use html_escaper::{Escape, Trusted};
@@ -11,7 +11,12 @@ use orgize::{
     export::{Container, Event, HtmlEscape, Traverser},
 };
 use slugify::slugify;
-use std::{collections::HashMap, ffi::OsStr, path::Path, rc::Rc};
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 use url::Url;
 
 #[derive(boilerplate::Boilerplate)]
@@ -23,12 +28,6 @@ struct Entry<'a> {
     title: &'a str,
     slug: &'a str,
     body: &'a str,
-}
-
-struct Page {
-    title: String,
-    keywords: PageKeywords,
-    body: String,
 }
 
 struct LinkSlugExport {
@@ -96,7 +95,8 @@ fn generate_page(
     links: &mut HashMap<String, Vec<Rc<String>>>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
-    let bpath = Path::new("/").join(&full_path);
+    let old_path = PathBuf::from(&full_path);
+    let bpath = Path::new("/").join(&old_path);
     let page = if bpath
         .extension()
         .and_then(OsStr::to_str)
@@ -123,23 +123,25 @@ fn generate_page(
             exp: crate::output::html::Handler::default(),
         };
         res.traverse(&mut html_export);
-        let html = html_export.exp.exp.finish();
+        let body = html_export.exp.exp.finish();
 
         Page {
             title,
+            old_path,
             keywords,
-            body: html,
+            body,
         }
     } else {
         let Ok(fstr) = str::from_utf8(file) else {
             return Ok(());
         };
         let title = infer_title(&bpath);
-        let html = format!("<pre>{}</pre>", HtmlEscape(&fstr));
+        let body = format!("<pre>{}</pre>", HtmlEscape(&fstr));
         Page {
             title,
+            old_path,
             keywords: PageKeywords::default(),
-            body: html,
+            body,
         }
     };
 
@@ -159,6 +161,7 @@ fn generate_entry<'a>(
 ) -> Entry<'a> {
     let Page {
         title,
+        old_path: _,
         keywords: _,
         body,
     } = page;
