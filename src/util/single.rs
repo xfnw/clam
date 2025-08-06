@@ -2,8 +2,9 @@ use crate::{
     Error, STYLESHEET_STR,
     git::HistMeta,
     helpers::org_links,
-    output::{Page, PageKeywords, get_keywords, infer_title},
+    output::{Page, PageKeywords, PageMetadata, get_keywords, infer_title},
 };
+use chrono::{DateTime, Datelike};
 use git2::{Commit, Repository};
 use html_escaper::{Escape, Trusted};
 use orgize::{
@@ -12,7 +13,7 @@ use orgize::{
 };
 use slugify::slugify;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     ffi::OsStr,
     path::{Path, PathBuf},
     rc::Rc,
@@ -28,6 +29,7 @@ struct Entry<'a> {
     title: &'a str,
     slug: &'a str,
     body: &'a str,
+    metadata: PageMetadata<'a>,
 }
 
 struct LinkSlugExport {
@@ -153,22 +155,82 @@ fn generate_page(
     Ok(())
 }
 
-fn generate_entry<'a>(
-    slug: &'a str,
-    page: &'a Page,
-    _links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
-    _hist: &'a HashMap<PathBuf, HistMeta>,
-) -> Entry<'a> {
-    let Page {
-        title,
-        old_path: _,
-        keywords: _,
-        body,
-    } = page;
-    Entry { title, slug, body }
+fn generate_entries<'a>(
+    pages: &'a HashMap<String, Page>,
+    commit: &'a str,
+    links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
+    hist: &'a HashMap<PathBuf, HistMeta>,
+) -> Vec<Entry<'a>> {
+    pages
+        .iter()
+        .map(
+            |(
+                slug,
+                Page {
+                    title,
+                    old_path,
+                    keywords,
+                    body,
+                },
+            )| {
+                let HistMeta {
+                    create_time,
+                    modify_time,
+                    creator,
+                    contributors,
+                    ..
+                } = hist
+                    .get(old_path)
+                    .expect("file should exist in git history");
+                let author = keywords.author.as_deref().unwrap_or(creator);
+                let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
+                    year
+                } else {
+                    DateTime::from_timestamp(create_time.seconds(), 0)
+                        .expect("creation time from git should be reasonable")
+                        .naive_utc()
+                        .year()
+                };
+
+                let incoming: Option<HashSet<_>> = links.get(old_path).map(|l| l.iter().collect());
+                let incoming: Option<Vec<_>> = incoming.map(|l| {
+                    l.into_iter()
+                        .map(|b| {
+                            (
+                                b.as_ref().as_ref(), // wtf lol
+                                pages.get(b.as_ref()).unwrap().title.as_ref(),
+                            )
+                        })
+                        .collect()
+                });
+
+                let contributors = contributors.len() - usize::from(contributors.contains(author));
+
+                let metadata = PageMetadata {
+                    author,
+                    commit,
+                    modified: DateTime::from_timestamp(modify_time.seconds(), 0)
+                        .expect("modification time from git should be reasonable")
+                        .naive_utc(),
+                    year,
+                    incoming,
+                    footer: None,
+                    contributors,
+                };
+                Entry {
+                    title,
+                    slug,
+                    body,
+                    metadata,
+                }
+            },
+        )
+        .collect()
 }
 
 pub fn print_html(repo: &Repository, commit: &Commit) {
+    let short_id = commit.as_object().short_id().unwrap();
+    let short_id = short_id.as_str().unwrap();
     let tree = commit.tree().unwrap();
     let hmeta = crate::git::make_time_tree(repo, commit.id()).unwrap();
     let org_cfg = crate::default_org_cfg();
@@ -185,10 +247,7 @@ pub fn print_html(repo: &Repository, commit: &Commit) {
     })
     .unwrap();
 
-    let entries: Vec<_> = pages
-        .iter()
-        .map(|(slug, page)| generate_entry(slug, page, &links, &hmeta))
-        .collect();
+    let entries = generate_entries(&pages, short_id, &links, &hmeta);
 
     println!("{}", SingleHtml { entries: &entries });
 }
