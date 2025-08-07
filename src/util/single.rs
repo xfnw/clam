@@ -238,7 +238,7 @@ pub fn print_html(repo: &Repository, commit: &Commit) {
     let mut links = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if let Err(e) = crate::git::walk_callback(repo, dir, entry, |name, blob| {
+        if let Err(e) = crate::git::walk_callback(repo, dir, entry, false, |name, blob| {
             generate_page(dir, name, blob.content(), &org_cfg, &mut pages, &mut links)
         }) {
             eprintln!("{e}");

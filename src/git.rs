@@ -101,6 +101,7 @@ pub fn walk_callback<F>(
     repo: &Repository,
     dir: &str,
     entry: &git2::TreeEntry,
+    create: bool,
     callback: F,
 ) -> Result<(), Error>
 where
@@ -113,7 +114,9 @@ where
         0o100_644 | 0o100_755 => (),
         // directories
         0o040_000 => {
-            fs::create_dir_all(format!("{dir}{name}/")).map_err(Error::Dir)?;
+            if create {
+                fs::create_dir_all(format!("{dir}{name}/")).map_err(Error::Dir)?;
+            }
             return Ok(());
         }
         // symlinks
