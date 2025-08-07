@@ -203,33 +203,32 @@ impl Traverser for GmiExport {
                             .filter_map(NodeOrToken::into_token)
                             .skip_while(|t| t.kind() != SyntaxKind::TEXT)
                     })
+                    && let Some(name) = par.nth(1)
                 {
-                    if let Some(name) = par.nth(1) {
-                        let name = name.text();
+                    let name = name.text();
 
-                        if name.eq_ignore_ascii_case("chat") {
-                            if let Some(usr) = par.next() {
-                                let usr = usr.text().trim();
-                                if !usr.is_empty() {
-                                    if let Some((person, expression)) = usr.rsplit_once('/') {
-                                        self.push_str(format!("<{person} is {expression}> "));
-                                    } else {
-                                        self.push_str(format!("<{usr}> "));
-                                    }
-
-                                    self.output_block_children(&block, ctx);
-
-                                    self.next(ctx);
-                                    return ctx.skip();
-                                }
+                    if name.eq_ignore_ascii_case("chat")
+                        && let Some(usr) = par.next()
+                    {
+                        let usr = usr.text().trim();
+                        if !usr.is_empty() {
+                            if let Some((person, expression)) = usr.rsplit_once('/') {
+                                self.push_str(format!("<{person} is {expression}> "));
+                            } else {
+                                self.push_str(format!("<{usr}> "));
                             }
+
+                            self.output_block_children(&block, ctx);
+
+                            self.next(ctx);
+                            return ctx.skip();
                         }
-                        self.push_str(format!("```{name}\n"));
-                        self.output_block_children(&block, ctx);
-                        self.push_str("```\n\n");
-                        self.next(ctx);
-                        ctx.skip();
                     }
+                    self.push_str(format!("```{name}\n"));
+                    self.output_block_children(&block, ctx);
+                    self.push_str("```\n\n");
+                    self.next(ctx);
+                    ctx.skip();
                 }
             }
             Event::Enter(Container::QuoteBlock(block)) => {
@@ -262,10 +261,10 @@ impl Traverser for GmiExport {
                 ctx.skip();
             }
             Event::Enter(Container::ExportBlock(block)) => {
-                if let Some(t) = block.ty() {
-                    if t == "gmi" || t == "gemini" {
-                        self.push_str(block.value());
-                    }
+                if let Some(t) = block.ty()
+                    && (t == "gmi" || t == "gemini")
+                {
+                    self.push_str(block.value());
                 }
             }
             Event::Enter(Container::OrgTable(table)) => {

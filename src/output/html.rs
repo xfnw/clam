@@ -115,45 +115,44 @@ r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h
                             .filter_map(NodeOrToken::into_token)
                             .skip_while(|t| t.kind() != SyntaxKind::TEXT)
                     })
+                    && let Some(name) = par.nth(1)
                 {
-                    if let Some(name) = par.nth(1) {
-                        let name = name.text();
+                    let name = name.text();
 
-                        self.exp
-                            .push_str(format!("<div class=\"{}\">", HtmlEscape(&name)));
+                    self.exp
+                        .push_str(format!("<div class=\"{}\">", HtmlEscape(&name)));
 
-                        if name.eq_ignore_ascii_case("chat") {
-                            if let Some(usr) = par.next() {
-                                let usr = usr.text().trim();
-                                if !usr.is_empty() {
-                                    let (person, desc) =
-                                        if let Some((person, expression)) = usr.rsplit_once('/') {
-                                            (person, format!("{person} is {expression}"))
-                                        } else {
-                                            (usr, usr.to_string())
-                                        };
-                                    self.exp.push_str("<img class=chat-head width=64 src=\"");
-                                    for _ in 1..self.numdir {
-                                        self.exp.push_str("../");
-                                    }
-                                    self.exp.push_str(format!(
+                    if name.eq_ignore_ascii_case("chat")
+                        && let Some(usr) = par.next()
+                    {
+                        let usr = usr.text().trim();
+                        if !usr.is_empty() {
+                            let (person, desc) =
+                                if let Some((person, expression)) = usr.rsplit_once('/') {
+                                    (person, format!("{person} is {expression}"))
+                                } else {
+                                    (usr, usr.to_string())
+                                };
+                            self.exp.push_str("<img class=chat-head width=64 src=\"");
+                            for _ in 1..self.numdir {
+                                self.exp.push_str("../");
+                            }
+                            self.exp.push_str(format!(
                                         r#"faces/{}.png" alt="{} says"><div class=chat-text><span class=chat-nick aria-hidden=true>&lt;{}&gt;</span> "#,
                                         slugify!(usr), HtmlEscape(desc), HtmlEscape(person)
                                     ));
 
-                                    self.output_block_children(&block, ctx);
+                            self.output_block_children(&block, ctx);
 
-                                    self.exp.push_str("</div></div>");
+                            self.exp.push_str("</div></div>");
 
-                                    return ctx.skip();
-                                }
-                            }
+                            return ctx.skip();
                         }
-
-                        self.output_block_children(&block, ctx);
-
-                        self.exp.push_str("</div>");
                     }
+
+                    self.output_block_children(&block, ctx);
+
+                    self.exp.push_str("</div>");
                 }
                 ctx.skip();
             }

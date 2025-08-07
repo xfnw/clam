@@ -70,20 +70,20 @@ fn slug_url(url: impl AsRef<str>, current: &Url) -> String {
     if let Some(f) = url.strip_prefix('*') {
         return format!("#{}", slugify!(f));
     }
-    if let Ok(url) = current.join(url) {
-        if url.scheme() == "file" {
-            return if let Some(f) = url.fragment() {
-                format!("#{f}")
+    if let Ok(url) = current.join(url)
+        && url.scheme() == "file"
+    {
+        return if let Some(f) = url.fragment() {
+            format!("#{f}")
+        } else {
+            let slug = slugify!(url.path());
+            let mindex = if url.path().ends_with('/') {
+                "-index-org"
             } else {
-                let slug = slugify!(url.path());
-                let mindex = if url.path().ends_with('/') {
-                    "-index-org"
-                } else {
-                    ""
-                };
-                format!("#{slug}{mindex}")
+                ""
             };
-        }
+            format!("#{slug}{mindex}")
+        };
     }
     url.to_string()
 }
