@@ -34,10 +34,7 @@ pub fn print_index(repo: &Repository, commit: &Commit, args: &RepoArgs) {
 }
 
 fn get_entry_org(mut path: PathBuf, blob: &Blob, outfmt: OutputFormat) -> Option<Entry> {
-    path.set_extension(match outfmt {
-        OutputFormat::Html => "html",
-        OutputFormat::Gmi => "gmi",
-    });
+    path.set_extension(outfmt.to_ext());
 
     let fstr = std::str::from_utf8(blob.content()).ok()?;
     let res = default_org_cfg().parse(fstr);

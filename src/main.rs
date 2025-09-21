@@ -165,6 +165,16 @@ enum OutputFormat {
     Gmi,
 }
 
+#[cfg(feature = "util")]
+impl OutputFormat {
+    const fn to_ext(self) -> &'static str {
+        match self {
+            OutputFormat::Html => "html",
+            OutputFormat::Gmi => "gmi",
+        }
+    }
+}
+
 static STYLESHEET_STR: &str = include_str!("style.css");
 static STYLESHEET: &[u8] = STYLESHEET_STR.as_bytes();
 static STYLEFEED: &[u8] = include_bytes!("style.xsl");
