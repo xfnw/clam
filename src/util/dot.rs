@@ -1,4 +1,4 @@
-use crate::{helpers::org_urls, util::map_org};
+use crate::{RepoArgs, helpers::org_urls, util::map_org};
 use git2::{Commit, Repository};
 use orgize::Org;
 use std::{
@@ -35,7 +35,13 @@ fn eat_file_index(url: &mut Url) {
     segments.pop().push("");
 }
 
-pub fn print_dot(repo: &Repository, commit: &Commit) {
+pub fn print_dot(repo: &Repository, commit: &Commit, args: &RepoArgs) {
+    let root = if let Some(url) = &args.url {
+        Url::parse(url).expect("you should pass a valid url to the url option")
+    } else {
+        Url::from_file_path(Path::new("/")).unwrap()
+    };
+
     println!(
         r"digraph L {{
 node [color=gray];
@@ -43,17 +49,17 @@ rankdir=LR;"
     );
 
     map_org(repo, commit, |name, blob| {
-        let fstr = std::str::from_utf8(blob.content()).unwrap();
+        let fstr = str::from_utf8(blob.content()).unwrap();
+        let nstr = name.to_str().unwrap();
         let res = Org::parse(fstr);
-        let mut base = Url::from_file_path(Path::new("/").join(name))
-            .expect("current path should fit in a file url");
+        let mut base = root
+            .join(nstr)
+            .expect("current path should parse as a url path");
         eat_file_index(&mut base);
         let from = DotEscape(base.as_str());
         org_urls(&res, &base, |mut url| {
-            match url.scheme() {
-                "abbr" => return,
-                "file" => {}
-                _ => (),
+            if url.scheme() == "abbr" {
+                return;
             }
             url.set_fragment(None);
             eat_file_index(&mut url);

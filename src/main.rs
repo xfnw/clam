@@ -235,7 +235,7 @@ fn main() {
             open_repo(args, |r, c| util::jsonindex::print_index(r, c, args));
         }
         #[cfg(feature = "util")]
-        Commands::Dot(args) => open_repo(args, util::dot::print_dot),
+        Commands::Dot(args) => open_repo(args, |r, c| util::dot::print_dot(r, c, args)),
         #[cfg(feature = "util")]
         Commands::Single(args) => open_repo(args, util::single::print_html),
         Commands::PreReceive(args) => prereceive::hook(args),
