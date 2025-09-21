@@ -48,8 +48,11 @@ node [color=gray];
 rankdir=LR;"
     );
 
-    map_org(repo, commit, |name, blob| {
+    map_org(repo, commit, |mut name, blob| {
         let fstr = str::from_utf8(blob.content()).unwrap();
+        if args.url.is_some() {
+            name.set_extension(args.format.to_ext());
+        }
         let nstr = name.to_str().unwrap();
         let res = Org::parse(fstr);
         let mut base = root
@@ -63,6 +66,13 @@ rankdir=LR;"
             }
             url.set_fragment(None);
             eat_file_index(&mut url);
+            if args.url.is_some()
+                && url.as_str().starts_with(root.as_str())
+                && let Some((pre, ext)) = url.path().rsplit_once('.')
+                && ext.eq_ignore_ascii_case("org")
+            {
+                url.set_path(&format!("{pre}.{}", args.format.to_ext()));
+            }
             println!("{from} -> {};", DotEscape(url.as_str()));
         });
         println!("{from} [color=black];");
