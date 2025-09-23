@@ -34,7 +34,7 @@ pre code {
   border: none;
 }
 
-code, kbd, pre, .flex div, .box, .chat-text, textarea {
+code, kbd, pre, .flex div, .box, .chat-text, textarea, .source div {
   background: #222;
 }
 
@@ -48,7 +48,7 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
   font-family: inherit;
 }
 
-pre, .flex div {
+pre, .flex div, .source div {
   padding: 5px;
   overflow: auto;
 }
@@ -181,6 +181,14 @@ li p:nth-of-type(1) {
   padding: 10px;
 }
 
+.source div {
+  text-align: center;
+}
+
+.source pre {
+  margin-top: 0;
+}
+
 @media (prefers-color-scheme: light) {
   body {
     background: white;
@@ -205,7 +213,7 @@ li p:nth-of-type(1) {
   code, kbd, pre, textarea {
     color: #111;
   }
-  code, kbd, pre, .flex div, .box, .chat-text, textarea {
+  code, kbd, pre, .flex div, .box, .chat-text, textarea, .source div {
     background: #ddd;
   }
   blockquote {

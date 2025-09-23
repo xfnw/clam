@@ -105,6 +105,29 @@ r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h
                 }
                 self.exp.push_str("</a>");
             }
+            Event::Enter(Container::SourceBlock(block)) => {
+                self.exp.push_str("<div class=source>");
+
+                if let Some(par) = block.parameters()
+                    && let Some(name) = par
+                        .split_ascii_whitespace()
+                        .skip_while(|&i| i != ":tangle")
+                        .nth(1)
+                {
+                    self.exp
+                        .push_str(format!("<div>{}</div>", HtmlEscape(name)));
+                }
+
+                if let Some(lang) = block.language() {
+                    self.exp.push_str(format!(
+                        "<pre><code class=\"language-{}\">",
+                        HtmlEscape(&lang)
+                    ));
+                } else {
+                    self.exp.push_str("<pre><code>");
+                }
+            }
+            Event::Leave(Container::SourceBlock(_)) => self.exp.push_str("</code></pre></div>"),
             Event::Enter(Container::SpecialBlock(block)) => {
                 if let Some(mut par) = block
                     .syntax()
