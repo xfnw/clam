@@ -14,7 +14,6 @@ use orgize::{
 use slugify::slugify;
 use std::{
     collections::{HashMap, HashSet},
-    ffi::OsStr,
     path::{Path, PathBuf},
     rc::Rc,
 };
@@ -101,7 +100,6 @@ fn generate_page(
     let bpath = Path::new("/").join(&old_path);
     let page = if bpath
         .extension()
-        .and_then(OsStr::to_str)
         .is_some_and(|s| s.eq_ignore_ascii_case("org"))
     {
         let fstr = str::from_utf8(file).map_err(Error::NonUTF8Org)?;

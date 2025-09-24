@@ -15,7 +15,6 @@ use orgize::{
 use percent_encoding::utf8_percent_encode;
 use std::{
     collections::{HashMap, HashSet},
-    ffi::OsStr,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -337,7 +336,6 @@ pub fn generate_page(
     let mut full_path: PathBuf = format!("{dir}{name}").into();
     if full_path
         .extension()
-        .and_then(OsStr::to_str)
         .is_some_and(|s| s.eq_ignore_ascii_case("org"))
     {
         let fstr = std::str::from_utf8(file).map_err(Error::NonUTF8Org)?;
