@@ -77,7 +77,11 @@ rankdir=LR;"
             }
             println!("{from} -> {};", DotEscape(url.as_str()));
         });
-        println!("{from} [color=black];");
+        print!("{from} [color=black");
+        if args.url.is_some() {
+            print!(";URL={}", DotEscape(base.as_str()));
+        }
+        println!("];");
     })
     .unwrap();
 
