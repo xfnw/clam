@@ -49,7 +49,7 @@ rankdir=LR;"
     );
 
     map_org(repo, commit, |mut name, blob| {
-        let fstr = str::from_utf8(blob.content()).unwrap();
+        let Ok(fstr) = str::from_utf8(blob.content()) else {return;};
         if args.url.is_some() {
             name.set_extension(args.format.to_ext());
         }

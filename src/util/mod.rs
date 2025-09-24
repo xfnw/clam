@@ -15,7 +15,7 @@ pub fn find_links<F>(name: &Path, blob: &Blob, callback: F)
 where
     F: FnMut(&Path),
 {
-    let fstr = std::str::from_utf8(blob.content()).unwrap();
+    let Ok(fstr) = std::str::from_utf8(blob.content()) else {return;};
     let res = Org::parse(fstr);
     org_links(&res, name, callback);
 }
