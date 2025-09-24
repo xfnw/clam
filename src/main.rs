@@ -31,6 +31,9 @@ enum Commands {
     /// check for orphan pages
     #[cfg(feature = "util")]
     Orphan(RepoArgs),
+    /// check for links to missing pages
+    #[cfg(feature = "util")]
+    Redlink(RepoArgs),
     /// output page content as json lines
     #[cfg(feature = "util")]
     Jsonindex(RepoArgs),
@@ -240,6 +243,8 @@ fn main() {
         Commands::Preview(args) => do_preview(args),
         #[cfg(feature = "util")]
         Commands::Orphan(args) => open_repo(args, do_orphan),
+        #[cfg(feature = "util")]
+        Commands::Redlink(args) => open_repo(args, util::redlink::print_redlinks),
         #[cfg(feature = "util")]
         Commands::Jsonindex(args) => {
             open_repo(args, |r, c| util::jsonindex::print_index(r, c, args));

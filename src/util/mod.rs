@@ -7,6 +7,7 @@ pub mod dot;
 pub mod jsonindex;
 pub mod orphan;
 pub mod preview;
+pub mod redlink;
 pub mod single;
 
 /// run a function on every link in an org document
