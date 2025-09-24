@@ -242,7 +242,7 @@ fn main() {
         #[cfg(feature = "util")]
         Commands::Preview(args) => do_preview(args),
         #[cfg(feature = "util")]
-        Commands::Orphan(args) => open_repo(args, do_orphan),
+        Commands::Orphan(args) => open_repo(args, util::orphan::print_orphans),
         #[cfg(feature = "util")]
         Commands::Redlink(args) => open_repo(args, util::redlink::print_redlinks),
         #[cfg(feature = "util")]
@@ -274,15 +274,6 @@ fn do_build(repo: &Repository, commit: &Commit, args: &RepoArgs) {
 fn do_preview(args: &PreviewArgs) {
     let org_cfg = default_org_cfg();
     util::preview::serve(&org_cfg, args.bindhost);
-}
-
-#[cfg(feature = "util")]
-fn do_orphan(repo: &Repository, commit: &Commit) {
-    let orphans = util::orphan::get_orphans(repo, commit);
-
-    for o in orphans {
-        println!("{}", o.display());
-    }
 }
 
 fn open_repo<F>(args: &RepoArgs, callback: F)
