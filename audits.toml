@@ -1,0 +1,324 @@
+[criteria.by-xfnw]
+implies = ["blobs-ok", "skimmed"]
+
+[criteria.no-sus-blobs]
+implies = "blobs-ok"
+
+[[audits.foxerror]]
+version = "0.1.0"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.foxerror]]
+version = "0.1.1"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.foxerror]]
+version = "0.1.2"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.irc-connect]]
+version = "0.1.0"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.irc-connect]]
+version = "0.1.1"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.irc-connect]]
+version = "0.2.0"
+criteria = "by-xfnw"
+merged-from = "workspace"
+
+[[audits.libloading]]
+version = "0.8.8"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.libloading]]
+delta = "0.8.8 -> 0.8.9"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.libloading]]
+delta = "0.8.8 -> 0.8.9"
+criteria = "no-sus-blobs"
+notes = "does have weird dlls in tests, but they were not modified in this update"
+merged-from = "workspace"
+
+[[audits.aws-lc-fips-sys]]
+version = "0.13.8"
+criteria = "too-big-to-fail"
+merged-from = "workspace"
+
+[[audits.aws-lc-rs]]
+version = "1.14.1"
+criteria = "too-big-to-fail"
+merged-from = "workspace"
+
+[[audits.aws-lc-sys]]
+version = "0.32.1"
+criteria = "too-big-to-fail"
+merged-from = "workspace"
+
+[[audits.aws-lc-sys]]
+version = "0.32.2"
+criteria = "too-big-to-fail"
+merged-from = "workspace"
+
+[[audits.tokio-rustls]]
+version = "0.26.3"
+criteria = "blobs-ok"
+notes = "pem files in tests"
+merged-from = "workspace"
+
+[[audits.tokio-rustls]]
+delta = "0.26.3 -> 0.26.4"
+criteria = "no-sus-blobs"
+notes = "pem files in tests not touched"
+merged-from = "workspace"
+
+[[audits.tokio-rustls]]
+delta = "0.26.3 -> 0.26.4"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.cc]]
+delta = "1.2.38 -> 1.2.39"
+criteria = "blobs-ok"
+notes = "has some trivial generated code"
+merged-from = "workspace"
+
+[[audits.cc]]
+delta = "1.2.38 -> 1.2.39"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.cc]]
+delta = "1.2.39 -> 1.2.40"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.cc]]
+delta = "1.2.39 -> 1.2.40"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.regex-automata]]
+delta = "0.4.10 -> 0.4.11"
+criteria = "blobs-ok"
+notes = "serialized data in tests, has command to generate them in documentation"
+merged-from = "workspace"
+
+[[audits.regex-automata]]
+delta = "0.4.10 -> 0.4.11"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.regex]]
+delta = "1.11.2 -> 1.11.3"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.regex]]
+version = "1.11.3"
+criteria = "no-sus-blobs"
+notes = 'fuzz data got excluded from the crate \o/'
+merged-from = "workspace"
+
+[[audits.addr2line]]
+delta = "0.24.2 -> 0.25.1"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.addr2line]]
+version = "0.25.1"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.windows-link]]
+version = "0.2.0"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.windows-link]]
+version = "0.2.0"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.object]]
+delta = "0.36.7 -> 0.37.3"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.object]]
+delta = "0.36.7 -> 0.37.3"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.memchr]]
+delta = "2.7.5 -> 2.7.6"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.memchr]]
+delta = "2.7.5 -> 2.7.6"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.backtrace]]
+delta = "0.3.75 -> 0.3.76"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.backtrace]]
+delta = "0.3.75 -> 0.3.76"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.gimli]]
+delta = "0.31.1 -> 0.32.3"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.gimli]]
+delta = "0.31.1 -> 0.32.3"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.quote]]
+delta = "1.0.40 -> 1.0.41"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.quote]]
+delta = "1.0.40 -> 1.0.41"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.zeroize]]
+delta = "1.8.1 -> 1.8.2"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.zeroize]]
+delta = "1.8.1 -> 1.8.2"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.serde_core]]
+delta = "1.0.226 -> 1.0.228"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.serde_core]]
+delta = "1.0.226 -> 1.0.228"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.serde_core]]
+version = "1.0.228"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.serde_core]]
+version = "1.0.228"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.itoa]]
+version = "1.0.15"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.itoa]]
+version = "1.0.15"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.ryu]]
+version = "1.0.20"
+criteria = "blobs-ok"
+notes = "has long lists of probably harmless magic numbers"
+merged-from = "workspace"
+
+[[audits.ryu]]
+version = "1.0.20"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.rustls-webpki]]
+delta = "0.103.6 -> 0.103.7"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.rustls-webpki]]
+delta = "0.103.6 -> 0.103.7"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.find-msvc-tools]]
+version = "0.1.3"
+criteria = "blobs-ok"
+notes = "includes some autogenerated bindings"
+merged-from = "workspace"
+
+[[audits.find-msvc-tools]]
+version = "0.1.3"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.typenum]]
+delta = "1.18.0 -> 1.19.0"
+criteria = "blobs-ok"
+notes = "some generated files with rather silly formatting"
+merged-from = "workspace"
+
+[[audits.typenum]]
+delta = "1.18.0 -> 1.19.0"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.serde_derive]]
+delta = "1.0.226 -> 1.0.228"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.serde_derive]]
+delta = "1.0.226 -> 1.0.228"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.serde]]
+version = "1.0.228"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.serde]]
+version = "1.0.228"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.anstyle]]
+delta = "1.0.11 -> 1.0.13"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.anstyle]]
+delta = "1.0.11 -> 1.0.13"
+criteria = "skimmed"
+merged-from = "workspace"
+
+[[audits.libc]]
+delta = "0.2.175 -> 0.2.176"
+criteria = "no-sus-blobs"
+merged-from = "workspace"
+
+[[audits.libc]]
+delta = "0.2.175 -> 0.2.176"
+criteria = "skimmed"
+merged-from = "workspace"

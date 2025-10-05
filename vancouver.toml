@@ -1,0 +1,830 @@
+[default-policy]
+require-all = ["blobs-ok", "skimmed"]
+
+[[exempt.aho-corasick]]
+version = "1.1.3"
+criteria = "blobs-ok"
+
+[[exempt.aho-corasick]]
+version = "1.1.3"
+criteria = "skimmed"
+
+[[exempt.anstyle]]
+version = "1.0.11"
+criteria = "blobs-ok"
+
+[[exempt.anstyle]]
+version = "1.0.11"
+criteria = "skimmed"
+
+[[exempt.autocfg]]
+version = "1.5.0"
+criteria = "blobs-ok"
+
+[[exempt.autocfg]]
+version = "1.5.0"
+criteria = "skimmed"
+
+[[exempt.bitflags]]
+version = "2.9.4"
+criteria = "blobs-ok"
+
+[[exempt.bitflags]]
+version = "2.9.4"
+criteria = "skimmed"
+
+[[exempt.boilerplate]]
+version = "1.0.1"
+criteria = "blobs-ok"
+
+[[exempt.boilerplate]]
+version = "1.0.1"
+criteria = "skimmed"
+
+[[exempt.bytecount]]
+version = "0.6.9"
+criteria = "blobs-ok"
+
+[[exempt.bytecount]]
+version = "0.6.9"
+criteria = "skimmed"
+
+[[exempt.cc]]
+version = "1.2.38"
+criteria = "blobs-ok"
+
+[[exempt.cc]]
+version = "1.2.38"
+criteria = "skimmed"
+
+[[exempt.cfg-if]]
+version = "1.0.3"
+criteria = "blobs-ok"
+
+[[exempt.cfg-if]]
+version = "1.0.3"
+criteria = "skimmed"
+
+[[exempt.chrono]]
+version = "0.4.42"
+criteria = "blobs-ok"
+
+[[exempt.chrono]]
+version = "0.4.42"
+criteria = "skimmed"
+
+[[exempt.clam]]
+version = "0.1.0"
+criteria = "blobs-ok"
+
+[[exempt.clam]]
+version = "0.1.0"
+criteria = "skimmed"
+
+[[exempt.clap]]
+version = "4.5.48"
+criteria = "blobs-ok"
+
+[[exempt.clap]]
+version = "4.5.48"
+criteria = "skimmed"
+
+[[exempt.clap_builder]]
+version = "4.5.48"
+criteria = "blobs-ok"
+
+[[exempt.clap_builder]]
+version = "4.5.48"
+criteria = "skimmed"
+
+[[exempt.clap_derive]]
+version = "4.5.47"
+criteria = "blobs-ok"
+
+[[exempt.clap_derive]]
+version = "4.5.47"
+criteria = "skimmed"
+
+[[exempt.clap_lex]]
+version = "0.7.5"
+criteria = "blobs-ok"
+
+[[exempt.clap_lex]]
+version = "0.7.5"
+criteria = "skimmed"
+
+[[exempt.countme]]
+version = "3.0.1"
+criteria = "blobs-ok"
+
+[[exempt.countme]]
+version = "3.0.1"
+criteria = "skimmed"
+
+[[exempt.darling]]
+version = "0.20.11"
+criteria = "blobs-ok"
+
+[[exempt.darling]]
+version = "0.20.11"
+criteria = "skimmed"
+
+[[exempt.darling_core]]
+version = "0.20.11"
+criteria = "blobs-ok"
+
+[[exempt.darling_core]]
+version = "0.20.11"
+criteria = "skimmed"
+
+[[exempt.darling_macro]]
+version = "0.20.11"
+criteria = "blobs-ok"
+
+[[exempt.darling_macro]]
+version = "0.20.11"
+criteria = "skimmed"
+
+[[exempt.displaydoc]]
+version = "0.2.5"
+criteria = "blobs-ok"
+
+[[exempt.displaydoc]]
+version = "0.2.5"
+criteria = "skimmed"
+
+[[exempt.equivalent]]
+version = "1.0.2"
+criteria = "blobs-ok"
+
+[[exempt.equivalent]]
+version = "1.0.2"
+criteria = "skimmed"
+
+[[exempt.fnv]]
+version = "1.0.7"
+criteria = "blobs-ok"
+
+[[exempt.fnv]]
+version = "1.0.7"
+criteria = "skimmed"
+
+[[exempt.form_urlencoded]]
+version = "1.2.2"
+criteria = "blobs-ok"
+
+[[exempt.form_urlencoded]]
+version = "1.2.2"
+criteria = "skimmed"
+
+[[exempt.foxerror]]
+version = "0.1.2"
+criteria = "blobs-ok"
+
+[[exempt.foxerror]]
+version = "0.1.2"
+criteria = "skimmed"
+
+[[exempt.getrandom]]
+version = "0.3.3"
+criteria = "blobs-ok"
+
+[[exempt.getrandom]]
+version = "0.3.3"
+criteria = "skimmed"
+
+[[exempt.git2]]
+version = "0.20.2"
+criteria = "blobs-ok"
+
+[[exempt.git2]]
+version = "0.20.2"
+criteria = "skimmed"
+
+[[exempt.hashbrown]]
+version = "0.14.5"
+criteria = "blobs-ok"
+
+[[exempt.hashbrown]]
+version = "0.14.5"
+criteria = "skimmed"
+
+[[exempt.hashbrown]]
+version = "0.16.0"
+criteria = "blobs-ok"
+
+[[exempt.hashbrown]]
+version = "0.16.0"
+criteria = "skimmed"
+
+[[exempt.heck]]
+version = "0.5.0"
+criteria = "blobs-ok"
+
+[[exempt.heck]]
+version = "0.5.0"
+criteria = "skimmed"
+
+[[exempt.html-escaper]]
+version = "0.2.0"
+criteria = "blobs-ok"
+
+[[exempt.html-escaper]]
+version = "0.2.0"
+criteria = "skimmed"
+
+[[exempt.icu_collections]]
+version = "2.0.0"
+criteria = "blobs-ok"
+
+[[exempt.icu_collections]]
+version = "2.0.0"
+criteria = "skimmed"
+
+[[exempt.icu_locale_core]]
+version = "2.0.0"
+criteria = "blobs-ok"
+
+[[exempt.icu_locale_core]]
+version = "2.0.0"
+criteria = "skimmed"
+
+[[exempt.icu_normalizer]]
+version = "2.0.0"
+criteria = "blobs-ok"
+
+[[exempt.icu_normalizer]]
+version = "2.0.0"
+criteria = "skimmed"
+
+[[exempt.icu_normalizer_data]]
+version = "2.0.0"
+criteria = "blobs-ok"
+
+[[exempt.icu_normalizer_data]]
+version = "2.0.0"
+criteria = "skimmed"
+
+[[exempt.icu_properties]]
+version = "2.0.1"
+criteria = "blobs-ok"
+
+[[exempt.icu_properties]]
+version = "2.0.1"
+criteria = "skimmed"
+
+[[exempt.icu_properties_data]]
+version = "2.0.1"
+criteria = "blobs-ok"
+
+[[exempt.icu_properties_data]]
+version = "2.0.1"
+criteria = "skimmed"
+
+[[exempt.icu_provider]]
+version = "2.0.0"
+criteria = "blobs-ok"
+
+[[exempt.icu_provider]]
+version = "2.0.0"
+criteria = "skimmed"
+
+[[exempt.ident_case]]
+version = "1.0.1"
+criteria = "blobs-ok"
+
+[[exempt.ident_case]]
+version = "1.0.1"
+criteria = "skimmed"
+
+[[exempt.idna]]
+version = "1.1.0"
+criteria = "blobs-ok"
+
+[[exempt.idna]]
+version = "1.1.0"
+criteria = "skimmed"
+
+[[exempt.idna_adapter]]
+version = "1.2.1"
+criteria = "blobs-ok"
+
+[[exempt.idna_adapter]]
+version = "1.2.1"
+criteria = "skimmed"
+
+[[exempt.indexmap]]
+version = "2.11.4"
+criteria = "blobs-ok"
+
+[[exempt.indexmap]]
+version = "2.11.4"
+criteria = "skimmed"
+
+[[exempt.itoa]]
+version = "1.0.15"
+criteria = "blobs-ok"
+
+[[exempt.jetscii]]
+version = "0.5.3"
+criteria = "blobs-ok"
+
+[[exempt.jetscii]]
+version = "0.5.3"
+criteria = "skimmed"
+
+[[exempt.jobserver]]
+version = "0.1.34"
+criteria = "blobs-ok"
+
+[[exempt.jobserver]]
+version = "0.1.34"
+criteria = "skimmed"
+
+[[exempt.libc]]
+version = "0.2.175"
+criteria = "blobs-ok"
+
+[[exempt.libc]]
+version = "0.2.175"
+criteria = "skimmed"
+
+[[exempt.libgit2-sys]]
+version = "0.18.2+1.9.1"
+criteria = "blobs-ok"
+
+[[exempt.libgit2-sys]]
+version = "0.18.2+1.9.1"
+criteria = "skimmed"
+
+[[exempt.libz-sys]]
+version = "1.1.22"
+criteria = "blobs-ok"
+
+[[exempt.libz-sys]]
+version = "1.1.22"
+criteria = "skimmed"
+
+[[exempt.litemap]]
+version = "0.8.0"
+criteria = "blobs-ok"
+
+[[exempt.litemap]]
+version = "0.8.0"
+criteria = "skimmed"
+
+[[exempt.log]]
+version = "0.4.28"
+criteria = "blobs-ok"
+
+[[exempt.log]]
+version = "0.4.28"
+criteria = "skimmed"
+
+[[exempt.memchr]]
+version = "2.7.5"
+criteria = "blobs-ok"
+
+[[exempt.memchr]]
+version = "2.7.5"
+criteria = "skimmed"
+
+[[exempt.memoffset]]
+version = "0.9.1"
+criteria = "blobs-ok"
+
+[[exempt.memoffset]]
+version = "0.9.1"
+criteria = "skimmed"
+
+[[exempt.micro_http_server]]
+version = "0.0.5"
+criteria = "blobs-ok"
+
+[[exempt.micro_http_server]]
+version = "0.0.5"
+criteria = "skimmed"
+
+[[exempt.mime]]
+version = "0.3.17"
+criteria = "blobs-ok"
+
+[[exempt.mime]]
+version = "0.3.17"
+criteria = "skimmed"
+
+[[exempt.minimal-lexical]]
+version = "0.2.1"
+criteria = "blobs-ok"
+
+[[exempt.minimal-lexical]]
+version = "0.2.1"
+criteria = "skimmed"
+
+[[exempt.new_mime_guess]]
+version = "4.0.4"
+criteria = "blobs-ok"
+
+[[exempt.new_mime_guess]]
+version = "4.0.4"
+criteria = "skimmed"
+
+[[exempt.nom]]
+version = "7.1.3"
+criteria = "blobs-ok"
+
+[[exempt.nom]]
+version = "7.1.3"
+criteria = "skimmed"
+
+[[exempt.num-traits]]
+version = "0.2.19"
+criteria = "blobs-ok"
+
+[[exempt.num-traits]]
+version = "0.2.19"
+criteria = "skimmed"
+
+[[exempt.orgize]]
+version = "0.10.0-alpha.10"
+criteria = "blobs-ok"
+
+[[exempt.orgize]]
+version = "0.10.0-alpha.10"
+criteria = "skimmed"
+
+[[exempt.percent-encoding]]
+version = "2.3.2"
+criteria = "blobs-ok"
+
+[[exempt.percent-encoding]]
+version = "2.3.2"
+criteria = "skimmed"
+
+[[exempt.pkg-config]]
+version = "0.3.32"
+criteria = "blobs-ok"
+
+[[exempt.pkg-config]]
+version = "0.3.32"
+criteria = "skimmed"
+
+[[exempt.potential_utf]]
+version = "0.1.3"
+criteria = "blobs-ok"
+
+[[exempt.potential_utf]]
+version = "0.1.3"
+criteria = "skimmed"
+
+[[exempt.proc-macro2]]
+version = "1.0.101"
+criteria = "blobs-ok"
+
+[[exempt.proc-macro2]]
+version = "1.0.101"
+criteria = "skimmed"
+
+[[exempt.quote]]
+version = "1.0.40"
+criteria = "blobs-ok"
+
+[[exempt.quote]]
+version = "1.0.40"
+criteria = "skimmed"
+
+[[exempt.r-efi]]
+version = "5.3.0"
+criteria = "blobs-ok"
+
+[[exempt.r-efi]]
+version = "5.3.0"
+criteria = "skimmed"
+
+[[exempt.regex]]
+version = "1.11.2"
+criteria = "skimmed"
+
+[[exempt.regex]]
+version = "1.11.2"
+criteria = "blobs-ok"
+
+[[exempt.regex-automata]]
+version = "0.4.10"
+criteria = "blobs-ok"
+
+[[exempt.regex-automata]]
+version = "0.4.10"
+criteria = "skimmed"
+
+[[exempt.regex-syntax]]
+version = "0.8.6"
+criteria = "blobs-ok"
+
+[[exempt.regex-syntax]]
+version = "0.8.6"
+criteria = "skimmed"
+
+[[exempt.rowan]]
+version = "0.15.17"
+criteria = "blobs-ok"
+
+[[exempt.rowan]]
+version = "0.15.17"
+criteria = "skimmed"
+
+[[exempt.rustc-hash]]
+version = "1.1.0"
+criteria = "blobs-ok"
+
+[[exempt.rustc-hash]]
+version = "1.1.0"
+criteria = "skimmed"
+
+[[exempt.serde_derive]]
+version = "1.0.226"
+criteria = "blobs-ok"
+
+[[exempt.serde_derive]]
+version = "1.0.226"
+criteria = "skimmed"
+
+[[exempt.serde_json]]
+version = "1.0.145"
+criteria = "blobs-ok"
+
+[[exempt.serde_json]]
+version = "1.0.145"
+criteria = "skimmed"
+
+[[exempt.serde_spanned]]
+version = "1.0.2"
+criteria = "blobs-ok"
+
+[[exempt.serde_spanned]]
+version = "1.0.2"
+criteria = "skimmed"
+
+[[exempt.shlex]]
+version = "1.3.0"
+criteria = "blobs-ok"
+
+[[exempt.shlex]]
+version = "1.3.0"
+criteria = "skimmed"
+
+[[exempt.slugify]]
+version = "0.1.0"
+criteria = "blobs-ok"
+
+[[exempt.slugify]]
+version = "0.1.0"
+criteria = "skimmed"
+
+[[exempt.smallvec]]
+version = "1.15.1"
+criteria = "blobs-ok"
+
+[[exempt.smallvec]]
+version = "1.15.1"
+criteria = "skimmed"
+
+[[exempt.stable_deref_trait]]
+version = "1.2.0"
+criteria = "blobs-ok"
+
+[[exempt.stable_deref_trait]]
+version = "1.2.0"
+criteria = "skimmed"
+
+[[exempt.strsim]]
+version = "0.11.1"
+criteria = "blobs-ok"
+
+[[exempt.strsim]]
+version = "0.11.1"
+criteria = "skimmed"
+
+[[exempt.syn]]
+version = "2.0.106"
+criteria = "blobs-ok"
+
+[[exempt.syn]]
+version = "2.0.106"
+criteria = "skimmed"
+
+[[exempt.synstructure]]
+version = "0.13.2"
+criteria = "blobs-ok"
+
+[[exempt.synstructure]]
+version = "0.13.2"
+criteria = "skimmed"
+
+[[exempt.text-size]]
+version = "1.1.1"
+criteria = "blobs-ok"
+
+[[exempt.text-size]]
+version = "1.1.1"
+criteria = "skimmed"
+
+[[exempt.tinystr]]
+version = "0.8.1"
+criteria = "blobs-ok"
+
+[[exempt.tinystr]]
+version = "0.8.1"
+criteria = "skimmed"
+
+[[exempt.toml_datetime]]
+version = "0.7.2"
+criteria = "blobs-ok"
+
+[[exempt.toml_datetime]]
+version = "0.7.2"
+criteria = "skimmed"
+
+[[exempt.toml_edit]]
+version = "0.23.6"
+criteria = "blobs-ok"
+
+[[exempt.toml_edit]]
+version = "0.23.6"
+criteria = "skimmed"
+
+[[exempt.toml_parser]]
+version = "1.0.3"
+criteria = "blobs-ok"
+
+[[exempt.toml_parser]]
+version = "1.0.3"
+criteria = "skimmed"
+
+[[exempt.unicase]]
+version = "2.8.1"
+criteria = "blobs-ok"
+
+[[exempt.unicase]]
+version = "2.8.1"
+criteria = "skimmed"
+
+[[exempt.unicode-ident]]
+version = "1.0.19"
+criteria = "blobs-ok"
+
+[[exempt.unicode-ident]]
+version = "1.0.19"
+criteria = "skimmed"
+
+[[exempt.unidecode]]
+version = "0.3.0"
+criteria = "blobs-ok"
+
+[[exempt.unidecode]]
+version = "0.3.0"
+criteria = "skimmed"
+
+[[exempt.url]]
+version = "2.5.7"
+criteria = "blobs-ok"
+
+[[exempt.url]]
+version = "2.5.7"
+criteria = "skimmed"
+
+[[exempt.utf8_iter]]
+version = "1.0.4"
+criteria = "blobs-ok"
+
+[[exempt.utf8_iter]]
+version = "1.0.4"
+criteria = "skimmed"
+
+[[exempt.vcpkg]]
+version = "0.2.15"
+criteria = "blobs-ok"
+
+[[exempt.vcpkg]]
+version = "0.2.15"
+criteria = "skimmed"
+
+[[exempt.wasi]]
+version = "0.14.7+wasi-0.2.4"
+criteria = "blobs-ok"
+
+[[exempt.wasi]]
+version = "0.14.7+wasi-0.2.4"
+criteria = "skimmed"
+
+[[exempt.wasip2]]
+version = "1.0.1+wasi-0.2.4"
+criteria = "blobs-ok"
+
+[[exempt.wasip2]]
+version = "1.0.1+wasi-0.2.4"
+criteria = "skimmed"
+
+[[exempt.winnow]]
+version = "0.7.13"
+criteria = "blobs-ok"
+
+[[exempt.winnow]]
+version = "0.7.13"
+criteria = "skimmed"
+
+[[exempt.wit-bindgen]]
+version = "0.46.0"
+criteria = "blobs-ok"
+
+[[exempt.wit-bindgen]]
+version = "0.46.0"
+criteria = "skimmed"
+
+[[exempt.writeable]]
+version = "0.6.1"
+criteria = "blobs-ok"
+
+[[exempt.writeable]]
+version = "0.6.1"
+criteria = "skimmed"
+
+[[exempt.yoke]]
+version = "0.8.0"
+criteria = "blobs-ok"
+
+[[exempt.yoke]]
+version = "0.8.0"
+criteria = "skimmed"
+
+[[exempt.yoke-derive]]
+version = "0.8.0"
+criteria = "blobs-ok"
+
+[[exempt.yoke-derive]]
+version = "0.8.0"
+criteria = "skimmed"
+
+[[exempt.zerofrom]]
+version = "0.1.6"
+criteria = "blobs-ok"
+
+[[exempt.zerofrom]]
+version = "0.1.6"
+criteria = "skimmed"
+
+[[exempt.zerofrom-derive]]
+version = "0.1.6"
+criteria = "blobs-ok"
+
+[[exempt.zerofrom-derive]]
+version = "0.1.6"
+criteria = "skimmed"
+
+[[exempt.zerotrie]]
+version = "0.2.2"
+criteria = "blobs-ok"
+
+[[exempt.zerotrie]]
+version = "0.2.2"
+criteria = "skimmed"
+
+[[exempt.zerovec]]
+version = "0.11.4"
+criteria = "blobs-ok"
+
+[[exempt.zerovec]]
+version = "0.11.4"
+criteria = "skimmed"
+
+[[exempt.zerovec-derive]]
+version = "0.11.1"
+criteria = "blobs-ok"
+
+[[exempt.zerovec-derive]]
+version = "0.11.1"
+criteria = "skimmed"
+
+[[exempt.find-msvc-tools]]
+version = "0.1.2"
+criteria = "blobs-ok"
+
+[[exempt.find-msvc-tools]]
+version = "0.1.2"
+criteria = "skimmed"
+
+[[exempt.serde]]
+version = "1.0.226"
+criteria = "blobs-ok"
+
+[[exempt.serde]]
+version = "1.0.226"
+criteria = "skimmed"
+
+[[exempt.serde_core]]
+version = "1.0.226"
+criteria = "blobs-ok"
+
+[[exempt.serde_core]]
+version = "1.0.226"
+criteria = "skimmed"
