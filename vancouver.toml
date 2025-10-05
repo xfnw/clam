@@ -505,10 +505,6 @@ criteria = "skimmed"
 version = "1.11.2"
 criteria = "skimmed"
 
-[[exempt.regex]]
-version = "1.11.2"
-criteria = "blobs-ok"
-
 [[exempt.regex-automata]]
 version = "0.4.10"
 criteria = "blobs-ok"
@@ -803,28 +799,4 @@ criteria = "blobs-ok"
 
 [[exempt.zerovec-derive]]
 version = "0.11.1"
-criteria = "skimmed"
-
-[[exempt.find-msvc-tools]]
-version = "0.1.2"
-criteria = "blobs-ok"
-
-[[exempt.find-msvc-tools]]
-version = "0.1.2"
-criteria = "skimmed"
-
-[[exempt.serde]]
-version = "1.0.226"
-criteria = "blobs-ok"
-
-[[exempt.serde]]
-version = "1.0.226"
-criteria = "skimmed"
-
-[[exempt.serde_core]]
-version = "1.0.226"
-criteria = "blobs-ok"
-
-[[exempt.serde_core]]
-version = "1.0.226"
 criteria = "skimmed"
