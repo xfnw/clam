@@ -34,7 +34,7 @@ pre code {
   border: none;
 }
 
-code, kbd, pre, .flex div, .box, .chat-text, textarea, .source div {
+code, kbd, pre, .flex div, .box, .chat-text, textarea {
   background: #222;
 }
 
@@ -66,7 +66,7 @@ thead tr td, th, kbd, summary, .chat-nick {
   font-weight: bold;
 }
 
-thead tr td, th, summary, input {
+thead tr td, th, summary, input, .source div{
   background: #333;
   color: #cdcdcd;
 }
@@ -203,7 +203,7 @@ li p:nth-of-type(1) {
   :target {
     background: #ee8;
   }
-  thead tr td, th, summary, input {
+  thead tr td, th, summary, input, .source div {
     background: #ccc;
     color: #141415;
   }
@@ -213,7 +213,7 @@ li p:nth-of-type(1) {
   code, kbd, pre, textarea {
     color: #111;
   }
-  code, kbd, pre, .flex div, .box, .chat-text, textarea, .source div {
+  code, kbd, pre, .flex div, .box, .chat-text, textarea {
     background: #ddd;
   }
   blockquote {
