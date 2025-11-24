@@ -73,14 +73,6 @@ criteria = "blobs-ok"
 version = "0.4.42"
 criteria = "skimmed"
 
-[[exempt.clam]]
-version = "0.1.0"
-criteria = "blobs-ok"
-
-[[exempt.clam]]
-version = "0.1.0"
-criteria = "skimmed"
-
 [[exempt.clap]]
 version = "4.5.48"
 criteria = "blobs-ok"
