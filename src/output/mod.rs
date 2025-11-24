@@ -73,12 +73,11 @@ pub fn write_org_page(
     pages: &HashMap<PathBuf, Page>,
     hist: &HashMap<PathBuf, HistMeta>,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-    short_id: &str,
     config: Option<&ClamConfig>,
 ) -> Result<(), Error> {
     match format {
-        OutputFormat::Html => html::write_org_page(pages, hist, links, short_id, config),
-        OutputFormat::Gmi => gmi::write_org_page(pages, hist, links, short_id, config),
+        OutputFormat::Html => html::write_org_page(pages, hist, links, config),
+        OutputFormat::Gmi => gmi::write_org_page(pages, hist, links, config),
     }
 }
 

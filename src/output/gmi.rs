@@ -383,7 +383,6 @@ pub fn write_org_page(
     pages: &HashMap<PathBuf, Page>,
     hist: &HashMap<PathBuf, HistMeta>,
     links: &HashMap<PathBuf, Vec<Rc<PathBuf>>>,
-    short_id: &str,
     _config: Option<&ClamConfig>,
 ) -> Result<(), Error> {
     let year_ago = std::time::SystemTime::now()
@@ -408,6 +407,7 @@ pub fn write_org_page(
             modify_time,
             creator,
             contributors,
+            last_commit,
             ..
         } = hist.get(old_path).ok_or(Error::MissingHist)?;
 
@@ -447,7 +447,7 @@ pub fn write_org_page(
 
         let meta = PageMetadata {
             author,
-            commit: short_id,
+            commit: last_commit,
             modified: DateTime::from_timestamp(modify_time.seconds(), 0)
                 .ok_or(Error::BadModifyTime)?
                 .naive_utc(),

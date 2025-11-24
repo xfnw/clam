@@ -187,8 +187,6 @@ fn generate(
     commit: &Commit,
     overrides: config::OverrideConfig,
 ) -> Result<(), Error> {
-    let short_id = commit.as_object().short_id().unwrap();
-    let short_id = short_id.as_str().unwrap();
     let oid = commit.id();
     let tree = commit.tree().unwrap();
     let format = overrides.format;
@@ -229,7 +227,7 @@ fn generate(
         eprintln!("configless, no feeds generated and overrides ignored");
     }
 
-    output::write_org_page(format, &pages, &hmeta, &links, short_id, config.as_ref())?;
+    output::write_org_page(format, &pages, &hmeta, &links, config.as_ref())?;
 
     Ok(())
 }
