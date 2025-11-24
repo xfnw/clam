@@ -12,13 +12,14 @@ pub struct HistMeta {
     pub modify_time: Time,
     pub creator: String,
     pub last_editor: String,
+    pub last_commit: String,
     pub last_msg: Option<String>,
     pub contributors: HashSet<String>,
 }
 
 pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, HistMeta>, Error> {
     macro_rules! add_times {
-        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $committer:expr, $diff:expr, $metadata:expr) => {
+        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $committer:expr, $short_id:expr, $diff:expr, $metadata:expr) => {
             for change in $diff.deltas() {
                 let path = change.new_file().path().ok_or(Error::BadGitPath)?;
                 if let Some(entry) = $metadata.get_mut(path) {
@@ -31,6 +32,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
                     if entry.modify_time < $time_c {
                         entry.modify_time = $time_c.clone();
                         entry.last_editor = $author.to_string();
+                        entry.last_commit = $short_id.to_string();
                         entry.last_msg = $message.clone();
                     }
                     if entry.create_time > $time_a {
@@ -50,6 +52,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
                             modify_time: $time_c.clone(),
                             creator: $author.to_string(),
                             last_editor: $author.to_string(),
+                            last_commit: $short_id.to_string(),
                             last_msg: $message.clone(),
                             contributors,
                         },
@@ -68,6 +71,8 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
 
     for cid in revwalk {
         let commit = repo.find_commit(cid?)?;
+        let short_id = commit.as_object().short_id()?;
+        let short_id = short_id.as_str().unwrap();
         let tree = commit.tree()?;
         let parents = commit.parent_count();
         let message = commit.message().map(str::to_string);
@@ -83,14 +88,18 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         // initial commit, everything touched
         if parents == 0 {
             let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            add_times!(time_a, time_c, message, author, committer, diff, metadata);
+            add_times!(
+                time_a, time_c, message, author, committer, short_id, diff, metadata
+            );
             continue;
         }
 
         for parent in 0..parents {
             let ptree = commit.parent(parent)?.tree()?;
             let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-            add_times!(time_a, time_c, message, author, committer, diff, metadata);
+            add_times!(
+                time_a, time_c, message, author, committer, short_id, diff, metadata
+            );
         }
     }
 
