@@ -155,7 +155,6 @@ fn generate_page(
 
 fn generate_entries<'a>(
     pages: &'a HashMap<String, Page>,
-    commit: &'a str,
     links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
     hist: &'a HashMap<PathBuf, HistMeta>,
 ) -> Vec<Entry<'a>> {
@@ -176,6 +175,7 @@ fn generate_entries<'a>(
                     modify_time,
                     creator,
                     contributors,
+                    last_commit,
                     ..
                 } = hist
                     .get(old_path)
@@ -206,7 +206,7 @@ fn generate_entries<'a>(
 
                 let metadata = PageMetadata {
                     author,
-                    commit,
+                    commit: last_commit,
                     modified: DateTime::from_timestamp(modify_time.seconds(), 0)
                         .expect("modification time from git should be reasonable")
                         .naive_utc(),
@@ -227,8 +227,6 @@ fn generate_entries<'a>(
 }
 
 pub fn print_html(repo: &Repository, commit: &Commit) {
-    let short_id = commit.as_object().short_id().unwrap();
-    let short_id = short_id.as_str().unwrap();
     let tree = commit.tree().unwrap();
     let hmeta = crate::git::make_time_tree(repo, commit.id()).unwrap();
     let org_cfg = crate::default_org_cfg();
@@ -245,7 +243,7 @@ pub fn print_html(repo: &Repository, commit: &Commit) {
     })
     .unwrap();
 
-    let entries = generate_entries(&pages, short_id, &links, &hmeta);
+    let entries = generate_entries(&pages, &links, &hmeta);
 
     println!("{}", SingleHtml { entries: &entries });
 }
