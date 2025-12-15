@@ -13,7 +13,7 @@ use orgize::{
 };
 use slugify::slugify;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     path::{Path, PathBuf},
     rc::Rc,
 };
@@ -92,7 +92,7 @@ fn generate_page(
     name: &str,
     file: &[u8],
     org_cfg: &ParseConfig,
-    pages: &mut HashMap<String, Page>,
+    pages: &mut BTreeMap<String, Page>,
     links: &mut HashMap<PathBuf, Vec<Rc<String>>>,
 ) -> Result<(), Error> {
     let full_path = format!("{dir}{name}");
@@ -154,7 +154,7 @@ fn generate_page(
 }
 
 fn generate_entries<'a>(
-    pages: &'a HashMap<String, Page>,
+    pages: &'a BTreeMap<String, Page>,
     links: &'a HashMap<PathBuf, Vec<Rc<String>>>,
     hist: &'a HashMap<PathBuf, HistMeta>,
 ) -> Vec<Entry<'a>> {
@@ -230,7 +230,7 @@ pub fn print_html(repo: &Repository, commit: &Commit) {
     let tree = commit.tree().unwrap();
     let hmeta = crate::git::make_time_tree(repo, commit.id()).unwrap();
     let org_cfg = crate::default_org_cfg();
-    let mut pages = HashMap::new();
+    let mut pages = BTreeMap::new();
     let mut links = HashMap::new();
 
     tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
