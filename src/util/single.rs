@@ -13,7 +13,7 @@ use orgize::{
 };
 use slugify::slugify;
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap},
     path::{Path, PathBuf},
     rc::Rc,
 };
@@ -190,7 +190,7 @@ fn generate_entries<'a>(
                         .year()
                 };
 
-                let incoming: Option<HashSet<_>> = links.get(old_path).map(|l| l.iter().collect());
+                let incoming: Option<BTreeSet<_>> = links.get(old_path).map(|l| l.iter().collect());
                 let incoming: Option<Vec<_>> = incoming.map(|l| {
                     l.into_iter()
                         .map(|b| {

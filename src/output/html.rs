@@ -17,7 +17,7 @@ use orgize::{
 use slugify::slugify;
 use std::{
     cmp::min,
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap},
     fs,
     io::Write,
     path::{Path, PathBuf},
@@ -520,7 +520,7 @@ pub fn write_org_page(
             None
         };
 
-        let incoming: Option<HashSet<_>> = links.get(new_path).map(|l| l.iter().collect());
+        let incoming: Option<BTreeSet<_>> = links.get(new_path).map(|l| l.iter().collect());
         let incoming: Option<Vec<_>> = incoming.map(|l| {
             l.iter()
                 .map(|b| {

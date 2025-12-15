@@ -14,7 +14,7 @@ use orgize::{
 };
 use percent_encoding::utf8_percent_encode;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap},
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -431,7 +431,7 @@ pub fn write_org_page(
             None
         };
 
-        let incoming: Option<HashSet<_>> = links.get(new_path).map(|l| l.iter().collect());
+        let incoming: Option<BTreeSet<_>> = links.get(new_path).map(|l| l.iter().collect());
         let incoming: Option<Vec<_>> = incoming.map(|l| {
             l.iter()
                 .map(|b| {
