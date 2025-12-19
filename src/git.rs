@@ -29,16 +29,8 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
                     if !entry.contributors.contains($committer) {
                         entry.contributors.insert($committer.to_string());
                     }
-                    if entry.modify_time < $time_c {
-                        entry.modify_time = $time_c.clone();
-                        entry.last_editor = $author.to_string();
-                        entry.last_commit = $short_id.to_string();
-                        entry.last_msg = $message.clone();
-                    }
-                    if entry.create_time > $time_a {
-                        entry.create_time = $time_a.clone();
-                        entry.creator = $author.to_string();
-                    }
+                    entry.create_time = $time_a.clone();
+                    entry.creator = $author.to_string();
                 } else {
                     let mut contributors = HashSet::new();
                     contributors.insert($author.to_string());
@@ -65,7 +57,7 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
     let mailmap = repo.mailmap()?;
     let mut revwalk = repo.revwalk()?;
     revwalk.push(oid)?;
-    revwalk.set_sorting(git2::Sort::TIME)?;
+    revwalk.set_sorting(git2::Sort::TOPOLOGICAL)?;
 
     let mut metadata: HashMap<PathBuf, HistMeta> = HashMap::new();
 
