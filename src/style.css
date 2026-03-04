@@ -62,7 +62,7 @@ summary {
   padding: 10px;
 }
 
-thead tr td, th, kbd, summary, .chat-nick {
+thead tr td, th, kbd, summary {
   font-weight: bold;
 }
 
