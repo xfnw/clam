@@ -11,10 +11,12 @@ pub enum Action {
 }
 
 #[derive(Debug)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Rules {
     require_signing: bool,
     no_deletion: bool,
     no_creation: bool,
+    no_merges: bool,
     allow_pattern: RegexSet,
     protect_pattern: RegexSet,
 }
@@ -27,6 +29,7 @@ impl Rules {
             require_signing: args.require_signing,
             no_deletion: args.no_deletion,
             no_creation: args.no_creation,
+            no_merges: args.no_merges,
             allow_pattern,
             protect_pattern,
         };
@@ -36,6 +39,13 @@ impl Rules {
     pub fn signed(&self, is_signed: bool) -> Result<(), Error> {
         if self.require_signing && !is_signed {
             return Err(Error::NotSigned);
+        }
+        Ok(())
+    }
+
+    pub fn parents(&self, parent_count: usize) -> Result<(), Error> {
+        if self.no_merges && parent_count > 1 {
+            return Err(Error::Merge);
         }
         Ok(())
     }
@@ -72,6 +82,7 @@ fn check_commit(repo: &Repository, rules: &Rules, cid: Oid) -> Result<(), Error>
     let commit = repo.find_commit(cid)?;
     let tree = commit.tree()?;
     let parents = commit.parent_count();
+    rules.parents(parents)?;
 
     if parents == 0 {
         let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;

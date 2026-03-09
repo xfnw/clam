@@ -75,6 +75,7 @@ struct PreviewArgs {
 }
 
 #[derive(Debug, Args)]
+#[allow(clippy::struct_excessive_bools)]
 struct PreReceiveArgs {
     /// require commits to be signed (does not verify signatures)
     #[arg(long)]
@@ -85,6 +86,9 @@ struct PreReceiveArgs {
     /// do not allow any new pages to be created
     #[arg(long)]
     no_creation: bool,
+    /// do not allow new merge commits
+    #[arg(long)]
+    no_merges: bool,
     /// require that paths of edited pages match this set of regexes
     ///
     /// may be specified multiple times for multiple patterns
@@ -109,6 +113,8 @@ enum Error {
     NonUTF8Org(std::str::Utf8Error),
     /// signing your commits is required
     NotSigned,
+    /// merge commits are not permitted
+    Merge,
     /// deleting pages is not permitted
     BadDelete(String),
     /// creating pages is not permitted
