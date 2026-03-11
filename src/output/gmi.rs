@@ -265,6 +265,7 @@ impl Traverser for GmiExport {
                 {
                     self.push_str(block.value());
                 }
+                ctx.skip();
             }
             Event::Enter(Container::OrgTable(table)) => {
                 self.push_str("```table\n");
