@@ -23,13 +23,22 @@
 				<xsl:value-of select="atom:title"/>
 			</a></h2>
 			<span>
-				updated
+				created
 				<time>
 					<xsl:attribute name="datetime">
-						<xsl:value-of select="atom:updated"/>
+						<xsl:value-of select="atom:published"/>
 					</xsl:attribute>
-					<xsl:value-of select="substring(atom:updated,1,10)"/>
+					<xsl:value-of select="substring(atom:published,1,10)"/>
 				</time>
+				<xsl:if test="atom:published != atom:updated">
+					and updated
+					<time>
+						<xsl:attribute name="datetime">
+							<xsl:value-of select="atom:updated"/>
+						</xsl:attribute>
+						<xsl:value-of select="substring(atom:updated,1,10)"/>
+					</time>
+				</xsl:if>
 				by
 				<i>
 					<xsl:value-of select="atom:author"/>

@@ -11,6 +11,7 @@
 <id>{{ self.id }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
 <link rel="alternate" href="{{ self.url }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
 <author><name>{{ entry.author }}</name></author>
+<published>{{ entry.published }}</published>
 <updated>{{ entry.updated }}</updated>
 %% if let Some(summary) = entry.summary {
 <summary>{{ summary }}</summary>

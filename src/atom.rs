@@ -30,6 +30,7 @@ pub struct AtomEntry<'a> {
     author: &'a str,
     summary: Option<&'a str>,
     content: Option<&'a str>,
+    published: AtomDateTime,
     updated: AtomDateTime,
 }
 
@@ -78,11 +79,13 @@ pub fn entries<'a>(
         };
 
         let HistMeta {
+            create_time,
             modify_time,
             last_editor,
             last_msg,
             ..
         } = metadata.get(old_path).ok_or(Error::MissingHist)?;
+        let published = AtomDateTime::new(create_time.seconds()).ok_or(Error::BadCreateTime)?;
         let updated = AtomDateTime::new(modify_time.seconds()).ok_or(Error::BadModifyTime)?;
         let summary = last_msg.as_deref();
         let content = Some(html.as_ref());
@@ -93,6 +96,7 @@ pub fn entries<'a>(
             author: last_editor,
             summary,
             content,
+            published,
             updated,
         });
     }
