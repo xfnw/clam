@@ -173,6 +173,7 @@ mod tests {
             title: "",
             path: "",
             author: "",
+            published: AtomDateTime::new(1_777_240_612).unwrap(),
             updated: AtomDateTime::new(1_633_462_756).unwrap(),
             summary: None,
             content: None,
@@ -181,6 +182,7 @@ mod tests {
             title: "",
             path: "",
             author: "",
+            published: AtomDateTime::new(1_777_240_642).unwrap(),
             updated: AtomDateTime::new(1_169_707_221).unwrap(),
             summary: None,
             content: None,
@@ -199,6 +201,7 @@ mod tests {
             title: "hi – there",
             path: "🦊.html",
             author: "fox",
+            published: AtomDateTime::new(1_714_168_779).unwrap(),
             updated: AtomDateTime::new(1_734_116_293).unwrap(),
             summary: Some("did you know that foxes—which are very fluffy—exist?"),
             content: None,
@@ -230,6 +233,7 @@ mod tests {
 <id>tag:foxes.invalid,2024-12-13:foxfeed/%F0%9F%A6%8A.html</id>
 <link rel="alternate" href="https://foxes.invalid/%F0%9F%A6%8A.html"/>
 <author><name>fox</name></author>
+<published>2024-04-26T21:59:39Z</published>
 <updated>2024-12-13T18:58:13Z</updated>
 <summary>did you know that foxes—which are very fluffy—exist?</summary>
 </entry>
