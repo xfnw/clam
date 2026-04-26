@@ -101,7 +101,13 @@ pub fn entries<'a>(
         });
     }
 
-    entries.sort_by(|x, y| y.updated.0.cmp(&x.updated.0).then(y.path.cmp(x.path)));
+    entries.sort_by(|x, y| {
+        y.updated
+            .0
+            .cmp(&x.updated.0)
+            .then(y.published.0.cmp(&x.published.0))
+            .then(y.path.cmp(x.path))
+    });
     Ok(entries)
 }
 
