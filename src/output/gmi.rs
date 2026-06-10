@@ -474,9 +474,10 @@ pub fn write_org_page(
 }
 
 pub fn write_redirect_page(path: &Path, target: &str) -> String {
+    let target = mangle_link(target, ".gmi", ".gmi#");
     let body = format!(
         "=> {} this page has moved here",
-        utf8_percent_encode(target, URL_PATH_UNSAFE)
+        utf8_percent_encode(&target, URL_PATH_UNSAFE)
     );
     let numdir = path.iter().count();
     let template = PageGmi {

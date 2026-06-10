@@ -566,6 +566,7 @@ pub fn write_org_page(
 }
 
 pub fn write_redirect_page(path: &Path, target: &str) -> String {
+    let target = mangle_link(target, ".html", ".html#");
     let body = format!(
         "this page has been <a href=\"{}\">moved here</a>.",
         HtmlEscape(&target)

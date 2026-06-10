@@ -1,14 +1,14 @@
 use crate::{Error, OutputFormat, config::ClamConfig, git::HistMeta};
 use chrono::NaiveDateTime;
-use orgize::{Org, ParseConfig, SyntaxNode, SyntaxToken, ast::Token, rowan::NodeOrToken};
+use orgize::{Org, ParseConfig, SyntaxNode, SyntaxToken, rowan::NodeOrToken};
 use slugify::slugify;
 use std::{
+    borrow::Cow,
     collections::HashMap,
     ffi::OsStr,
     fs::File,
     io::Write,
-    path::Component,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
     rc::Rc,
 };
 
@@ -106,9 +106,20 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
         return Err(Error::UnsafePath);
     }
 
+    let path = if path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("org"))
+    {
+        let mut newpath = path.to_owned();
+        newpath.set_extension(format.to_ext());
+        Cow::Owned(newpath)
+    } else {
+        Cow::Borrowed(path)
+    };
+
     let content = match format {
-        OutputFormat::Html => html::write_redirect_page(path, target),
-        OutputFormat::Gmi => gmi::write_redirect_page(path, target),
+        OutputFormat::Html => html::write_redirect_page(&path, target),
+        OutputFormat::Gmi => gmi::write_redirect_page(&path, target),
     };
 
     let mut f = File::create(path).map_err(Error::File)?;
@@ -116,7 +127,7 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
 }
 
 // FIXME: use an actual url parser
-pub fn mangle_link(path: &Token, suffix: &str, asuffix: &str) -> String {
+pub fn mangle_link(path: &str, suffix: &str, asuffix: &str) -> String {
     let path = path.strip_prefix("file:").unwrap_or(path);
     if let Some(p) = path.strip_prefix('*') {
         let mut p = slugify!(p);
