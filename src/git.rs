@@ -67,15 +67,15 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let short_id = short_id.as_str().unwrap();
         let tree = commit.tree()?;
         let parents = commit.parent_count();
-        let message = commit.message().map(str::to_string);
+        let message = commit.message().ok().map(str::to_string);
         let author = commit.author();
         let author = mailmap.resolve_signature(&author).unwrap_or(author);
         let committer = commit.committer();
         let committer = mailmap.resolve_signature(&committer).unwrap_or(committer);
         let time_a = author.when();
         let time_c = commit.time();
-        let author = author.name().ok_or(Error::BadAuthor)?;
-        let committer = committer.name().ok_or(Error::BadCommitter)?;
+        let author = author.name()?;
+        let committer = committer.name()?;
 
         // initial commit, everything touched
         if parents == 0 {
@@ -108,7 +108,7 @@ pub fn walk_callback<F>(
 where
     F: FnOnce(&str, git2::Blob) -> Result<(), Error>,
 {
-    let name = entry.name().ok_or(Error::NonUTF8Path)?;
+    let name = entry.name()?;
 
     match entry.filemode() {
         // normal files

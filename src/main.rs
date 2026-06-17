@@ -153,10 +153,6 @@ enum Error {
     EmptyFeed,
     /// invalid path in git repository
     BadGitPath,
-    /// broken author
-    BadAuthor,
-    /// broken committer
-    BadCommitter,
     /// skipping symlink
     SkipSymlink(String),
     /// skipping submodule
