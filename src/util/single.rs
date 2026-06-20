@@ -4,9 +4,9 @@ use crate::{
     helpers::org_links,
     output::{Page, PageKeywords, PageMetadata, get_keywords, infer_title},
 };
+use boilerplate::Trusted;
 use chrono::{DateTime, Datelike};
 use git2::{Commit, Repository};
-use html_escaper::{Escape, Trusted};
 use orgize::{
     ParseConfig,
     export::{Container, Event, HtmlEscape, Traverser},

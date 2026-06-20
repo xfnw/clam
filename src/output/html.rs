@@ -5,8 +5,8 @@ use crate::{
     helpers::org_links,
     output::{Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
 };
+use boilerplate::Trusted;
 use chrono::{DateTime, Datelike};
-use html_escaper::{Escape, Trusted};
 use indexmap::IndexMap;
 use orgize::{
     ParseConfig, SyntaxKind,

@@ -1,6 +1,5 @@
 use crate::{Error, config::FeedConfig, git::HistMeta, helpers::URL_PATH_UNSAFE, output::Page};
 use chrono::{DateTime, NaiveDateTime};
-use html_escaper::Escape;
 use percent_encoding::utf8_percent_encode;
 use regex::RegexSet;
 use std::{
