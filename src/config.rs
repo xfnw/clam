@@ -28,6 +28,13 @@ pub struct FeedConfig {
     pub path: PathBuf,
     pub include: Option<Vec<String>>,
     pub exclude: Option<Vec<String>>,
+    #[serde(default = "default_max_items")]
+    pub max_items: usize,
+}
+
+// serde is annoying
+fn default_max_items() -> usize {
+    42
 }
 
 #[derive(Deserialize, Debug)]

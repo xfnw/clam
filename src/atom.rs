@@ -158,7 +158,7 @@ pub fn write_feed(
         numdir,
         is_html,
         updated: head_updated(&filt).ok_or(Error::EmptyFeed)?,
-        entries: &filt[..min(filt.len(), 42)],
+        entries: &filt[..min(filt.len(), feed.max_items)],
     }
     .to_string();
     let mut f = fs::File::create(&feed.path).map_err(Error::File)?;
