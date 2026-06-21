@@ -351,6 +351,13 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
 
                 self.exp.push_str("</main>");
             }
+            Event::Timestamp(timestamp) => {
+                // TODO: set datetime attribute
+                // not sure how to handle org's time ranges though
+                self.exp.push_str("<time>");
+                self.exp.push_str(HtmlEscape(timestamp.raw()).to_string());
+                self.exp.push_str("</time>");
+            }
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
@@ -615,7 +622,7 @@ i have a footnote[fn:1:beep /boop/][fn:2]
 #+CAPTION: the libera.chat logo, but with the mountain replaced with a cat
 [[https://cheapiesystems.com/media/images/libera-cat.png]]
 
-** TODO wash the fox
+** TODO wash the fox <2026-06-21 Sun>
 :PROPERTIES:
 :CUSTOM_ID: foxwash-time
 :END:
@@ -639,7 +646,7 @@ AAAA even more
 <abbr title="Yelling In Furry Form">YIFF</abbr> is an acronym
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says" title="fox is stimky"><div class=chat-text> AAAA even more
+</p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <time>&lt;2026-06-21 Sun&gt;</time> <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says" title="fox is stimky"><div class=chat-text> AAAA even more
 </div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
 <a href="#fnr.1.0" role=doc-backlink>↩</a>
 </li><li id="fn.2"> and *another* footnote
