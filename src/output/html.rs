@@ -61,7 +61,7 @@ impl Traverser for Handler {
                     self.element(e, ctx);
                 }
                 self.exp.push_str(format!(
-r##" <a class=see-focus href="#{id}" aria-label="permalink to section">¶</a></h{lvl}>"##,
+r##" <a class=see-focus href="#{id}" aria-label="permalink to section">§</a></h{lvl}>"##,
 ));
             }
             Event::Enter(Container::Link(link)) => {
