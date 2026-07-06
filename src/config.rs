@@ -33,7 +33,7 @@ pub struct FeedConfig {
 }
 
 // serde is annoying
-fn default_max_items() -> usize {
+const fn default_max_items() -> usize {
     42
 }
 
