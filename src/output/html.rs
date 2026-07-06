@@ -637,7 +637,7 @@ AAAA even more
         res.traverse(&mut exp);
         assert_eq!(
             exp.exp.finish(),
-            r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">¶</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox says" title="fox"><div class=chat-text> AAAA
+            r##"<main><section></section><h2 tabindex=-1 id="meow">meow <a class=see-focus href="#meow" aria-label="permalink to section">§</a></h2><section><div class="chat"><img class=chat-head width=64 src="faces/fox.png" alt="fox says" title="fox"><div class=chat-text> AAAA
 </div></div><p>i have a footnote<sup><a id="fnr.1.0" href="#fn.1" role=doc-noteref>[1]</a></sup><sup><a id="fnr.2.0" href="#fn.2" role=doc-noteref>[2]</a></sup>
 </p><p><a href="#finish-writing-this-test">i am a heading link</a>
 <a href="hmm/example.org/test.html">should link to .html</a>
@@ -646,8 +646,8 @@ AAAA even more
 <abbr title="Yelling In Furry Form">YIFF</abbr> is an acronym
 <a href="https://example.org">webbed sight</a>
 </p><p><img src="https://cheapiesystems.com/media/images/libera-cat.png" alt="the libera.chat logo, but with the mountain replaced with a cat">
-</p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <time>&lt;2026-06-21 Sun&gt;</time> <a class=see-focus href="#foxwash-time" aria-label="permalink to section">¶</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says" title="fox is stimky"><div class=chat-text> AAAA even more
-</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">¶</a></h3><section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
+</p></section><h3 tabindex=-1 id="foxwash-time"><span class=todo>TODO</span> wash the fox <time>&lt;2026-06-21 Sun&gt;</time> <a class=see-focus href="#foxwash-time" aria-label="permalink to section">§</a></h3><section><div class="chat"><img class=chat-head width=64 src="faces/fox-stimky.png" alt="fox is stimky says" title="fox is stimky"><div class=chat-text> AAAA even more
+</div></div></section><h3 tabindex=-1 id="finish-writing-this-test"><span class=done>DONE</span> finish writing this test <a class=see-focus href="#finish-writing-this-test" aria-label="permalink to section">§</a></h3><section role=doc-endnotes aria-labelledby=clam.footnotes><h2 id=clam.footnotes>footnotes</h2><ol><li id="fn.1">beep <i>boop</i>
 <a href="#fnr.1.0" role=doc-backlink>↩</a>
 </li><li id="fn.2"> and *another* footnote
 <a href="#fnr.2.0" role=doc-backlink>↩</a>
