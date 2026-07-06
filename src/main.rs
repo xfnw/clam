@@ -1,4 +1,5 @@
 #![deny(clippy::pedantic)]
+#![deny(clippy::use_self)]
 
 use clap::{Args, Parser, Subcommand};
 use foxerror::FoxError;
@@ -174,8 +175,8 @@ enum OutputFormat {
 impl OutputFormat {
     const fn to_ext(self) -> &'static str {
         match self {
-            OutputFormat::Html => "html",
-            OutputFormat::Gmi => "gmi",
+            Self::Html => "html",
+            Self::Gmi => "gmi",
         }
     }
 }
