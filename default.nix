@@ -4,6 +4,8 @@
 , naersk ? pkgs.callPackage "${pins.naersk}" { } # npins#242
 }:
 
-naersk.buildPackage {
-  src = ./.;
+{
+
+  clam = pkgs.callPackage ./package.nix { inherit naersk; };
+
 }

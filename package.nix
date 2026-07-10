@@ -1,0 +1,5 @@
+{ naersk }:
+
+naersk.buildPackage {
+  src = ./.;
+}
