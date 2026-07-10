@@ -13,6 +13,19 @@
       "url": "https://github.com/nix-community/naersk/archive/9aa07bb0256d300219b30622d2454e85f7f3667e.tar.gz",
       "hash": "sha256-thLTFbp9D5Qknmh8q/v4FRpLGphUSijT3E86cbLYTXo="
     },
+    "nix2container": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nlewo",
+        "repo": "nix2container"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "76be9608a7f4d6c985d28b0e7be903ae2547df3e",
+      "url": "https://github.com/nlewo/nix2container/archive/76be9608a7f4d6c985d28b0e7be903ae2547df3e.tar.gz",
+      "hash": "sha256-2lguQpLPQaxpQCJjXhmEEAfabwsAhkP29Z7fgLzHARA="
+    },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
