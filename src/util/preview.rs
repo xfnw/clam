@@ -1,9 +1,12 @@
 use micro_http_server::{Client, MicroHTTP};
 use orgize::ParseConfig;
 use std::{
+    borrow::Cow,
+    ffi::OsStr,
     fs::{File, read_to_string},
     io::Result,
     net::SocketAddr,
+    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
 };
 
@@ -29,15 +32,16 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
     let Some(path) = client.request() else {
         return client.respond("400 Bad Request", b"why no request\n", &vec![]);
     };
+    let path: Cow<[u8]> = percent_encoding::percent_decode_str(path).into();
     // prevent both accessing hidden files and path traversal
-    if path.contains("/.") {
+    if path.windows(2).any(|a| a == b"/.") {
         return client.respond("400 Bad Request", b"no bad\n", &vec![]);
     }
     // previous check may have missed stuff if the leading / is not there
-    let Some(path) = path.strip_prefix("/") else {
+    let Some(path) = path.strip_prefix(b"/") else {
         return client.respond("400 Bad Request", b"what the dog doin\n", &vec![]);
     };
-    let mut pathb = PathBuf::from(path);
+    let mut pathb = PathBuf::from(OsStr::from_bytes(path));
     if path.is_empty() || pathb.is_dir() {
         pathb.push("index.html");
     }
@@ -70,7 +74,7 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
             },
         );
     }
-    if path == "style.css" {
+    if path == b"style.css" {
         return client.respond(
             "200 OK",
             crate::STYLESHEET,
