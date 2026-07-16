@@ -171,7 +171,6 @@ enum OutputFormat {
     Gmi,
 }
 
-#[cfg(feature = "util")]
 impl OutputFormat {
     const fn to_ext(self) -> &'static str {
         match self {
