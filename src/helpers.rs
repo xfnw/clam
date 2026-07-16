@@ -27,8 +27,16 @@ pub fn org_links<F>(res: &Org, name: &Path, mut callback: F)
 where
     F: FnMut(&Path),
 {
-    let fileroot = Url::from_file_path(Path::new("/").join(name))
-        .expect("current path should fit in a file url");
+    let fileroot = Url::from_file_path(
+        Path::new(
+            #[cfg(windows)]
+            "H:/",
+            #[cfg(not(windows))]
+            "/",
+        )
+        .join(name),
+    )
+    .expect("current path should fit in a file url");
     org_urls(res, &fileroot, |url| {
         if url.scheme() != "file" {
             return;
@@ -39,7 +47,14 @@ where
         if url.path().ends_with('/') {
             fullpath.push("index.org");
         }
-        let fullpath = fullpath.strip_prefix("/").unwrap();
+        let fullpath = fullpath
+            .strip_prefix(
+                #[cfg(windows)]
+                "H:/",
+                #[cfg(not(windows))]
+                "/",
+            )
+            .unwrap();
         callback(fullpath);
     });
 }

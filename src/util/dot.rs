@@ -39,7 +39,13 @@ pub fn print_dot(repo: &Repository, commit: &Commit, args: &RepoArgs) {
     let root = if let Some(url) = &args.url {
         Url::parse(url).expect("you should pass a valid url to the url option")
     } else {
-        Url::from_file_path(Path::new("/")).unwrap()
+        Url::from_file_path(Path::new(
+            #[cfg(windows)]
+            "H:/",
+            #[cfg(not(windows))]
+            "/",
+        ))
+        .unwrap()
     };
 
     println!(

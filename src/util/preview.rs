@@ -2,13 +2,14 @@ use micro_http_server::{Client, MicroHTTP};
 use orgize::ParseConfig;
 use std::{
     borrow::Cow,
-    ffi::OsStr,
     fs::{File, read_to_string},
     io::Result,
     net::SocketAddr,
-    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
 };
+
+#[cfg(unix)]
+use std::os::unix::ffi::OsStrExt;
 
 use crate::output::{
     get_keywords,
@@ -34,14 +35,30 @@ fn handle_request(mut client: Client, org_cfg: &ParseConfig) -> Result<usize> {
     };
     let path: Cow<[u8]> = percent_encoding::percent_decode_str(path).into();
     // prevent both accessing hidden files and path traversal
-    if path.windows(2).any(|a| a == b"/.") {
+    if path.windows(2).any(|a| a == b"/." || a == b"\\.") {
         return client.respond("400 Bad Request", b"no bad\n", &vec![]);
     }
     // previous check may have missed stuff if the leading / is not there
     let Some(path) = path.strip_prefix(b"/") else {
         return client.respond("400 Bad Request", b"what the dog doin\n", &vec![]);
     };
-    let mut pathb = PathBuf::from(OsStr::from_bytes(path));
+    let mut pathb = PathBuf::from(
+        #[cfg(unix)]
+        std::ffi::OsStr::from_bytes(path),
+        #[cfg(not(unix))]
+        if let Ok(b) = str::from_utf8(path) {
+            b
+        } else {
+            return client.respond(
+                "400 Bad Request",
+                b"non-utf-8 paths are only supported on unix\n",
+                &vec![],
+            );
+        },
+    );
+    if pathb.has_root() {
+        return client.respond("400 Bad Request", b"naughty\n", &vec![]);
+    }
     if path.is_empty() || pathb.is_dir() {
         pathb.push("index.html");
     }
