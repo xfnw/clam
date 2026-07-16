@@ -23,7 +23,6 @@ pub fn print_index(repo: &Repository, commit: &Commit, args: &RepoArgs) {
             .as_deref()
         {
             Some("org") => get_entry_org(name, &blob, args.format),
-            Some("htm" | "html") => return,
             _ => get_entry_raw(name, &blob),
         }) else {
             return;
