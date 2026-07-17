@@ -160,7 +160,12 @@ impl Traverser for GmiExport {
                     self.output.push('#');
                 }
                 self.output.push(' ');
-                // TODO: output TODO
+
+                if let Some(keyword) = headline.todo_keyword() {
+                    self.output.push_str(&keyword);
+                    self.output.push(' ');
+                }
+
                 for e in headline.title() {
                     self.element(e, ctx);
                 }
