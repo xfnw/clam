@@ -1,6 +1,6 @@
 use crate::{
     Error, STYLESHEET_STR,
-    config::ClamConfig,
+    config::{ClamConfig, FeedConfig},
     git::HistMeta,
     helpers::org_links,
     output::{Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
@@ -35,6 +35,7 @@ pub struct PageHtml<'a> {
     pub metadata: Option<&'a PageMetadata<'a>>,
     pub nav: bool,
     pub inline: bool,
+    pub feeds: Option<Vec<&'a FeedConfig>>,
 }
 
 #[derive(Default)]
@@ -553,6 +554,17 @@ pub fn write_org_page(
             contributors,
         };
 
+        let feeds = config.map(|c| {
+            c.feed
+                .iter()
+                .filter(|f| {
+                    str::from_utf8(new_path.as_os_str().as_encoded_bytes())
+                        .ok()
+                        .is_some_and(|p| f.contains(p))
+                })
+                .collect()
+        });
+
         let template = PageHtml {
             title,
             body: html,
@@ -563,6 +575,7 @@ pub fn write_org_page(
             nav,
             inline,
             metadata: Some(&meta),
+            feeds,
         };
 
         let mut f = fs::File::create(new_path).map_err(Error::File)?;

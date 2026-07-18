@@ -36,6 +36,12 @@ pub struct FeedConfig {
     pub max_items: usize,
 }
 
+impl FeedConfig {
+    pub fn contains(&self, path: &str) -> bool {
+        self.include.is_match(path) && !self.exclude.is_match(path)
+    }
+}
+
 // serde is annoying
 const fn default_max_items() -> usize {
     42

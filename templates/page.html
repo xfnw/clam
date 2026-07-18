@@ -12,6 +12,11 @@
 %% if let Some(header) = self.header {
 {{ Trusted(header) }}
 %% }
+%% if let Some(feeds) = &self.feeds {
+%% for feed in feeds {
+<link rel=alternate type=application/atom+xml title="{{ feed.title }}" href="{% for _ in 1..self.numdir { %}../{% } %}{{ feed.path.display() }}">
+%% }
+%% }
 </head>
 <body>
 <header>

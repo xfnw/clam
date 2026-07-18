@@ -132,10 +132,7 @@ pub fn write_feed(
         return Err(Error::NonUTF8Path);
     };
 
-    let filt: Vec<_> = entries
-        .iter()
-        .filter(|e| feed.include.is_match(e.path) && !feed.exclude.is_match(e.path))
-        .collect();
+    let filt: Vec<_> = entries.iter().filter(|e| feed.contains(e.path)).collect();
     let numdir = feed.path.iter().count();
 
     let output = FeedXml {
