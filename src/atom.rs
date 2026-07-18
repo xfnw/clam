@@ -1,7 +1,6 @@
 use crate::{Error, config::FeedConfig, git::HistMeta, helpers::URL_PATH_UNSAFE, output::Page};
 use chrono::{DateTime, NaiveDateTime};
 use percent_encoding::utf8_percent_encode;
-use regex::RegexSet;
 use std::{
     cmp::min,
     collections::HashMap,
@@ -133,20 +132,9 @@ pub fn write_feed(
         return Err(Error::NonUTF8Path);
     };
 
-    let include = if let Some(e) = &feed.include {
-        RegexSet::new(e)?
-    } else {
-        RegexSet::new([r"."])?
-    };
-    let exclude = if let Some(e) = &feed.exclude {
-        RegexSet::new(e)?
-    } else {
-        RegexSet::empty()
-    };
-
     let filt: Vec<_> = entries
         .iter()
-        .filter(|e| include.is_match(e.path) && !exclude.is_match(e.path))
+        .filter(|e| feed.include.is_match(e.path) && !feed.exclude.is_match(e.path))
         .collect();
     let numdir = feed.path.iter().count();
 

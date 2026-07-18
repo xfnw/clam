@@ -1,8 +1,10 @@
 use crate::{
     OutputFormat, atom,
     git::HistMeta,
+    helpers::de_regex_set,
     output::{Page, write_redirect_page},
 };
+use regex::RegexSet;
 use serde::Deserialize;
 use std::{collections::HashMap, fs, path::PathBuf};
 
@@ -26,8 +28,10 @@ pub struct ClamConfig {
 pub struct FeedConfig {
     pub title: String,
     pub path: PathBuf,
-    pub include: Option<Vec<String>>,
-    pub exclude: Option<Vec<String>>,
+    #[serde(default = "full_regex_set", deserialize_with = "de_regex_set")]
+    pub include: RegexSet,
+    #[serde(default = "RegexSet::empty", deserialize_with = "de_regex_set")]
+    pub exclude: RegexSet,
     #[serde(default = "default_max_items")]
     pub max_items: usize,
 }
@@ -35,6 +39,10 @@ pub struct FeedConfig {
 // serde is annoying
 const fn default_max_items() -> usize {
     42
+}
+
+fn full_regex_set() -> RegexSet {
+    RegexSet::new(["."]).unwrap()
 }
 
 #[derive(Deserialize, Debug)]

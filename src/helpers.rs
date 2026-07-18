@@ -1,5 +1,7 @@
 use orgize::{Org, ast::Link, rowan::ast::AstNode};
 use percent_encoding::{AsciiSet, CONTROLS};
+use regex::RegexSet;
+use serde::{Deserialize, Deserializer};
 use slugify::slugify;
 use std::path::Path;
 use url::Url;
@@ -80,4 +82,31 @@ where
         };
         callback(url);
     }
+}
+
+pub fn de_regex_set<'de, D>(deserializer: D) -> Result<RegexSet, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de::{Error, SeqAccess, Visitor, value};
+
+    struct DeRegexSet;
+
+    impl<'de> Visitor<'de> for DeRegexSet {
+        type Value = RegexSet;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("set of string")
+        }
+        fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: SeqAccess<'de>,
+            A::Error: Error,
+        {
+            let regexes: Vec<String> =
+                Deserialize::deserialize(value::SeqAccessDeserializer::new(seq))?;
+            RegexSet::new(regexes).map_err(Error::custom)
+        }
+    }
+
+    deserializer.deserialize_any(DeRegexSet)
 }
