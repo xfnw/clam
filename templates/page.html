@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv=content-type content="text/html; charset=utf-8">
 <meta name=viewport content="width=device-width, initial-scale=1">
+<title>{{ self.title }}</title>
 %% if self.inline {
 <style>{{ Trusted(STYLESHEET_STR) }}</style>
 %% } else {
@@ -11,7 +12,6 @@
 %% if let Some(header) = self.header {
 {{ Trusted(header) }}
 %% }
-<title>{{ self.title }}</title>
 </head>
 <body>
 <header>
