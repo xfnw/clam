@@ -77,8 +77,9 @@ pub fn handle_config(
             return None;
         }
     };
+
+    let id = config.id.unwrap_or_else(|| config.url.clone());
     let url = overrides.url.unwrap_or(config.url);
-    let id = config.id.as_ref().unwrap_or(&url);
 
     if !config.feed.is_empty() {
         let entries = atom::entries(pages, metadata).ok()?;
@@ -86,7 +87,7 @@ pub fn handle_config(
         for feed in &config.feed {
             if let Err(e) = atom::write_feed(
                 feed,
-                id,
+                &id,
                 &url,
                 entries.as_slice(),
                 matches!(overrides.format, OutputFormat::Html),
@@ -102,6 +103,7 @@ pub fn handle_config(
         }
     }
 
+    config.id = Some(id);
     config.url = url;
     config.inline = overrides.inline.unwrap_or(config.inline);
 
