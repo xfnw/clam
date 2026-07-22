@@ -1,4 +1,4 @@
-use crate::{RepoArgs, helpers::org_urls, util::map_org};
+use crate::{RepoArgs, helpers::org_urls, util::map_files};
 use git2::{Commit, Repository};
 use orgize::Org;
 use std::{
@@ -54,8 +54,11 @@ node [color=gray];
 rankdir=LR;"
     );
 
-    map_org(repo, commit, |mut name, blob| {
-        if args.url.is_some() {
+    map_files(repo, commit, |mut name, blob| {
+        let is_org = name
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("org"));
+        if args.url.is_some() && is_org {
             name.set_extension(args.format.to_ext());
         }
         let nstr = name.to_str().unwrap();
@@ -71,6 +74,9 @@ rankdir=LR;"
         }
         println!("];");
 
+        if !is_org {
+            return;
+        }
         let Ok(fstr) = str::from_utf8(blob.content()) else {
             return;
         };
