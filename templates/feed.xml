@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="{% for _ in 1..self.numdir { %}../{% } %}style.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-<title>{{ self.title }}</title>
-<id>{{ self.id }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}</id>
+<title>{{ Clean(self.title) }}</title>
+<id>{{ Clean(self.id) }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}</id>
 <link rel="self" href="{{ self.url }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}"/>
 <updated>{{ self.updated }}</updated>
 %% for entry in self.entries {
 <entry>
-<title>{{ entry.title }}</title>
-<id>{{ self.id }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
-<link rel="alternate" href="{{ self.url }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
-<author><name>{{ entry.author }}</name></author>
+<title>{{ Clean(entry.title) }}</title>
+<id>{{ Clean(self.id) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
+<link rel="alternate" href="{{ Clean(self.url) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
+<author><name>{{ Clean(entry.author) }}</name></author>
 <published>{{ entry.published }}</published>
 <updated>{{ entry.updated }}</updated>
 %% if let Some(summary) = entry.summary {
-<summary>{{ summary }}</summary>
+<summary>{{ Clean(summary) }}</summary>
 %% }
 %% if let Some(content) = entry.content {
-<content{% if self.is_html { %} type="html"{% } %}>{{ content }}</content>
+<content{% if self.is_html { %} type="html"{% } %}>{{ Clean(content) }}</content>
 %% }
 </entry>
 %% }

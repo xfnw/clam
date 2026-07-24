@@ -56,6 +56,24 @@ impl fmt::Display for AtomDateTime {
     }
 }
 
+/// replace most c0 control codes since xml 1.0 does not
+/// allow them and does not have a way to escape them???
+struct Clean<'a>(&'a str);
+
+impl fmt::Display for Clean<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use std::fmt::Write;
+        for c in self.0.chars() {
+            f.write_char(match c {
+                '\x09' | '\x0a' | '\x0d' => c,
+                '\0'..='\x1f' => '\u{fffd}',
+                _ => c,
+            })?;
+        }
+        Ok(())
+    }
+}
+
 pub fn entries<'a>(
     pages: &'a HashMap<PathBuf, Page>,
     metadata: &'a HashMap<PathBuf, HistMeta>,
