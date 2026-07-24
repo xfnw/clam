@@ -41,34 +41,32 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let author = author.name()?;
         let committer = committer.name()?;
 
-        let changed: BTreeSet<PathBuf> = if parents == 0 {
-            // initial commit, everything touched
-            let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            diff.deltas()
-                .map(|change| change.new_file().path().map(Path::to_path_buf))
-                .collect::<Option<_>>()
-                .ok_or(Error::BadGitPath)?
-        } else {
-            (0..parents)
-                .map(|parent| {
-                    let ptree = commit.parent(parent)?.tree()?;
-                    let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-                    diff.deltas()
-                        .map(|change| change.new_file().path().map(Path::to_path_buf))
-                        .collect::<Option<BTreeSet<_>>>()
-                        .ok_or(Error::BadGitPath)
-                })
-                .reduce(|a, b| {
-                    let mut a = a?;
-                    let b = b?;
+        let changed: BTreeSet<PathBuf> = (0..parents)
+            .map(|parent| {
+                let ptree = commit.parent(parent)?.tree()?;
+                let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
+                diff.deltas()
+                    .map(|change| change.new_file().path().map(Path::to_path_buf))
+                    .collect::<Option<BTreeSet<_>>>()
+                    .ok_or(Error::BadGitPath)
+            })
+            .reduce(|a, b| {
+                let mut a = a?;
+                let b = b?;
 
-                    // rust does not give us an owned intersection :(
-                    a.retain(|p| b.contains(p));
+                // rust does not give us an owned intersection :(
+                a.retain(|p| b.contains(p));
 
-                    Ok(a)
-                })
-                .expect("there should be at least one parent here since parents == 0 was already handled")?
-        };
+                Ok(a)
+            })
+            .unwrap_or_else(|| {
+                // initial commit, everything touched
+                let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
+                diff.deltas()
+                    .map(|change| change.new_file().path().map(Path::to_path_buf))
+                    .collect::<Option<_>>()
+                    .ok_or(Error::BadGitPath)
+            })?;
 
         for path in changed {
             if let Some(entry) = metadata.get_mut(&path) {
