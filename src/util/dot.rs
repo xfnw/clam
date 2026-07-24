@@ -1,10 +1,7 @@
 use crate::{RepoArgs, helpers::org_urls, util::map_files};
 use git2::{Commit, Repository};
 use orgize::Org;
-use std::{
-    fmt::{self, Write},
-    path::Path,
-};
+use std::fmt::{self, Write};
 use url::Url;
 
 struct DotEscape<'a>(&'a str);
@@ -36,17 +33,8 @@ fn eat_file_index(url: &mut Url) {
 }
 
 pub fn print_dot(repo: &Repository, commit: &Commit, args: &RepoArgs) {
-    let root = if let Some(url) = &args.url {
-        Url::parse(url).expect("you should pass a valid url to the url option")
-    } else {
-        Url::from_file_path(Path::new(
-            #[cfg(windows)]
-            "H:/",
-            #[cfg(not(windows))]
-            "/",
-        ))
-        .unwrap()
-    };
+    let root = Url::parse(args.url.as_deref().unwrap_or("file:///"))
+        .expect("you should pass a valid url to the url option");
 
     println!(
         r"digraph L {{
