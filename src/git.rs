@@ -1,9 +1,9 @@
 use crate::Error;
 use git2::{Oid, Repository, Time};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap, HashSet},
     fs,
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 #[derive(Debug)]
@@ -18,42 +18,6 @@ pub struct HistMeta {
 }
 
 pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, HistMeta>, Error> {
-    macro_rules! add_times {
-        ($time_a:expr, $time_c:expr, $message:expr, $author:expr, $committer:expr, $short_id:expr, $diff:expr, $metadata:expr) => {
-            for change in $diff.deltas() {
-                let path = change.new_file().path().ok_or(Error::BadGitPath)?;
-                if let Some(entry) = $metadata.get_mut(path) {
-                    if !entry.contributors.contains($author) {
-                        entry.contributors.insert($author.to_string());
-                    }
-                    if !entry.contributors.contains($committer) {
-                        entry.contributors.insert($committer.to_string());
-                    }
-                    entry.create_time = $time_a.clone();
-                    entry.creator = $author.to_string();
-                } else {
-                    let mut contributors = HashSet::new();
-                    contributors.insert($author.to_string());
-                    if $author != $committer {
-                        contributors.insert($committer.to_string());
-                    }
-                    $metadata.insert(
-                        path.to_owned(),
-                        HistMeta {
-                            create_time: $time_a.clone(),
-                            modify_time: $time_c.clone(),
-                            creator: $author.to_string(),
-                            last_editor: $author.to_string(),
-                            last_commit: $short_id.to_string(),
-                            last_msg: $message.clone(),
-                            contributors,
-                        },
-                    );
-                }
-            }
-        };
-    }
-
     let mailmap = repo.mailmap()?;
     let mut revwalk = repo.revwalk()?;
     revwalk.push(oid)?;
@@ -77,21 +41,64 @@ pub fn make_time_tree(repo: &Repository, oid: Oid) -> Result<HashMap<PathBuf, Hi
         let author = author.name()?;
         let committer = committer.name()?;
 
-        // initial commit, everything touched
-        if parents == 0 {
+        let changed: BTreeSet<PathBuf> = if parents == 0 {
+            // initial commit, everything touched
             let diff = repo.diff_tree_to_tree(None, Some(&tree), None)?;
-            add_times!(
-                time_a, time_c, message, author, committer, short_id, diff, metadata
-            );
-            continue;
-        }
+            diff.deltas()
+                .map(|change| change.new_file().path().map(Path::to_path_buf))
+                .collect::<Option<_>>()
+                .ok_or(Error::BadGitPath)?
+        } else {
+            (0..parents)
+                .map(|parent| {
+                    let ptree = commit.parent(parent)?.tree()?;
+                    let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
+                    diff.deltas()
+                        .map(|change| change.new_file().path().map(Path::to_path_buf))
+                        .collect::<Option<BTreeSet<_>>>()
+                        .ok_or(Error::BadGitPath)
+                })
+                .reduce(|a, b| {
+                    let mut a = a?;
+                    let b = b?;
 
-        for parent in 0..parents {
-            let ptree = commit.parent(parent)?.tree()?;
-            let diff = repo.diff_tree_to_tree(Some(&ptree), Some(&tree), None)?;
-            add_times!(
-                time_a, time_c, message, author, committer, short_id, diff, metadata
-            );
+                    // rust does not give us an owned intersection :(
+                    a.retain(|p| b.contains(p));
+
+                    Ok(a)
+                })
+                .expect("there should be at least one parent here since parents == 0 was already handled")?
+        };
+
+        for path in changed {
+            if let Some(entry) = metadata.get_mut(&path) {
+                if !entry.contributors.contains(author) {
+                    entry.contributors.insert(author.to_string());
+                }
+                if !entry.contributors.contains(committer) {
+                    entry.contributors.insert(committer.to_string());
+                }
+                entry.create_time = time_a;
+                entry.creator = author.to_string();
+            } else {
+                let mut contributors = HashSet::new();
+                contributors.insert(author.to_string());
+                if author != committer {
+                    contributors.insert(committer.to_string());
+                }
+                metadata.insert(
+                    path,
+                    HistMeta {
+                        create_time: time_a,
+                        modify_time: time_c,
+                        creator: author.to_string(),
+                        last_editor: author.to_string(),
+                        last_commit: short_id.to_string(),
+                        last_msg: message.clone(),
+                        contributors,
+                    },
+                );
+            }
         }
     }
 
