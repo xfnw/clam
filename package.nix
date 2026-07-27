@@ -1,6 +1,6 @@
-{ naersk, lib }:
+{ crane, lib }:
 
-naersk.buildPackage {
+crane.buildPackage {
   src = lib.fileset.toSource {
     root = ./.;
     fileset = lib.fileset.unions [

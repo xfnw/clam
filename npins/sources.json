@@ -1,17 +1,17 @@
 {
   "pins": {
-    "naersk": {
+    "crane": {
       "type": "Git",
       "repository": {
         "type": "GitHub",
-        "owner": "nix-community",
-        "repo": "naersk"
+        "owner": "ipetkov",
+        "repo": "crane"
       },
       "branch": "master",
       "submodules": false,
-      "revision": "9aa07bb0256d300219b30622d2454e85f7f3667e",
-      "url": "https://github.com/nix-community/naersk/archive/9aa07bb0256d300219b30622d2454e85f7f3667e.tar.gz",
-      "hash": "sha256-thLTFbp9D5Qknmh8q/v4FRpLGphUSijT3E86cbLYTXo="
+      "revision": "7930f6c291de6f83c257839d434592aa085f290a",
+      "url": "https://github.com/ipetkov/crane/archive/7930f6c291de6f83c257839d434592aa085f290a.tar.gz",
+      "hash": "sha256-TkTWNhJV/8Wk3czlbz4bwHZkFCaCHPsOy+oJe4PUiXg="
     },
     "nix2container": {
       "type": "Git",
