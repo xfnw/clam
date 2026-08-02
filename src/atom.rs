@@ -1,6 +1,6 @@
 use crate::{Error, config::FeedConfig, git::HistMeta, helpers::URL_PATH_UNSAFE, output::Page};
 use chrono::{DateTime, NaiveDateTime};
-use percent_encoding::utf8_percent_encode;
+use percent_encoding::{CONTROLS, utf8_percent_encode};
 use std::{
     cmp::min,
     collections::HashMap,

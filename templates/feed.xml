@@ -2,14 +2,14 @@
 <?xml-stylesheet type="text/xsl" href="{% for _ in 1..self.numdir { %}../{% } %}style.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>{{ Clean(self.title) }}</title>
-<id>{{ Clean(self.id) }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}</id>
-<link rel="self" href="{{ self.url }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}"/>
+<id>{{ utf8_percent_encode(self.id, CONTROLS) }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}</id>
+<link rel="self" href="{{ utf8_percent_encode(self.url, CONTROLS) }}/{{ utf8_percent_encode(self.path, URL_PATH_UNSAFE) }}"/>
 <updated>{{ self.updated }}</updated>
 %% for entry in self.entries {
 <entry>
 <title>{{ Clean(entry.title) }}</title>
-<id>{{ Clean(self.id) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
-<link rel="alternate" href="{{ Clean(self.url) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
+<id>{{ utf8_percent_encode(self.id, CONTROLS) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}</id>
+<link rel="alternate" href="{{ utf8_percent_encode(self.url, CONTROLS) }}/{{ utf8_percent_encode(entry.path, URL_PATH_UNSAFE) }}"/>
 <author><name>{{ Clean(entry.author) }}</name></author>
 <published>{{ entry.published }}</published>
 <updated>{{ entry.updated }}</updated>
