@@ -357,6 +357,13 @@ impl Traverser for GmiExport {
                         self.push_str(format!("{name} ({amount})"));
                     }
                 }
+                "abbr" => {
+                    if let Some(args) = macros.args()
+                        && let Some((abbr, meaning)) = args.split_once(',')
+                    {
+                        self.push_str(format!("{abbr} ({meaning})"));
+                    }
+                }
                 _ => (),
             },
             Event::LineBreak(_) => self.output.push('\n'),
