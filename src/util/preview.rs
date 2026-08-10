@@ -12,7 +12,7 @@ use std::{
 use std::os::unix::ffi::OsStrExt;
 
 use crate::output::{
-    get_keywords,
+    accumulate, get_keywords,
     html::{Handler, PageHtml},
     infer_title,
 };
@@ -129,11 +129,13 @@ fn preview_page(path: &Path, org_cfg: &ParseConfig) -> Option<String> {
 
     let title = res.title().unwrap_or_else(|| infer_title(path));
     let keywords = get_keywords(&res);
+    let accumulated = accumulate(&res);
     let lang = keywords.language.unwrap_or_else(|| "en".to_string());
     let numdir = path.iter().count();
 
     let mut html_export = Handler {
         numdir,
+        accumulated,
         ..Default::default()
     };
     res.traverse(&mut html_export);

@@ -2,7 +2,7 @@ use crate::{
     Error, STYLESHEET_STR,
     git::HistMeta,
     helpers::org_links,
-    output::{Page, PageKeywords, PageMetadata, get_keywords, infer_title},
+    output::{Page, PageKeywords, PageMetadata, accumulate, get_keywords, infer_title},
 };
 use boilerplate::Trusted;
 use chrono::{DateTime, Datelike};
@@ -106,6 +106,7 @@ fn generate_page(
         let res = org_cfg.clone().parse(fstr);
         let title = res.title().unwrap_or_else(|| infer_title(&bpath));
         let keywords = get_keywords(&res);
+        let accumulated = accumulate(&res);
 
         let myslug = Rc::new(slugify!(&full_path));
         org_links(&res, &bpath, |l| {
@@ -120,7 +121,10 @@ fn generate_page(
 
         let mut html_export = LinkSlugExport {
             myurl: Url::from_file_path(&bpath).unwrap(),
-            exp: crate::output::html::Handler::default(),
+            exp: crate::output::html::Handler {
+                accumulated,
+                ..Default::default()
+            },
         };
         res.traverse(&mut html_export);
         let body = html_export.exp.exp.finish();
