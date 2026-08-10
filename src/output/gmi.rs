@@ -348,6 +348,15 @@ impl Traverser for GmiExport {
 
                     self.nums.insert(name.to_string(), num);
                 }
+                "cum" => {
+                    if let Some(args) = macros.args()
+                        && let Some((_, rest)) = args.split_once(',')
+                        && let Some((name, amount)) = rest.split_once(',')
+                    {
+                        let (name, amount) = (name.trim(), amount.trim());
+                        self.push_str(format!("{name} ({amount})"));
+                    }
+                }
                 _ => (),
             },
             Event::LineBreak(_) => self.output.push('\n'),

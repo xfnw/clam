@@ -385,6 +385,16 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
 
                     self.nums.insert(name.to_string(), num);
                 }
+                "cum" => {
+                    if let Some(args) = macros.args()
+                        && let Some((_, rest)) = args.split_once(',')
+                        && let Some((name, amount)) = rest.split_once(',')
+                    {
+                        let (name, amount) = (name.trim(), amount.trim());
+                        self.exp
+                            .push_str(HtmlEscape(format!("{name} ({amount})")).to_string());
+                    }
+                }
                 _ => (),
             },
             Event::LineBreak(_) => self.exp.push_str("<br>"),
