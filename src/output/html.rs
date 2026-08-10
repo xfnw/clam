@@ -17,7 +17,7 @@ use orgize::{
 use slugify::slugify;
 use std::{
     cmp::min,
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     fs,
     io::Write,
     path::{Path, PathBuf},
@@ -43,6 +43,7 @@ pub struct Handler {
     pub exp: HtmlExport,
     pub numdir: usize,
     pub feet: IndexMap<String, (Option<TokenList>, i32)>,
+    pub nums: BTreeMap<String, u64>,
 }
 
 impl Traverser for Handler {
@@ -362,6 +363,30 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
             Event::Cookie(cookie) => {
                 self.exp.push_str(HtmlEscape(cookie.raw()).to_string());
             }
+            Event::Macros(macros) => match macros.key().as_ref() {
+                "n" => {
+                    let args = macros.args();
+                    let args: Option<&str> = args.as_deref();
+                    let (name, act) = args
+                        .and_then(|a| a.split_once(','))
+                        .unwrap_or_else(|| (args.unwrap_or(""), ""));
+                    let (name, act) = (name.trim(), act.trim());
+                    let num = if matches!(act, "" | "-") {
+                        self.nums
+                            .get(name)
+                            .copied()
+                            .map(|n| if act == "-" { n } else { n.wrapping_add(1) })
+                    } else {
+                        act.parse().ok()
+                    }
+                    .unwrap_or(1);
+
+                    self.exp.push_str(format!("{num}"));
+
+                    self.nums.insert(name.to_string(), num);
+                }
+                _ => (),
+            },
             Event::LineBreak(_) => self.exp.push_str("<br>"),
             _ => self.exp.event(event, ctx),
         }

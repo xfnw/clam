@@ -14,7 +14,7 @@ use orgize::{
 };
 use percent_encoding::utf8_percent_encode;
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -47,6 +47,7 @@ enum LinkLabel {
 pub struct GmiExport {
     output: String,
     links: Vec<LinkLine>,
+    nums: BTreeMap<String, u64>,
 }
 
 impl GmiExport {
@@ -325,6 +326,30 @@ impl Traverser for GmiExport {
             Event::Cookie(cookie) => {
                 self.push_str(cookie.raw());
             }
+            Event::Macros(macros) => match macros.key().as_ref() {
+                "n" => {
+                    let args = macros.args();
+                    let args: Option<&str> = args.as_deref();
+                    let (name, act) = args
+                        .and_then(|a| a.split_once(','))
+                        .unwrap_or_else(|| (args.unwrap_or(""), ""));
+                    let (name, act) = (name.trim(), act.trim());
+                    let num = if matches!(act, "" | "-") {
+                        self.nums
+                            .get(name)
+                            .copied()
+                            .map(|n| if act == "-" { n } else { n.wrapping_add(1) })
+                    } else {
+                        act.parse().ok()
+                    }
+                    .unwrap_or(1);
+
+                    self.push_str(format!("{num}"));
+
+                    self.nums.insert(name.to_string(), num);
+                }
+                _ => (),
+            },
             Event::LineBreak(_) => self.output.push('\n'),
             _ => (),
         }
