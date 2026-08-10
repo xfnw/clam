@@ -1,10 +1,14 @@
 use crate::{Error, OutputFormat, config::ClamConfig, git::HistMeta};
 use chrono::NaiveDateTime;
-use orgize::{Org, ParseConfig, SyntaxNode, SyntaxToken, rowan::NodeOrToken};
+use orgize::{
+    Org, ParseConfig, SyntaxNode, SyntaxToken,
+    ast::Macros,
+    rowan::{NodeOrToken, ast::AstNode},
+};
 use slugify::slugify;
 use std::{
     borrow::Cow,
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     ffi::OsStr,
     fs::File,
     io::Write,
@@ -66,6 +70,30 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
         match_keywords!(k, keywords, (author, language, year));
     }
     keywords
+}
+
+pub fn accumulate(res: &Org) -> BTreeMap<String, BTreeMap<String, Vec<String>>> {
+    let mut out = BTreeMap::new();
+    let document = res.document();
+    let syntax = document.syntax();
+
+    for descendant in syntax.descendants() {
+        if let Some(macros) = Macros::cast(descendant)
+            && macros.key() == "cum"
+            && let Some(args) = macros.args()
+            && let Some((bucket, rest)) = args.split_once(',')
+            && let Some((name, amount)) = rest.split_once(',')
+        {
+            let (bucket, name, amount) = (bucket.trim(), name.trim(), amount.trim());
+            out.entry(bucket.to_string())
+                .or_insert_with(BTreeMap::new)
+                .entry(name.to_string())
+                .or_insert_with(|| Vec::with_capacity(1))
+                .push(amount.to_string());
+        }
+    }
+
+    out
 }
 
 pub fn write_org_page(

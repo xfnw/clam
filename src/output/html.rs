@@ -3,7 +3,7 @@ use crate::{
     config::{ClamConfig, FeedConfig},
     git::HistMeta,
     helpers::org_links,
-    output::{Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
+    output::{Page, PageMetadata, TokenList, accumulate, get_keywords, infer_title, mangle_link},
 };
 use boilerplate::Trusted;
 use chrono::{DateTime, Datelike};
@@ -44,6 +44,7 @@ pub struct Handler {
     pub numdir: usize,
     pub feet: IndexMap<String, (Option<TokenList>, i32)>,
     pub nums: BTreeMap<String, u64>,
+    pub accumulated: BTreeMap<String, BTreeMap<String, Vec<String>>>,
 }
 
 impl Traverser for Handler {
@@ -211,69 +212,81 @@ r##" <a class=see-focus href="#{id}" aria-label="permalink to section">§</a></h
                 }
             }
             Event::Enter(Container::Keyword(keyword)) => {
-                if !keyword.key().eq_ignore_ascii_case("TOC") {
-                    ctx.skip();
-                    return;
-                }
-
-                let value = keyword.value();
-                let mut value = value.split_ascii_whitespace();
-                match value.next() {
-                    Some("headlines") | None => (),
-                    Some(o) => {
-                        eprintln!("TOC type {o} not supported");
-                        ctx.skip();
-                        return;
-                    }
-                }
-                let limit: usize = if let Some(Ok(val)) = value.next().map(str::parse) {
-                    val
-                } else {
-                    0
-                };
-
-                self.exp
-                    .push_str("<details class=toc><summary>table of contents</summary>");
-
-                if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
-                    let mut depth = 0;
-                    for descendant in parent.descendants() {
-                        if let Some(headline) = Headline::cast(descendant) {
-                            let level = headline.level();
-                            if limit != 0 && level > limit {
-                                continue;
-                            }
-                            if depth == level {
-                                self.exp.push_str("</li>");
-                            } else {
-                                while depth < level {
-                                    self.exp.push_str("<ul>");
-                                    depth += 1;
-                                }
-                                while depth > level {
-                                    self.exp.push_str("</li></ul>");
-                                    depth -= 1;
-                                }
-                            }
-
-                            self.exp.push_str(format!(
-                                "<li><a href=\"#{}\">",
-                                generate_headline_id(&headline)
-                            ));
-                            self.output_headline_todo(&headline);
-                            for e in headline.title() {
-                                self.element(e, ctx);
-                            }
-                            self.exp.push_str("</a>");
+                if keyword.key().eq_ignore_ascii_case("TOC") {
+                    let value = keyword.value();
+                    let mut value = value.split_ascii_whitespace();
+                    match value.next() {
+                        Some("headlines") | None => (),
+                        Some(o) => {
+                            eprintln!("TOC type {o} not supported");
+                            ctx.skip();
+                            return;
                         }
                     }
-                    while depth > 0 {
-                        self.exp.push_str("</li></ul>");
-                        depth -= 1;
-                    }
-                }
+                    let limit: usize = if let Some(Ok(val)) = value.next().map(str::parse) {
+                        val
+                    } else {
+                        0
+                    };
 
-                self.exp.push_str("</details>");
+                    self.exp
+                        .push_str("<details class=toc><summary>table of contents</summary>");
+
+                    if let Some(Some(parent)) = keyword.syntax().parent().map(|p| p.parent()) {
+                        let mut depth = 0;
+                        for descendant in parent.descendants() {
+                            if let Some(headline) = Headline::cast(descendant) {
+                                let level = headline.level();
+                                if limit != 0 && level > limit {
+                                    continue;
+                                }
+                                if depth == level {
+                                    self.exp.push_str("</li>");
+                                } else {
+                                    while depth < level {
+                                        self.exp.push_str("<ul>");
+                                        depth += 1;
+                                    }
+                                    while depth > level {
+                                        self.exp.push_str("</li></ul>");
+                                        depth -= 1;
+                                    }
+                                }
+
+                                self.exp.push_str(format!(
+                                    "<li><a href=\"#{}\">",
+                                    generate_headline_id(&headline)
+                                ));
+                                self.output_headline_todo(&headline);
+                                for e in headline.title() {
+                                    self.element(e, ctx);
+                                }
+                                self.exp.push_str("</a>");
+                            }
+                        }
+                        while depth > 0 {
+                            self.exp.push_str("</li></ul>");
+                            depth -= 1;
+                        }
+                    }
+
+                    self.exp.push_str("</details>");
+                } else if keyword.key().eq_ignore_ascii_case("CUM") {
+                    self.exp.push_str("<ul>");
+
+                    if let Some(bucket) = self.accumulated.get(keyword.value().trim()) {
+                        for (name, amounts) in bucket {
+                            self.exp.push_str(format!("<li>{}", HtmlEscape(name)));
+                            if !amounts.is_empty() {
+                                self.exp
+                                    .push_str(format!(" ({})", HtmlEscape(amounts.join(", "))));
+                            }
+                            self.exp.push_str("</li>");
+                        }
+                    }
+
+                    self.exp.push_str("</ul>");
+                }
                 ctx.skip();
             }
             // FIXME: this is cursed, replace with fancy new footnote stuff once merged into orgize
@@ -489,8 +502,10 @@ pub fn generate_page(
         });
 
         let keywords = get_keywords(&res);
+        let accumulated = accumulate(&res);
         let mut html_export = Handler {
             numdir: old_path.iter().count(),
+            accumulated,
             ..Default::default()
         };
         res.traverse(&mut html_export);

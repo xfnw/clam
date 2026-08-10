@@ -3,7 +3,10 @@ use crate::{
     config::ClamConfig,
     git::HistMeta,
     helpers::{URL_PATH_UNSAFE, org_links},
-    output::{NodeOrToken, Page, PageMetadata, TokenList, get_keywords, infer_title, mangle_link},
+    output::{
+        NodeOrToken, Page, PageMetadata, TokenList, accumulate, get_keywords, infer_title,
+        mangle_link,
+    },
 };
 use chrono::{DateTime, Datelike};
 use orgize::{
@@ -48,6 +51,7 @@ pub struct GmiExport {
     output: String,
     links: Vec<LinkLine>,
     nums: BTreeMap<String, u64>,
+    accumulated: BTreeMap<String, BTreeMap<String, Vec<String>>>,
 }
 
 impl GmiExport {
@@ -318,7 +322,22 @@ impl Traverser for GmiExport {
 
                 ctx.skip();
             }
-            Event::Enter(Container::Keyword(_) | Container::CommentBlock(_)) => ctx.skip(),
+            Event::Enter(Container::Keyword(keyword)) => {
+                if keyword.key().eq_ignore_ascii_case("CUM")
+                    && let Some(bucket) = self.accumulated.get(keyword.value().trim())
+                {
+                    for (name, amounts) in bucket {
+                        self.output += format!("- {name}").as_ref();
+                        if !amounts.is_empty() {
+                            self.output += format!(" ({})", amounts.join(", ")).as_ref();
+                        }
+                        self.output += "\n";
+                    }
+                    self.output += "\n";
+                }
+                ctx.skip();
+            }
+            Event::Enter(Container::CommentBlock(_)) => ctx.skip(),
             Event::Text(text) => self.push_join(text),
             Event::Timestamp(timestamp) => {
                 self.push_str(timestamp.raw());
@@ -406,7 +425,11 @@ pub fn generate_page(
         });
 
         let keywords = get_keywords(&res);
-        let mut gmi_export = GmiExport::default();
+        let accumulated = accumulate(&res);
+        let mut gmi_export = GmiExport {
+            accumulated,
+            ..Default::default()
+        };
         res.traverse(&mut gmi_export);
         let gmi = gmi_export.finish();
 
