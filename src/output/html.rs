@@ -420,17 +420,14 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
 }
 
 impl Handler {
-    /// output children while stripping off some exterior formatting
     fn output_block_children(
         &mut self,
         block: &orgize::ast::SpecialBlock,
         ctx: &mut TraversalContext,
     ) {
         for child in block.syntax().children() {
-            for sub in child.children() {
-                for e in sub.children_with_tokens() {
-                    self.element(e, ctx);
-                }
+            for e in child.children() {
+                self.element(NodeOrToken::Node(e), ctx);
             }
         }
     }
