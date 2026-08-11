@@ -72,7 +72,7 @@ pub fn get_keywords(res: &Org) -> PageKeywords {
     keywords
 }
 
-pub fn accumulate(res: &Org) -> BTreeMap<String, BTreeMap<String, Vec<String>>> {
+pub fn accumulate(res: &Org) -> BTreeMap<String, Vec<String>> {
     let mut out = BTreeMap::new();
     let document = res.document();
     let syntax = document.syntax();
@@ -81,18 +81,12 @@ pub fn accumulate(res: &Org) -> BTreeMap<String, BTreeMap<String, Vec<String>>> 
         if let Some(macros) = Macros::cast(descendant)
             && macros.key() == "cum"
             && let Some(args) = macros.args()
-            && let Some((bucket, rest)) = args.split_once(',')
-            && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
+            && let Some((bucket, name)) = args.split_once(',')
         {
-            let (bucket, name, amount) = (bucket.trim(), name.trim(), amount.trim());
-            let amounts = out
-                .entry(bucket.to_string())
-                .or_insert_with(BTreeMap::new)
-                .entry(name.to_string())
-                .or_insert_with(|| Vec::with_capacity(1));
-            if !amount.is_empty() {
-                amounts.push(amount.to_string());
-            }
+            let (bucket, name) = (bucket.trim(), name.trim());
+            out.entry(bucket.to_string())
+                .or_insert_with(|| Vec::with_capacity(1))
+                .push(name.to_string());
         }
     }
 

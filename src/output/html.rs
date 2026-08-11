@@ -44,7 +44,7 @@ pub struct Handler {
     pub numdir: usize,
     pub feet: IndexMap<String, (Option<TokenList>, i32)>,
     pub nums: BTreeMap<String, u64>,
-    pub accumulated: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+    pub accumulated: BTreeMap<String, Vec<String>>,
 }
 
 impl Traverser for Handler {
@@ -275,13 +275,8 @@ r##" <a class=see-focus href="#{id}" aria-label="permalink to section">§</a></h
                     self.exp.push_str("<ul>");
 
                     if let Some(bucket) = self.accumulated.get(keyword.value().trim()) {
-                        for (name, amounts) in bucket {
-                            self.exp.push_str(format!("<li>{}", HtmlEscape(name)));
-                            if !amounts.is_empty() {
-                                self.exp
-                                    .push_str(format!(" ({})", HtmlEscape(amounts.join(", "))));
-                            }
-                            self.exp.push_str("</li>");
+                        for name in bucket {
+                            self.exp.push_str(format!("<li>{}</li>", HtmlEscape(name)));
                         }
                     }
 
@@ -400,15 +395,9 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
                 }
                 "cum" => {
                     if let Some(args) = macros.args()
-                        && let Some((_, rest)) = args.split_once(',')
-                        && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
+                        && let Some((_, name)) = args.split_once(',')
                     {
-                        let (name, amount) = (name.trim(), amount.trim());
-                        self.exp.push_str(HtmlEscape(name).to_string());
-                        if !amount.is_empty() {
-                            self.exp
-                                .push_str(HtmlEscape(format!(" ({amount})")).to_string());
-                        }
+                        self.exp.push_str(HtmlEscape(name.trim()).to_string());
                     }
                 }
                 "abbr" => {

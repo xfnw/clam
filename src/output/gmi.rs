@@ -51,7 +51,7 @@ pub struct GmiExport {
     output: String,
     links: Vec<LinkLine>,
     nums: BTreeMap<String, u64>,
-    accumulated: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+    accumulated: BTreeMap<String, Vec<String>>,
 }
 
 impl GmiExport {
@@ -326,12 +326,8 @@ impl Traverser for GmiExport {
                 if keyword.key().eq_ignore_ascii_case("CUM")
                     && let Some(bucket) = self.accumulated.get(keyword.value().trim())
                 {
-                    for (name, amounts) in bucket {
-                        self.output += format!("- {name}").as_ref();
-                        if !amounts.is_empty() {
-                            self.output += format!(" ({})", amounts.join(", ")).as_ref();
-                        }
-                        self.output += "\n";
+                    for name in bucket {
+                        self.output += format!("- {name}\n").as_ref();
                     }
                     self.output += "\n";
                 }
@@ -369,14 +365,9 @@ impl Traverser for GmiExport {
                 }
                 "cum" => {
                     if let Some(args) = macros.args()
-                        && let Some((_, rest)) = args.split_once(',')
-                        && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
+                        && let Some((_, name)) = args.split_once(',')
                     {
-                        let (name, amount) = (name.trim(), amount.trim());
-                        self.push_str(name);
-                        if !amount.is_empty() {
-                            self.push_str(format!(" ({amount})"));
-                        }
+                        self.push_str(name.trim());
                     }
                 }
                 "abbr" => {
