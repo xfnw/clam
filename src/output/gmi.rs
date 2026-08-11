@@ -370,10 +370,13 @@ impl Traverser for GmiExport {
                 "cum" => {
                     if let Some(args) = macros.args()
                         && let Some((_, rest)) = args.split_once(',')
-                        && let Some((name, amount)) = rest.split_once(',')
+                        && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
                     {
                         let (name, amount) = (name.trim(), amount.trim());
-                        self.push_str(format!("{name} ({amount})"));
+                        self.push_str(name);
+                        if !amount.is_empty() {
+                            self.push_str(format!(" ({amount})"));
+                        }
                     }
                 }
                 "abbr" => {

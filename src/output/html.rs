@@ -401,11 +401,14 @@ r##"<sup><a id="fnr.{fnum}.{rnum}" href="#fn.{fnum}" role=doc-noteref>[{fnum}]</
                 "cum" => {
                     if let Some(args) = macros.args()
                         && let Some((_, rest)) = args.split_once(',')
-                        && let Some((name, amount)) = rest.split_once(',')
+                        && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
                     {
                         let (name, amount) = (name.trim(), amount.trim());
-                        self.exp
-                            .push_str(HtmlEscape(format!("{name} ({amount})")).to_string());
+                        self.exp.push_str(HtmlEscape(name).to_string());
+                        if !amount.is_empty() {
+                            self.exp
+                                .push_str(HtmlEscape(format!(" ({amount})")).to_string());
+                        }
                     }
                 }
                 "abbr" => {

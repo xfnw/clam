@@ -82,14 +82,17 @@ pub fn accumulate(res: &Org) -> BTreeMap<String, BTreeMap<String, Vec<String>>> 
             && macros.key() == "cum"
             && let Some(args) = macros.args()
             && let Some((bucket, rest)) = args.split_once(',')
-            && let Some((name, amount)) = rest.split_once(',')
+            && let (name, amount) = rest.split_once(',').unwrap_or((rest, ""))
         {
             let (bucket, name, amount) = (bucket.trim(), name.trim(), amount.trim());
-            out.entry(bucket.to_string())
+            let amounts = out
+                .entry(bucket.to_string())
                 .or_insert_with(BTreeMap::new)
                 .entry(name.to_string())
-                .or_insert_with(|| Vec::with_capacity(1))
-                .push(amount.to_string());
+                .or_insert_with(|| Vec::with_capacity(1));
+            if !amount.is_empty() {
+                amounts.push(amount.to_string());
+            }
         }
     }
 
