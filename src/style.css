@@ -8,7 +8,7 @@ body {
   font-family: sans-serif;
   max-width: 44em;
   margin: 0 auto;
-  padding: 10px;
+  padding: .64em;
 }
 
 a {
@@ -39,8 +39,8 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
 }
 
 .box, .alert, .warning, .fixme, .FIXME {
-  padding: 10px;
-  margin: 10px 0;
+  padding: .64em;
+  margin: .64em 0;
 }
 
 .verse {
@@ -49,7 +49,7 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
 }
 
 pre, .flex div, .source div {
-  padding: 5px;
+  padding: .32em;
   overflow: auto;
 }
 
@@ -59,7 +59,7 @@ mark {
 
 summary {
   cursor: pointer;
-  padding: 10px;
+  padding: .64em;
 }
 
 thead tr td, th, kbd, summary {
@@ -80,25 +80,25 @@ input[type=button], input[type=submit] {
 }
 
 th, td {
-  padding: 5px;
+  padding: .32em;
 }
 
 table, details *:not(summary) {
   border-collapse: collapse;
-  margin: 10px 0;
+  margin: .64em 0;
 }
 
 .flex {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px;
+  margin: 0 -.64em;
 }
 
 .flex div {
   display: flex;
   min-width: 12em;
   width: 100%;
-  margin: 10px;
+  margin: .64em;
   flex: 1 1 0;
   flex-direction: column;
 }
@@ -117,7 +117,7 @@ fieldset {
 
 blockquote {
   border-left: 1px solid #333;
-  padding-left: 5px;
+  padding-left: .32em;
 }
 
 img {
@@ -132,7 +132,7 @@ li p:nth-of-type(1) {
   position: absolute;
   background: #000;
   color: #fff !important;
-  margin: 0 5px;
+  margin: 0 .32em;
 }
 
 :not(:hover) > .see-focus:not(:focus):not(:active) {
@@ -167,26 +167,26 @@ li p:nth-of-type(1) {
 }
 
 .chat {
-  margin: 10px 0;
+  margin: .64em 0;
   display: flex;
   align-items: center;
 }
 
 .chat-head {
-  margin-right: 10px;
+  margin-right: .64em;
 }
 
 .chat-text {
   display: inline-block;
-  margin-left: 10px;
-  padding: 0 10px;
+  margin-left: .64em;
+  padding: 0 .64em;
 }
 
 .chat-text::before {
   content: '';
   position: absolute;
-  margin: 10px -20px;
-  border: 10px solid transparent;
+  margin: .64em -1.28em;
+  border: .64em solid transparent;
   border-right-color: #222;
   border-left: 0;
 }
