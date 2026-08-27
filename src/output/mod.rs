@@ -153,7 +153,33 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
 
 // FIXME: use an actual url parser
 pub fn mangle_link(path: &str, suffix: &str, asuffix: &str) -> String {
-    let path = path.strip_prefix("file:").unwrap_or(path);
+    if let Some(path) = path.strip_prefix("file:") {
+        let (path, fragment) = if let Some((p, e)) = path.split_once("::") {
+            (
+                p,
+                Some(if let Some(a) = e.strip_prefix('#') {
+                    Cow::Borrowed(a)
+                } else {
+                    Cow::Owned(slugify!(e))
+                }),
+            )
+        } else {
+            (path, None)
+        };
+        let path = if let Some(p) = path.strip_suffix(".org") {
+            let mut p = p.to_string();
+            p.push_str(suffix);
+            Cow::Owned(p)
+        } else {
+            Cow::Borrowed(path)
+        };
+        let path = if let Some(fragment) = fragment {
+            Cow::Owned(format!("{path}#{fragment}"))
+        } else {
+            Cow::Borrowed(path.as_ref())
+        };
+        return path.into_owned();
+    }
     if let Some(p) = path.strip_prefix('*') {
         let mut p = slugify!(p);
         p.insert(0, '#');

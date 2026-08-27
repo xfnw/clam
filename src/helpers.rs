@@ -3,7 +3,7 @@ use percent_encoding::{AsciiSet, CONTROLS};
 use regex::RegexSet;
 use serde::{Deserialize, Deserializer};
 use slugify::slugify;
-use std::path::Path;
+use std::{borrow::Cow, path::Path};
 use url::Url;
 
 pub const URL_UNSAFE: &AsciiSet = &CONTROLS
@@ -73,7 +73,20 @@ where
             continue;
         };
         let path = &link.path();
-        let Ok(url) = (if let Some(p) = path.strip_prefix('*') {
+        let Ok(url) = (if let Some(p) = path.strip_prefix("file:") {
+            base.join(&if let Some((p, e)) = p.split_once("::") {
+                Cow::Owned(format!(
+                    "{p}#{}",
+                    if let Some(a) = e.strip_prefix('#') {
+                        Cow::Borrowed(a)
+                    } else {
+                        Cow::Owned(slugify!(e))
+                    }
+                ))
+            } else {
+                Cow::Borrowed(p)
+            })
+        } else if let Some(p) = path.strip_prefix('*') {
             base.join(&format!("#{}", slugify!(p)))
         } else {
             base.join(path)
