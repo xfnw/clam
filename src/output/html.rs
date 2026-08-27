@@ -609,8 +609,7 @@ pub fn write_org_page(
                 .iter()
                 .filter(|f| {
                     str::from_utf8(new_path.as_os_str().as_encoded_bytes())
-                        .ok()
-                        .is_some_and(|p| f.contains(p))
+                        .is_ok_and(|p| f.contains(p))
                 })
                 .collect()
         });
