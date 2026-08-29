@@ -9,9 +9,9 @@
       },
       "branch": "master",
       "submodules": false,
-      "revision": "2c71e194474d13de031d729b729c968ddbe3507f",
-      "url": "https://github.com/ipetkov/crane/archive/2c71e194474d13de031d729b729c968ddbe3507f.tar.gz",
-      "hash": "sha256-MPaRdVkf6zZP5fCPxYCi8Dr4pZzgmXzg8T9nVEbp3Mw="
+      "revision": "692f7e9ef2ece8125b466f66f2af532b3edaed0d",
+      "url": "https://github.com/ipetkov/crane/archive/692f7e9ef2ece8125b466f66f2af532b3edaed0d.tar.gz",
+      "hash": "sha256-lWhBbBvC05/xwivKBBiM2YNizpmgqCgyOIzomvRuwxs="
     },
     "nix2container": {
       "type": "Git",
@@ -30,8 +30,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.zst",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1053303.6b5e5b7a6631/nixexprs.tar.zst",
-      "hash": "sha256-NebGpEUD7MV7GWfUhDErp7imOKX2rFSUDtqkO5ryJ/o="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1062790.c27cdad491a9/nixexprs.tar.zst",
+      "hash": "sha256-4Opnii0iGg8Dk8/rZ2IYh/HCHvg1B+Us5+Qg+Qy5c18="
     }
   },
   "version": 8
