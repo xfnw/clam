@@ -43,6 +43,14 @@ code, kbd, pre, .flex div, .box, .chat-text, textarea {
   margin: .64em 0;
 }
 
+div p:first-child {
+  margin-top: 0;
+}
+
+div p:last-child {
+  margin-bottom: 0;
+}
+
 .verse {
   white-space: pre-line;
   font-family: inherit;
@@ -179,13 +187,13 @@ li p:nth-of-type(1) {
 .chat-text {
   display: inline-block;
   margin-left: .64em;
-  padding: 0 .64em;
+  padding: .64em;
 }
 
 .chat-text::before {
   content: '';
   position: absolute;
-  margin: .64em -1.28em;
+  margin-left: -1.28em;
   border: .64em solid transparent;
   border-right-color: #222;
   border-left: 0;
