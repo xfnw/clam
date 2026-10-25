@@ -1,5 +1,5 @@
 use crate::{
-    Error,
+    Error, OutputFormat,
     config::ClamConfig,
     git::HistMeta,
     helpers::{URL_PATH_UNSAFE, org_links},
@@ -79,7 +79,7 @@ impl GmiExport {
             let links = std::mem::take(&mut self.links);
             for LinkLine { path, label } in links {
                 self.push_str("=> ");
-                self.push_str(mangle_link(&path, ".gmi", ".gmi#"));
+                self.push_str(mangle_link(&path, OutputFormat::Gmi));
                 match label {
                     LinkLabel::Path => (),
                     LinkLabel::Caption(c) => {
@@ -537,10 +537,9 @@ pub fn write_org_page(
 }
 
 pub fn write_redirect_page(path: &Path, target: &str) -> String {
-    let target = mangle_link(target, ".gmi", ".gmi#");
     let body = format!(
         "=> {} this page has moved here",
-        utf8_percent_encode(&target, URL_PATH_UNSAFE)
+        utf8_percent_encode(target, URL_PATH_UNSAFE)
     );
     let numdir = path.iter().count();
     let template = PageGmi {

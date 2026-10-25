@@ -1,5 +1,5 @@
 use crate::{
-    Error, STYLESHEET_STR,
+    Error, OutputFormat, STYLESHEET_STR,
     config::{ClamConfig, FeedConfig},
     git::HistMeta,
     helpers::org_links,
@@ -76,7 +76,7 @@ r##" <a class=see-focus href="#{id}" aria-label="permalink to section">§</a></h
                     return;
                 }
 
-                let path = mangle_link(&path, ".html", ".html#");
+                let path = mangle_link(&path, OutputFormat::Html);
 
                 if link.is_image() {
                     if let Some(Some(caption)) = link.caption().map(|c| c.value()) {
@@ -635,7 +635,6 @@ pub fn write_org_page(
 }
 
 pub fn write_redirect_page(path: &Path, target: &str) -> String {
-    let target = mangle_link(target, ".html", ".html#");
     let body = format!(
         "this page has been <a href=\"{}\">moved here</a>.",
         HtmlEscape(&target)

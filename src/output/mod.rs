@@ -141,10 +141,11 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
     } else {
         Cow::Borrowed(path)
     };
+    let target = mangle_link(target, format);
 
     let content = match format {
-        OutputFormat::Html => html::write_redirect_page(&path, target),
-        OutputFormat::Gmi => gmi::write_redirect_page(&path, target),
+        OutputFormat::Html => html::write_redirect_page(&path, &target),
+        OutputFormat::Gmi => gmi::write_redirect_page(&path, &target),
     };
 
     let mut f = File::create(path).map_err(Error::File)?;
@@ -152,7 +153,12 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
 }
 
 // FIXME: use an actual url parser
-pub fn mangle_link(path: &str, suffix: &str, asuffix: &str) -> String {
+pub fn mangle_link(path: &str, format: OutputFormat) -> String {
+    let (suffix, asuffix) = match format {
+        OutputFormat::Html => (".html", ".html#"),
+        OutputFormat::Gmi => (".gmi", ".gmi#"),
+    };
+
     if let Some(path) = path.strip_prefix("file:") {
         let (path, fragment) = if let Some((p, e)) = path.split_once("::") {
             (
