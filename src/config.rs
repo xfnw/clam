@@ -2,11 +2,16 @@ use crate::{
     OutputFormat, atom,
     git::HistMeta,
     helpers::de_regex_set,
-    output::{Page, write_redirect_page},
+    output::{Page, mangle_link, replace_org_extension, write_redirect_page},
 };
 use regex::RegexSet;
 use serde::Deserialize;
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    io::{BufWriter, Write},
+    path::PathBuf,
+};
 
 #[derive(Deserialize, Debug)]
 pub struct ClamConfig {
@@ -18,6 +23,8 @@ pub struct ClamConfig {
     pub show_navigation: bool,
     #[serde(default)]
     pub inline: bool,
+    #[serde(default)]
+    pub use_redirects_file: bool,
     #[serde(default)]
     pub feed: Vec<FeedConfig>,
     #[serde(default)]
@@ -62,6 +69,7 @@ pub struct OverrideConfig {
     pub url: Option<String>,
     pub inline: Option<bool>,
     pub format: OutputFormat,
+    pub use_redirects_file: Option<bool>,
 }
 
 pub fn handle_config(
@@ -97,9 +105,37 @@ pub fn handle_config(
         }
     }
 
-    for RedirectConfig { path, target } in &config.redirect {
-        if let Err(e) = write_redirect_page(overrides.format, path, target) {
-            eprintln!("skipping redirect {}: {}", path.display(), e);
+    if overrides
+        .use_redirects_file
+        .unwrap_or(config.use_redirects_file)
+    {
+        if fs::File::create("_redirects")
+            .ok()
+            .map(BufWriter::new)
+            .map(|mut w| {
+                config
+                    .redirect
+                    .iter()
+                    .map(|RedirectConfig { path, target }| {
+                        let path = replace_org_extension(path, overrides.format);
+                        let target = mangle_link(target, overrides.format);
+                        w.write_all(path.as_os_str().as_encoded_bytes())
+                            .and_then(|()| w.write_all(b"\t"))
+                            .and_then(|()| w.write_all(target.as_bytes()))
+                            .and_then(|()| w.write_all(b"\n"))
+                            .ok()
+                    })
+                    .collect::<Option<()>>()
+            })
+            .is_none()
+        {
+            eprintln!("failed to write _redirects file");
+        }
+    } else {
+        for RedirectConfig { path, target } in &config.redirect {
+            if let Err(e) = write_redirect_page(overrides.format, path, target) {
+                eprintln!("skipping redirect {}: {}", path.display(), e);
+            }
         }
     }
 

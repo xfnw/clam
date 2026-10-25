@@ -131,16 +131,7 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
         return Err(Error::UnsafePath);
     }
 
-    let path = if path
-        .extension()
-        .is_some_and(|e| e.eq_ignore_ascii_case("org"))
-    {
-        let mut newpath = path.to_owned();
-        newpath.set_extension(format.to_ext());
-        Cow::Owned(newpath)
-    } else {
-        Cow::Borrowed(path)
-    };
+    let path = replace_org_extension(path, format);
     let target = mangle_link(target, format);
 
     let content = match format {
@@ -150,6 +141,19 @@ pub fn write_redirect_page(format: OutputFormat, path: &Path, target: &str) -> R
 
     let mut f = File::create(path).map_err(Error::File)?;
     f.write_all(&content.into_bytes()).map_err(Error::File)
+}
+
+pub fn replace_org_extension(path: &Path, format: OutputFormat) -> Cow<'_, Path> {
+    if path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("org"))
+    {
+        let mut newpath = path.to_owned();
+        newpath.set_extension(format.to_ext());
+        Cow::Owned(newpath)
+    } else {
+        Cow::Borrowed(path)
+    }
 }
 
 // FIXME: use an actual url parser

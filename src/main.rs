@@ -66,6 +66,9 @@ struct RepoArgs {
     /// override inlining css
     #[arg(long)]
     inline: Option<bool>,
+    /// override using redirects file
+    #[arg(long)]
+    use_redirects_file: Option<bool>,
 }
 
 #[cfg(feature = "util")]
@@ -262,6 +265,7 @@ fn do_build(repo: &Repository, commit: &Commit, args: &RepoArgs) {
         url: args.url.clone(),
         inline: args.inline,
         format: args.format,
+        use_redirects_file: args.use_redirects_file,
     };
 
     if let Err(e) = generate(repo, commit, overrides) {
