@@ -119,7 +119,8 @@ pub fn handle_config(
                     .map(|RedirectConfig { path, target }| {
                         let path = replace_org_extension(path, overrides.format);
                         let target = mangle_link(target, overrides.format);
-                        w.write_all(path.as_os_str().as_encoded_bytes())
+                        w.write_all(b"/")
+                            .and_then(|()| w.write_all(path.as_os_str().as_encoded_bytes()))
                             .and_then(|()| w.write_all(b"\t"))
                             .and_then(|()| w.write_all(target.as_bytes()))
                             .and_then(|()| w.write_all(b"\n"))
