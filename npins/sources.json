@@ -32,6 +32,20 @@
       "artifact": "nixexprs.tar.zst",
       "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1072974.02f5696b0e60/nixexprs.tar.zst",
       "hash": "sha256-iR1Jj6svMpvLxPWA40qp+WUpg3MStLXJy5TZrP2cPes="
+    },
+    "vulppkgs": {
+      "type": "Git",
+      "repository": {
+        "type": "Forgejo",
+        "server": "https://codeberg.org/",
+        "owner": "xfnw",
+        "repo": "vulppkgs"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "27d8596bfd2a068271044b3097329d1d2f80cf4f",
+      "url": "https://codeberg.org/xfnw/vulppkgs/archive/27d8596bfd2a068271044b3097329d1d2f80cf4f.tar.gz",
+      "hash": "sha256-xOaZ13ycJ04DoOF5l3YmNhImYR/vmwlnorRDfXBFEMI="
     }
   },
   "version": 8
