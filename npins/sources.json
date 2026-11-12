@@ -9,9 +9,9 @@
       },
       "branch": "master",
       "submodules": false,
-      "revision": "eb35abda9f232cc6610b1d1e3200d15c49b7ac54",
-      "url": "https://github.com/ipetkov/crane/archive/eb35abda9f232cc6610b1d1e3200d15c49b7ac54.tar.gz",
-      "hash": "sha256-Y1/TTVXjYXGF068IThQH9fPSZ0SIE74PABlUxnWTUH0="
+      "revision": "79fd63528501446749c09f08cad486a58c7d173e",
+      "url": "https://github.com/ipetkov/crane/archive/79fd63528501446749c09f08cad486a58c7d173e.tar.gz",
+      "hash": "sha256-TREenflwEjxOSq292FYwbc3kEm7TDRtXCZRNWEdjBmg="
     },
     "nix2container": {
       "type": "Git",
@@ -22,16 +22,16 @@
       },
       "branch": "master",
       "submodules": false,
-      "revision": "b6ac40ef110c12ab1651fce5ea563f7837236439",
-      "url": "https://github.com/nlewo/nix2container/archive/b6ac40ef110c12ab1651fce5ea563f7837236439.tar.gz",
-      "hash": "sha256-b3zONUcYXZHeoeYwDZdSDCzMj0s6ubmD6NT3D7sS+jU="
+      "revision": "42d1df94f001a9416ef08be7b305144074aca9d2",
+      "url": "https://github.com/nlewo/nix2container/archive/42d1df94f001a9416ef08be7b305144074aca9d2.tar.gz",
+      "hash": "sha256-poBaF2bJUH3yGMav3TSOi7k84jy8BnU8HD6PONQAwak="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.zst",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1072974.02f5696b0e60/nixexprs.tar.zst",
-      "hash": "sha256-iR1Jj6svMpvLxPWA40qp+WUpg3MStLXJy5TZrP2cPes="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1113202.085af13c1607/nixexprs.tar.zst",
+      "hash": "sha256-ylq2ECc2gjIQi5HtrjzSHhqVQ4e5CQqLi/M5gA8+HEo="
     },
     "vulppkgs": {
       "type": "Git",
@@ -43,9 +43,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "27d8596bfd2a068271044b3097329d1d2f80cf4f",
-      "url": "https://codeberg.org/xfnw/vulppkgs/archive/27d8596bfd2a068271044b3097329d1d2f80cf4f.tar.gz",
-      "hash": "sha256-xOaZ13ycJ04DoOF5l3YmNhImYR/vmwlnorRDfXBFEMI="
+      "revision": "bac36b723489b5e6bb24a67fb49374f074f53b82",
+      "url": "https://codeberg.org/xfnw/vulppkgs/archive/bac36b723489b5e6bb24a67fb49374f074f53b82.tar.gz",
+      "hash": "sha256-velLt18VvxIIXorKxrOPdDuz/oanXDr6RHge01vaXX4="
     }
   },
   "version": 8
