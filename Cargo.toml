@@ -8,7 +8,6 @@ edition = "2024"
 
 [dependencies]
 boilerplate = "1.2.1"
-chrono = { version = "0.4.35", default-features = false }
 clap = { version = "4.5.3", default-features = false, features = ["derive", "std", "help", "usage"] }
 foxerror = "0.1.0"
 git2 = { version = "0.21", default-features = false, features = ["unstable-sha256"] }
@@ -20,6 +19,7 @@ regex = { version = "1.10.5", default-features = false, features = ["std"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = { version = "1.0.125", optional = true }
 slugify = "0.1.0"
+time = { version = "0.3.55", features = ["formatting", "macros"] }
 toml_edit = { version = "0.23", default-features = false, features = ["serde", "parse"] }
 url = "2.5.4"
 

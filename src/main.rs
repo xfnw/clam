@@ -6,6 +6,7 @@ use foxerror::FoxError;
 use git2::{Commit, Repository};
 use orgize::config::{ParseConfig, UseSubSuperscript};
 use std::{collections::HashMap, env::set_current_dir, fs, io::Write, path::PathBuf};
+use time::error::ComponentRange;
 
 mod atom;
 mod config;
@@ -146,9 +147,9 @@ enum Error {
     /// missing history of file
     MissingHist,
     /// creation time broken
-    BadCreateTime,
+    BadCreateTime(ComponentRange),
     /// modification time broken
-    BadModifyTime,
+    BadModifyTime(ComponentRange),
     /// stop using 300 billion year old software
     TimeOverflow,
     /// unsafe path

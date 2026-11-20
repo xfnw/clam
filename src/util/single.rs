@@ -2,10 +2,11 @@ use crate::{
     Error, STYLESHEET_STR,
     git::HistMeta,
     helpers::org_links,
-    output::{Page, PageKeywords, PageMetadata, accumulate, get_keywords, infer_title},
+    output::{
+        Page, PageKeywords, PageMetadata, PrettyDateTime, accumulate, get_keywords, infer_title,
+    },
 };
 use boilerplate::Trusted;
-use chrono::{DateTime, Datelike};
 use git2::{Commit, Repository};
 use orgize::{
     ParseConfig,
@@ -188,9 +189,9 @@ fn generate_entries<'a>(
                 let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
                     year
                 } else {
-                    DateTime::from_timestamp(create_time.seconds(), 0)
+                    PrettyDateTime::new(create_time.seconds())
                         .expect("creation time from git should be reasonable")
-                        .naive_utc()
+                        .0
                         .year()
                 };
 
@@ -211,9 +212,8 @@ fn generate_entries<'a>(
                 let metadata = PageMetadata {
                     author,
                     commit: last_commit,
-                    modified: DateTime::from_timestamp(modify_time.seconds(), 0)
-                        .expect("modification time from git should be reasonable")
-                        .naive_utc(),
+                    modified: PrettyDateTime::new(modify_time.seconds())
+                        .expect("modification time from git should be reasonable"),
                     year,
                     incoming,
                     footer: None,

@@ -4,11 +4,10 @@ use crate::{
     git::HistMeta,
     helpers::{URL_PATH_UNSAFE, org_links},
     output::{
-        NodeOrToken, Page, PageMetadata, TokenList, accumulate, get_keywords, infer_title,
-        mangle_link,
+        NodeOrToken, Page, PageMetadata, PrettyDateTime, TokenList, accumulate, get_keywords,
+        infer_title, mangle_link,
     },
 };
-use chrono::{DateTime, Datelike};
 use orgize::{
     ParseConfig, SyntaxKind,
     ast::{Token, filter_token},
@@ -479,9 +478,9 @@ pub fn write_org_page(
         let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
             year
         } else {
-            DateTime::from_timestamp(create_time.seconds(), 0)
-                .ok_or(Error::BadCreateTime)?
-                .naive_utc()
+            PrettyDateTime::new(create_time.seconds())
+                .map_err(Error::BadCreateTime)?
+                .0
                 .year()
         };
 
@@ -512,9 +511,7 @@ pub fn write_org_page(
         let meta = PageMetadata {
             author,
             commit: last_commit,
-            modified: DateTime::from_timestamp(modify_time.seconds(), 0)
-                .ok_or(Error::BadModifyTime)?
-                .naive_utc(),
+            modified: PrettyDateTime::new(modify_time.seconds()).map_err(Error::BadModifyTime)?,
             year,
             incoming,
             footer: None,

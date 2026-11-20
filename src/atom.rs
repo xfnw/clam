@@ -1,13 +1,13 @@
 use crate::{Error, config::FeedConfig, git::HistMeta, helpers::URL_PATH_UNSAFE, output::Page};
-use chrono::{DateTime, NaiveDateTime};
 use percent_encoding::{CONTROLS, utf8_percent_encode};
 use std::{
     cmp::min,
     collections::HashMap,
     fmt, fs,
-    io::Write,
+    io::{Cursor, Write},
     path::{Component, PathBuf},
 };
+use time::{UtcDateTime, error::ComponentRange, format_description::well_known::Rfc3339};
 
 #[derive(boilerplate::Boilerplate)]
 struct FeedXml<'a> {
@@ -32,27 +32,32 @@ pub struct AtomEntry<'a> {
     updated: AtomDateTime,
 }
 
-/// `NaiveDateTime` that `Display`s to an atom feed compatible date (iso8601/rfc3339 subset)
-/// without unnecessary allocation, as chrono gates iso8601 output behind the `alloc` feature
+/// [`UtcDateTime`] that [`Display`]s to an atom feed compatible date (iso8601/rfc3339 subset)
 #[derive(Debug)]
-pub struct AtomDateTime(pub NaiveDateTime);
+pub struct AtomDateTime(pub UtcDateTime);
 
 impl AtomDateTime {
     /// create a new `AtomDateTime` from a unix timestamp
-    pub fn new(unix: i64) -> Option<Self> {
-        let ts = DateTime::from_timestamp(unix, 0)?;
-        Some(Self(ts.naive_utc()))
+    pub fn new(unix: i64) -> Result<Self, ComponentRange> {
+        UtcDateTime::from_unix_timestamp(unix).map(Self)
     }
 }
 
 impl fmt::Display for AtomDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use std::fmt::Write;
-
-        self.0.date().fmt(f)?;
-        f.write_char('T')?;
-        self.0.time().fmt(f)?;
-        f.write_char('Z')
+        // FIXME: replace this nonsense if time ever implements fmt::Write stuff.
+        // it is on their breaking changes wishlist:
+        // https://github.com/time-rs/time/issues/650
+        let mut buf = Cursor::new([0u8; "9999-12-31T23:59:59.999999999Z".len()]);
+        // not sure what the usize this returns is for, but it is NOT the written length,
+        // hence needing to record that ourselves with the Cursor
+        self.0
+            .format_into(&mut buf, &Rfc3339)
+            .map_err(|_| fmt::Error)?;
+        #[expect(clippy::cast_possible_truncation)]
+        f.write_str(
+            str::from_utf8(&buf.get_ref()[..buf.position() as usize]).map_err(|_| fmt::Error)?,
+        )
     }
 }
 
@@ -101,8 +106,8 @@ pub fn entries<'a>(
             last_msg,
             ..
         } = metadata.get(old_path).ok_or(Error::MissingHist)?;
-        let published = AtomDateTime::new(create_time.seconds()).ok_or(Error::BadCreateTime)?;
-        let updated = AtomDateTime::new(modify_time.seconds()).ok_or(Error::BadModifyTime)?;
+        let published = AtomDateTime::new(create_time.seconds()).map_err(Error::BadCreateTime)?;
+        let updated = AtomDateTime::new(modify_time.seconds()).map_err(Error::BadModifyTime)?;
         let summary = last_msg.as_deref();
         let content = Some(html.as_ref());
 
@@ -248,5 +253,12 @@ mod tests {
 </feed>
 "#
         );
+    }
+
+    #[test]
+    fn longest_date() {
+        let max = UtcDateTime::MAX;
+        let atom = AtomDateTime(max);
+        assert_eq!(atom.to_string(), max.format(&Rfc3339).unwrap());
     }
 }

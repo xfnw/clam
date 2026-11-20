@@ -1,5 +1,4 @@
 use crate::{Error, OutputFormat, config::ClamConfig, git::HistMeta};
-use chrono::NaiveDateTime;
 use orgize::{
     Org, ParseConfig, SyntaxNode, SyntaxToken,
     ast::Macros,
@@ -10,11 +9,13 @@ use std::{
     borrow::Cow,
     collections::{BTreeMap, HashMap},
     ffi::OsStr,
+    fmt,
     fs::File,
-    io::Write,
+    io::{Cursor, Write},
     path::{Component, Path, PathBuf},
     rc::Rc,
 };
+use time::{UtcDateTime, error::ComponentRange, macros::format_description};
 
 pub mod gmi;
 pub mod html;
@@ -31,7 +32,7 @@ pub struct Page {
 pub struct PageMetadata<'a> {
     pub author: &'a str,
     pub commit: &'a str,
-    pub modified: NaiveDateTime,
+    pub modified: PrettyDateTime,
     pub year: i32,
     pub incoming: Option<Vec<(&'a str, &'a str)>>,
     pub footer: Option<&'a str>,
@@ -43,6 +44,43 @@ pub struct PageKeywords {
     pub author: Option<String>,
     pub language: Option<String>,
     pub year: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct PrettyDateTime(pub UtcDateTime);
+
+impl PrettyDateTime {
+    pub fn new(unix: i64) -> Result<Self, ComponentRange> {
+        UtcDateTime::from_unix_timestamp(unix).map(Self)
+    }
+}
+
+impl fmt::Display for PrettyDateTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // FIXME: replace this nonsense if time ever implements fmt::Write stuff.
+        // it is on their breaking changes wishlist:
+        // https://github.com/time-rs/time/issues/650
+        let mut buf = Cursor::new([0u8; "9999-12-31 23:59:59".len()]);
+        // not sure what the usize this returns is for, but it is NOT the written length,
+        // hence needing to record that ourselves with the Cursor
+        self.0
+            .format_into(
+                &mut buf,
+                format_description!("[year]-[month]-[day] [hour]:[minute]:[second]"),
+            )
+            .map_err(|_| fmt::Error)?;
+        #[expect(clippy::cast_possible_truncation)]
+        f.write_str(
+            str::from_utf8(&buf.get_ref()[..buf.position() as usize]).map_err(|_| fmt::Error)?,
+        )
+    }
+}
+
+#[test]
+fn longest_date() {
+    let max = UtcDateTime::MAX;
+    let pretty = PrettyDateTime(max);
+    assert_eq!(pretty.to_string(), "9999-12-31 23:59:59");
 }
 
 pub fn infer_title(filename: &Path) -> String {

@@ -3,10 +3,12 @@ use crate::{
     config::{ClamConfig, FeedConfig},
     git::HistMeta,
     helpers::org_links,
-    output::{Page, PageMetadata, TokenList, accumulate, get_keywords, infer_title, mangle_link},
+    output::{
+        Page, PageMetadata, PrettyDateTime, TokenList, accumulate, get_keywords, infer_title,
+        mangle_link,
+    },
 };
 use boilerplate::Trusted;
-use chrono::{DateTime, Datelike};
 use indexmap::IndexMap;
 use orgize::{
     ParseConfig, SyntaxKind,
@@ -562,9 +564,9 @@ pub fn write_org_page(
         let year = if let Some(Ok(year)) = keywords.year.as_ref().map(|k| k.parse()) {
             year
         } else {
-            DateTime::from_timestamp(create_time.seconds(), 0)
-                .ok_or(Error::BadCreateTime)?
-                .naive_utc()
+            PrettyDateTime::new(create_time.seconds())
+                .map_err(Error::BadCreateTime)?
+                .0
                 .year()
         };
 
@@ -595,9 +597,7 @@ pub fn write_org_page(
         let meta = PageMetadata {
             author,
             commit: last_commit,
-            modified: DateTime::from_timestamp(modify_time.seconds(), 0)
-                .ok_or(Error::BadModifyTime)?
-                .naive_utc(),
+            modified: PrettyDateTime::new(modify_time.seconds()).map_err(Error::BadModifyTime)?,
             year,
             incoming,
             footer,
